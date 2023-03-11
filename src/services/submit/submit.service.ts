@@ -3,7 +3,7 @@ import FormData from 'form-data';
 import * as path from 'path';
 import { SubmitRepresentationResponse, SubmitCodeRepresentationPayload } from '../../types';
 
-export class SubmitService extends ApiServiceBase {
+class SubmitService extends ApiServiceBase {
   /**
    * @param relativePath Relative Path of the file
    * @param fileContent Buffer Contents of the txt file
@@ -46,3 +46,5 @@ export class SubmitService extends ApiServiceBase {
     return response;
   }
 }
+
+export const submitService = new SubmitService();
