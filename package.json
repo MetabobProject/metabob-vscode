@@ -40,19 +40,12 @@
       }
     ],
     "configuration": {
-      "title": "Webview React",
+      "title": "Metabob Extension configuration",
       "properties": {
-        "webviewReact.userApiGender": {
+        "metabob.apiKey": {
+          "description": "API key to use for authentication",
           "type": "string",
-          "default": "male",
-          "enum": [
-            "male",
-            "female"
-          ],
-          "enumDescriptions": [
-            "Fetching user information with gender of male",
-            "Fetching user information with gender of female"
-          ]
+          "default": ""
         }
       }
     }

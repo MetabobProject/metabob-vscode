@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export const getAPIUserGender = () => {
-  const gender = vscode.workspace.getConfiguration('webviewReact').get('userApiGender', 'male');
-  return gender;
+export const getAPIConfig = () => {
+  const config = vscode.workspace.getConfiguration('metabob').get('apiKey');
+  return config;
 };

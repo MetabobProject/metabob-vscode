@@ -1,6 +1,4 @@
 import { ApiServiceBase } from '../base.service';
-import FormData from 'form-data';
-import * as path from 'path';
 
 interface CreateSessionRequest {
   apiKey: string;

@@ -1,8 +1,11 @@
 import * as vscode from 'vscode';
 import { ViewLoader } from './view/ViewLoader';
 import { CommonMessage } from './view/messages/messageTypes';
+import { getAPIConfig } from './config';
 
 export function activate(context: vscode.ExtensionContext) {
+  console.log(getAPIConfig());
+
   context.subscriptions.push(
     vscode.commands.registerCommand('webview.open', () => {
       ViewLoader.showWebview(context);
