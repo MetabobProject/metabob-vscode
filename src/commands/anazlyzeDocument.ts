@@ -30,17 +30,21 @@ function extractMetaDataFromDocument(document: vscode.TextDocument) {
 
 // If the status is completed, passes the response to another function
 // if the status is pending then queue the job
-function computeTextDocumentResponse(
+function computeDocumentResponse(
   response: Result<SubmitRepresentationResponse | null, ApiErrorBase>
 ) {
   if (response.isOk()) {
     if (response.value?.results) {
-      // const decor = GenerateDecorations(response.value.results);
+      const decor = GenerateDecorations(response.value.results);
+      return decor;
     }
-  } else {
-    // check the value of the error, if it is pending
-    // append the job to queue else remove from queue
   }
+  if (response.isErr()) {
+    // if(response.error.)
+    return;
+  }
+
+  return undefined;
 }
 
 export function activateAnalyzeCommand(
@@ -54,41 +58,62 @@ export function activateAnalyzeCommand(
 ) {
   const command = 'metabob.analyzeDocument';
 
-  const commandHandler = async (payload?: ActivateAnalyzeCommandPayload) => {
+  const commandHandler = async () => {
     // get the current editor
-    if (!payload) {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        vscode.window.showErrorMessage('Editor is not Selected');
-        return;
-      }
-      const metaDataDocument = extractMetaDataFromDocument(editor.document);
-      if (metaDataDocument.isTextDocument) {
-        const response = await submitService.submitTextFile(
-          metaDataDocument.relativePath,
-          metaDataDocument.fileContent,
-          metaDataDocument.filePath
-        );
-        debug?.appendLine(JSON.stringify(response));
-      } else {
-        // const response = await submitService.submitCodeFile();
-      }
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('Editor is not Selected');
+      return;
+    }
+    const metaDataDocument = extractMetaDataFromDocument(editor.document);
+    if (metaDataDocument.isTextDocument) {
+      const response = await submitService.submitTextFile(
+        metaDataDocument.relativePath,
+        metaDataDocument.fileContent,
+        metaDataDocument.filePath
+      );
+      debug?.appendLine(JSON.stringify(response));
+    } else {
+      const codeRepresentation = {
+        format: 'full',
+        identities: {
+          [metaDataDocument.filePath]: {
+            language: editor.document.languageId,
+            filePath: metaDataDocument.filePath,
+            startLine: 0,
+            endLine: editor.document.lineCount - 1,
+            text: metaDataDocument.fileContent,
+          },
+        },
+        nodes: {
+          [metaDataDocument.filePath]: [
+            {
+              type: 'FILE',
+              identity: metaDataDocument.filePath,
+            },
+          ],
+        },
+        edges: {},
+      };
+      // const response = await submitService.submitCodeFile(codeRepresentation);
     }
 
-    if (payload && payload.code === true && payload.text === false) {
-    }
+    // if (payload && payload.code === true && payload.text === false) {
+    //   vscode.window.showInformationMessage('hello from code');
+    // }
 
-    if (payload && payload.code === false && payload.text === false) {
-      const metaDataDocument = extractMetaDataFromDocument(payload.document);
-      if (metaDataDocument.isTextDocument) {
-        const response = await submitService.submitTextFile(
-          metaDataDocument.relativePath,
-          metaDataDocument.fileContent,
-          metaDataDocument.filePath
-        );
-      }
-    }
-
-    context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));
+    // if (payload && payload.code === false && payload.text === false) {
+    //   vscode.window.showInformationMessage('hello from text');
+    //   const metaDataDocument = extractMetaDataFromDocument(payload.document);
+    //   if (metaDataDocument.isTextDocument) {
+    //     const response = await submitService.submitTextFile(
+    //       metaDataDocument.relativePath,
+    //       metaDataDocument.fileContent,
+    //       metaDataDocument.filePath
+    //     );
+    //   }
+    // }
   };
+
+  context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));
 }

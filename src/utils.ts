@@ -21,8 +21,13 @@ export class Util {
     );
   }
 
+  static isValidDocument(doc: TextDocument): boolean {
+    const textLanguageIds = ['markdown', 'asciidoc'];
+    return !(languages.match(textLanguageIds, doc) > 0);
+  }
+
   static isTextDocument(doc: TextDocument): boolean {
-    const textLanguageIds = ['plaintext', 'markdown', 'asciidoc'];
+    const textLanguageIds = ['plaintext'];
     return languages.match(textLanguageIds, doc) > 0;
   }
 

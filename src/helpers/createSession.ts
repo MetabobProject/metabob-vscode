@@ -27,8 +27,8 @@ export async function createUserSession(context: vscode.ExtensionContext) {
     if (response.error.response.data.session) {
       sessionState.set(response.error.response.data.session);
     } else {
-      vscode.window.showErrorMessage('Could not Authenticate User');
+      // @Todo Show Error message here
+      return;
     }
   }
-  // store the response in the state
 }

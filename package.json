@@ -23,8 +23,7 @@
     "metabob"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onCommand:metabob.analyzeDocument"
+    "onStartupFinished"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
