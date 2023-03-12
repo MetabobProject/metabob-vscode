@@ -6,7 +6,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Run Extension",
+			"name": "Run Metabob Extension",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
@@ -14,20 +14,6 @@
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/src/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}",
-			"sourceMaps": true
-		},
-		{
-			"name": "Extension Tests",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/index"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/test/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}",
 			"sourceMaps": true

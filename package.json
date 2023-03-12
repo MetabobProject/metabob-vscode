@@ -27,16 +27,35 @@
   ],
   "main": "./out/src/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "webview",
+          "title": "Metabob",
+          "icon": "src/assets/extension-icon.png"
+        }
+      ]
+    },
+    "views": {
+      "webview": [
+        {
+          "type": "webview",
+          "id": "left-panel-webview",
+          "name": "Metabob Extension",
+          "icon": "src/assets/extension-icon.png"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "webview.open",
         "title": "Open Webview",
-        "category": "Webview React"
+        "category": "Metabob"
       },
       {
         "command": "extension.sendMessage",
         "title": "Send Message to Webview",
-        "category": "Webview React"
+        "category": "Metabob"
       }
     ],
     "configuration": {
@@ -45,7 +64,8 @@
         "metabob.apiKey": {
           "description": "API key to use for authentication",
           "type": "string",
-          "default": ""
+          "default": "",
+          "category": "Metabob"
         }
       }
     }
@@ -57,10 +77,8 @@
     "compile:view": "webpack --mode development",
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc -watch -p ./",
-    "watch:view": "webpack --watch --mode development",
     "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "lint": "eslint src --ext ts"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",

@@ -1,30 +1,14 @@
 import * as vscode from 'vscode';
-import { ViewLoader } from './view/ViewLoader';
-import { CommonMessage } from './view/messages/messageTypes';
 import { getAPIConfig } from './config';
+import { LeftPanelWebview } from './providers/leftWebView.provider';
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log(getAPIConfig());
+  const debug = vscode.window.createOutputChannel('Metabob-Debug');
+  const apiConfig = getAPIConfig();
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('webview.open', () => {
-      ViewLoader.showWebview(context);
-    }),
-
-    vscode.commands.registerCommand('extension.sendMessage', () => {
-      vscode.window
-        .showInputBox({
-          prompt: 'Send message to Webview',
-        })
-        .then(result => {
-          result &&
-            ViewLoader.postMessageToWebview<CommonMessage>({
-              type: 'COMMON',
-              payload: result,
-            });
-        });
-    })
-  );
+  const leftPanelWebView = new LeftPanelWebview(context?.extensionUri, {});
+  let view = vscode.window.registerWebviewViewProvider('left-panel-webview', leftPanelWebView);
+  context.subscriptions.push(view);
 }
 
 export function deactivate() {}
