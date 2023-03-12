@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
     createUserSession(context);
   }, 60_000);
 
-  activateAnalyzeCommand(context, config, debug);
+  activateAnalyzeCommand(context, debug);
 
   if (analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true) {
     context.subscriptions.push(
