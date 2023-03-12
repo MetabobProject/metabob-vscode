@@ -30,19 +30,25 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "webview",
-          "title": "Metabob",
-          "icon": "src/assets/extension-icon.png"
+          "id": "metabob-webview",
+          "title": "Metabob Extension",
+          "icon": "./src/assets/extension-icon.png"
         }
       ]
     },
     "views": {
-      "webview": [
+      "metabob-webview": [
         {
           "type": "webview",
-          "id": "left-panel-webview",
-          "name": "Metabob Extension",
-          "icon": "src/assets/extension-icon.png"
+          "id": "suggestion-panel-webview",
+          "name": "Suggestion",
+          "icon": "./src/assets/extension-icon.png"
+        },
+        {
+          "type": "webview",
+          "id": "recommendation-panel-webview",
+          "name": "Recommendation",
+          "icon": "./src/assets/extension-icon.png"
         }
       ]
     },
@@ -80,7 +86,6 @@
     "vscode:prepublish": "npm run compile",
     "compile": "npm-run-all compile:*",
     "compile:extension": "tsc -p ./",
-    "compile:view": "webpack --mode development",
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",

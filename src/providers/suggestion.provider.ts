@@ -1,7 +1,7 @@
 import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window } from 'vscode';
 import { Util } from '../utils';
 
-export class LeftPanelWebview implements WebviewViewProvider {
+export class SuggestionWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
   private readonly extensionPath: Uri;
 
