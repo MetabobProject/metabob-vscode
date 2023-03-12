@@ -2,14 +2,22 @@ import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window } 
 import { Util } from '../utils';
 
 export class LeftPanelWebview implements WebviewViewProvider {
-  constructor(private readonly extensionPath: Uri, private data: any, private _view: any = null) {}
+  private _view?: WebviewView | null = null;
+  private readonly extensionPath: Uri;
+
+  constructor(extensionPath: Uri) {
+    this.extensionPath = extensionPath;
+  }
+
   private onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<
     any | undefined | null | void
   >();
 
-  refresh(context: any): void {
+  refresh(): void {
     this.onDidChangeTreeData.fire(null);
-    this._view.webview.html = this._getHtmlForWebview(this._view?.webview);
+    if (this._view) {
+      this._view.webview.html = this._getHtmlForWebview(this._view?.webview);
+    }
   }
 
   resolveWebviewView(webviewView: WebviewView): void | Thenable<void> {
@@ -23,22 +31,31 @@ export class LeftPanelWebview implements WebviewViewProvider {
   }
 
   private activateMessageListener() {
-    this._view.webview.onDidReceiveMessage((message: any) => {
-      switch (message.action) {
-        case 'SHOW_WARNING_LOG':
-          window.showWarningMessage(message.data.message);
-          break;
-        default:
-          break;
-      }
-    });
+    if (this._view) {
+      this._view.webview.onDidReceiveMessage((message: any) => {
+        switch (message.action) {
+          case 'SHOW_WARNING_LOG':
+            window.showWarningMessage(message.data.message);
+            break;
+          default:
+            break;
+        }
+      });
+    }
   }
 
   private _getHtmlForWebview(webview: Webview) {
     const nonce = Util.getNonce();
+    const styleVSCodeUri = webview.asWebviewUri(
+      Uri.joinPath(this.extensionPath, 'media', 'vscode.css')
+    );
+    const styleResetUri = webview.asWebviewUri(
+      Uri.joinPath(this.extensionPath, 'media', 'reset.css')
+    );
 
-    return `<html>
-                <head>
+    return /*html*/ `
+    <html>
+    <head>
                     <meta charSet="utf-8"/>
                     <meta http-equiv="Content-Security-Policy" 
                             content="default-src 'none';
@@ -49,8 +66,13 @@ export class LeftPanelWebview implements WebviewViewProvider {
 							
 							;">             
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="${styleResetUri}" rel="stylesheet">
+                    <link href="${styleVSCodeUri}" rel="stylesheet">
                 </head>
-               <body><h1>hello</h1><vs-button>hello</vs-button></body>
+               <body>
+                <h1>hello</h1>
+                <button>hello</button>
+              </body>
             </html>`;
   }
 }
