@@ -2,6 +2,11 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { Util } from '../utils';
 import { submitService } from '../services/submit/submit.service';
+import { SubmitRepresentationResponse } from '../types';
+import { Result } from 'rusty-result-ts';
+import { ApiErrorBase } from '../services/base.error';
+import { GenerateDecorations } from '../helpers/generateDecorations';
+import { debug } from 'console';
 
 interface ActivateAnalyzeCommandPayload {
   text: boolean;
@@ -23,6 +28,21 @@ function extractMetaDataFromDocument(document: vscode.TextDocument) {
   };
 }
 
+// If the status is completed, passes the response to another function
+// if the status is pending then queue the job
+function computeTextDocumentResponse(
+  response: Result<SubmitRepresentationResponse | null, ApiErrorBase>
+) {
+  if (response.isOk()) {
+    if (response.value?.results) {
+      // const decor = GenerateDecorations(response.value.results);
+    }
+  } else {
+    // check the value of the error, if it is pending
+    // append the job to queue else remove from queue
+  }
+}
+
 export function activateAnalyzeCommand(
   context: vscode.ExtensionContext,
   _config: {
@@ -30,7 +50,7 @@ export function activateAnalyzeCommand(
     baseUrl: string | undefined;
     analyzeDocumentOnSave: boolean | undefined;
   },
-  _debug?: vscode.OutputChannel
+  debug?: vscode.OutputChannel
 ) {
   const command = 'metabob.analyzeDocument';
 
@@ -49,41 +69,9 @@ export function activateAnalyzeCommand(
           metaDataDocument.fileContent,
           metaDataDocument.filePath
         );
-        if (response.isOk()) {
-          if (response.value?.results) {
-            const decorations: vscode.DecorationOptions[] = response.value.results.map(
-              (result: any) => {
-                const startLine = result.startLine;
-                const endLine = result.endLine;
-                const category = result.category;
-                const summary = result.summary;
-
-                // Create a decoration type for each category
-                const decorationType = vscode.window.createTextEditorDecorationType({
-                  backgroundColor: 'rgba(255, 0, 0, 0.2)',
-                  overviewRulerColor: 'red',
-                  overviewRulerLane: vscode.OverviewRulerLane.Right,
-                });
-
-                // Create decoration options for each line range
-                const lineRange = new vscode.Range(startLine, 0, endLine, 0);
-                const decorationOption = { range: lineRange, hoverMessage: summary };
-                const lineDecorations = [decorationOption];
-
-                // Return the decoration options for this result
-                return { range: lineRange, hoverMessage: summary, decorationType, lineDecorations };
-              }
-            );
-            // Get the active text editor
-            const activeEditor = vscode.window.activeTextEditor;
-
-            // Decorate the active editor with the results
-            if (activeEditor) {
-            }
-          }
-        }
+        debug?.appendLine(JSON.stringify(response));
       } else {
-        const response = await submitService.submitCodeFile();
+        // const response = await submitService.submitCodeFile();
       }
     }
 

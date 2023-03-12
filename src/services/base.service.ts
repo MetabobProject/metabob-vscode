@@ -1,18 +1,20 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { merge } from 'lodash';
 import { err, ok, Result } from 'rusty-result-ts';
-
+import { getAPIBaseURL } from '../config';
 import { ApiErrorBase } from './base.error';
 
+const apiBase = getAPIBaseURL();
+
 export class ApiServiceBase {
-  protected urlBase = process.env.NEXT_PUBLIC_API_URL;
+  protected urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase;
 
   /**
    * Creates a new service instance.
    * @param path A base path for all requests this service will make. Defaults to `/api`.
    */
-  public constructor(path?: string) {
-    this.urlBase = path ?? process.env.NEXT_PUBLIC_API_URL;
+  public constructor() {
+    this.urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase;
   }
 
   /**
