@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-interface ExtensionStateValue<T> {
+export interface ExtensionStateValue<T> {
   key: string;
   value: T;
 }
@@ -14,8 +14,8 @@ export class ExtensionState<T> {
     this.key = key;
   }
 
-  get(): T | undefined {
-    return this.context.globalState.get<T>(this.key);
+  get(): ExtensionStateValue<T> | undefined {
+    return this.context.globalState.get<ExtensionStateValue<T>>(this.key);
   }
 
   set(value: T): Thenable<void> {

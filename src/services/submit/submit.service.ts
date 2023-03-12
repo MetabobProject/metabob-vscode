@@ -9,13 +9,19 @@ class SubmitService extends ApiServiceBase {
    * @param fileContent Buffer Contents of the txt file
    * @param filePath Path of the file
    */
-  async submitTextFile(relativePath: string, fileContent: any, filePath: string) {
+  async submitTextFile(
+    relativePath: string,
+    fileContent: any,
+    filePath: string,
+    sessionToken: string
+  ) {
     const formData = new FormData();
     formData.append(relativePath, fileContent, { filename: path.basename(filePath) });
 
     const response = await this.post<SubmitRepresentationResponse>('/submit', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${sessionToken}`,
       },
     });
 
@@ -25,10 +31,11 @@ class SubmitService extends ApiServiceBase {
   /**
    * @param codeRepresentation The Code Representation of the file
    */
-  async submitCodeFile(codeRepresentation: SubmitCodeRepresentationPayload) {
+  async submitCodeFile(codeRepresentation: SubmitCodeRepresentationPayload, sessionToken: string) {
     const response = await this.post<SubmitRepresentationResponse>('/submit', codeRepresentation, {
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionToken}`,
       },
     });
     return response;

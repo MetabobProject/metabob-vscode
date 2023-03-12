@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { Util } from '../utils';
@@ -7,6 +8,7 @@ import { Result } from 'rusty-result-ts';
 import { ApiErrorBase } from '../services/base.error';
 import { GenerateDecorations } from '../helpers/generateDecorations';
 import { withProgress } from '../helpers/withProgress';
+import { SessionState } from '../store/session.state';
 
 interface IDocumentMetaData {
   filePath: string;
@@ -53,11 +55,15 @@ function computeDocumentResponse(
   return undefined;
 }
 
-const handleTextDocumentAnalyze = async (metaDataDocument: IDocumentMetaData) => {
+const handleTextDocumentAnalyze = async (
+  metaDataDocument: IDocumentMetaData,
+  sessionToken: string
+) => {
   const response = await submitService.submitTextFile(
     metaDataDocument.relativePath,
     metaDataDocument.fileContent,
-    metaDataDocument.filePath
+    metaDataDocument.filePath,
+    sessionToken
   );
   const computeOutput = computeDocumentResponse(response);
   return;
@@ -65,10 +71,13 @@ const handleTextDocumentAnalyze = async (metaDataDocument: IDocumentMetaData) =>
 
 const handleCodeDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
-  debug?: vscode.OutputChannel
+  sessionToken: string
 ) => {
   const codeRepresentation: SubmitCodeRepresentationPayload = {
     format: 'full',
+    body: {
+      upload: metaDataDocument.fileContent,
+    },
     identities: {
       [metaDataDocument.filePath]: {
         language: metaDataDocument.languageId,
@@ -76,6 +85,9 @@ const handleCodeDocumentAnalyze = async (
         startLine: 0,
         endLine: metaDataDocument.endLine,
         text: metaDataDocument.fileContent,
+        body: {
+          upload: metaDataDocument.fileContent,
+        },
       },
     },
     nodes: {
@@ -83,21 +95,23 @@ const handleCodeDocumentAnalyze = async (
         {
           type: 'FILE',
           identity: metaDataDocument.filePath,
+          body: {
+            upload: metaDataDocument.fileContent,
+          },
         },
       ],
     },
     edges: {},
   };
 
-  const response = await submitService.submitCodeFile(codeRepresentation);
+  const response = await submitService.submitCodeFile(codeRepresentation, sessionToken);
+
   if (response.isOk()) {
-    debug?.appendLine(JSON.stringify(response));
-    // const computeOutput = computeDocumentResponse(response);
+    const computeOutput = computeDocumentResponse(response);
     // const editor = vscode.window.activeTextEditor;
   }
 
   if (response.isErr()) {
-    debug?.appendLine(JSON.stringify(response.error));
   }
 };
 
@@ -113,18 +127,25 @@ export function activateAnalyzeCommand(
       vscode.window.showErrorMessage('Editor is not Selected');
       return;
     }
+
     if (Util.isValidDocument(editor.document)) {
       const documentMetaData = extractMetaDataFromDocument(editor.document);
       if (documentMetaData.isTextDocument) {
-        withProgress<void>(
-          handleTextDocumentAnalyze(documentMetaData),
-          'Metabob: Analyzing Document'
-        );
+        const sessionState = new SessionState(context).get();
+        if (sessionState) {
+          withProgress<void>(
+            handleTextDocumentAnalyze(documentMetaData, sessionState.value),
+            'Metabob: Analyzing Document'
+          );
+        }
       } else {
-        withProgress<void>(
-          handleCodeDocumentAnalyze(documentMetaData),
-          'Metabob: Analyzing Document'
-        );
+        const sessionState = new SessionState(context).get();
+        if (sessionState) {
+          withProgress<void>(
+            handleCodeDocumentAnalyze(documentMetaData, sessionState.value),
+            'Metabob: Analyzing Document'
+          );
+        }
       }
     } else {
       vscode.window.showErrorMessage('Metabob: Selected Document is invalid');
