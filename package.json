@@ -1,7 +1,7 @@
 {
   "name": "metabob-vscode",
   "displayName": "Metabob VScode",
-  "description": "Metabob Vscode Extension",
+  "description": "AI static code analysis to ensure high code quality and software security",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.64.0"
@@ -23,7 +23,8 @@
     "metabob"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onCommand:metabob.analyzeDocument"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
@@ -54,13 +55,8 @@
     },
     "commands": [
       {
-        "command": "webview.open",
-        "title": "Open Webview",
-        "category": "Metabob"
-      },
-      {
-        "command": "extension.sendMessage",
-        "title": "Send Message to Webview",
+        "command": "metabob.analyzeDocument",
+        "title": "Analyze Document",
         "category": "Metabob"
       }
     ],
@@ -73,10 +69,16 @@
           "default": "",
           "category": "Metabob"
         },
-        "metabob.apiBaseUrl": {
+        "metabob.baseURl": {
           "description": "Endpoint of the backend service",
           "type": "string",
           "default": "",
+          "category": "Metabob"
+        },
+        "metabob.analyzeDocumentOnSave": {
+          "description": "Analyze Document On Save",
+          "type": "boolean",
+          "default": true,
           "category": "Metabob"
         }
       }

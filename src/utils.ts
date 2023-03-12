@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { CONSTANTS } from './constants';
+import { languages, TextDocument } from 'vscode';
 
 export class Util {
   static context: vscode.ExtensionContext;
@@ -9,11 +10,20 @@ export class Util {
     return this.context.globalState.get<string>(CONSTANTS.sessionKey) || '';
   }
 
+  static updateSessionToken(sessionToken: string) {
+    return this.context.globalState.update(CONSTANTS.sessionKey, sessionToken);
+  }
+
   static isLoggedIn() {
     return (
       !!this.context.globalState.get(CONSTANTS.sessionKey) &&
       !!this.context.globalState.get(CONSTANTS.apiKey)
     );
+  }
+
+  static isTextDocument(doc: TextDocument): boolean {
+    const textLanguageIds = ['plaintext', 'markdown', 'asciidoc'];
+    return languages.match(textLanguageIds, doc) > 0;
   }
 
   static getNonce() {
