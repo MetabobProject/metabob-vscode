@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { Util } from '../utils';
@@ -75,9 +74,6 @@ const handleCodeDocumentAnalyze = async (
 ) => {
   const codeRepresentation: SubmitCodeRepresentationPayload = {
     format: 'full',
-    body: {
-      upload: metaDataDocument.fileContent,
-    },
     identities: {
       [metaDataDocument.filePath]: {
         language: metaDataDocument.languageId,
@@ -85,9 +81,6 @@ const handleCodeDocumentAnalyze = async (
         startLine: 0,
         endLine: metaDataDocument.endLine,
         text: metaDataDocument.fileContent,
-        body: {
-          upload: metaDataDocument.fileContent,
-        },
       },
     },
     nodes: {
@@ -95,9 +88,6 @@ const handleCodeDocumentAnalyze = async (
         {
           type: 'FILE',
           identity: metaDataDocument.filePath,
-          body: {
-            upload: metaDataDocument.fileContent,
-          },
         },
       ],
     },
