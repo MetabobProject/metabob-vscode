@@ -1,18 +1,5 @@
+import { CreateSessionRequest, CreateSessionResponse, getUserSessionResponse } from '../../types';
 import { ApiServiceBase } from '../base.service';
-
-interface CreateSessionRequest {
-  apiKey: string;
-  sessionToken?: string;
-}
-
-interface CreateSessionResponse {
-  session: string;
-}
-
-interface getUserSessionResponse {
-  data: null;
-  status: 200;
-}
 
 class SessionService extends ApiServiceBase {
   /**

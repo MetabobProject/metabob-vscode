@@ -1,3 +1,3 @@
 import { IAnalyzeTextDocumentOnSave } from '../types';
 
-export function AnalyzeTextDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave) {}
+export function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave) {}

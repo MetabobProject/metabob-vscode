@@ -1,24 +1,16 @@
 import * as vscode from 'vscode';
-import { getAPIConfig, getAPIBaseURL, analyzeDocumentOnSave } from './config';
+import { analyzeDocumentOnSaveConfig } from './config';
 import { SuggestionWebView } from './providers/suggestion.provider';
 import { RecommendationWebView } from './providers/recommendation.provider';
 import { activateAnalyzeCommand } from './commands/anazlyzeDocument';
 import { Util } from './utils';
 import { createUserSession } from './helpers/createSession';
-import { AnalyzeTextDocumentOnSave } from './helpers/analyzeTextDocumentOnSave';
+import { AnalyzeDocumentOnSave } from './helpers/analyzeTextDocumentOnSave';
 
 let sessionInterval: any | null = null;
 export function activate(context: vscode.ExtensionContext) {
   const debug = vscode.window.createOutputChannel('Metabob-Debug');
-  const apiConfig = getAPIConfig();
-  const baseUrl = getAPIBaseURL();
-  const analyzeDocumentOnSaveConfig = analyzeDocumentOnSave();
-
-  const config = {
-    apiConfig,
-    baseUrl,
-    analyzeDocumentOnSave: analyzeDocumentOnSaveConfig,
-  };
+  const analyzeDocumentOnSave = analyzeDocumentOnSaveConfig();
 
   createUserSession(context);
   sessionInterval = setInterval(() => {
@@ -27,11 +19,11 @@ export function activate(context: vscode.ExtensionContext) {
 
   activateAnalyzeCommand(context, debug);
 
-  if (analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true) {
+  if (analyzeDocumentOnSave && analyzeDocumentOnSave === true) {
     context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument(document => {
         if (Util.isValidDocument(document)) {
-          AnalyzeTextDocumentOnSave({
+          AnalyzeDocumentOnSave({
             document,
           });
         }

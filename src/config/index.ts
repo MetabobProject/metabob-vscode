@@ -5,12 +5,12 @@ export const getAPIConfig = () => {
   return config;
 };
 
-export const getAPIBaseURL = () => {
+export const getAPIBaseURLConfig = () => {
   const config = vscode.workspace.getConfiguration('metabob').get<string>('baseURl');
   return config;
 };
 
-export const analyzeDocumentOnSave = () => {
+export const analyzeDocumentOnSaveConfig = () => {
   const config = vscode.workspace.getConfiguration('metabob').get<boolean>('analyzeDocumentOnSave');
   return config;
 };

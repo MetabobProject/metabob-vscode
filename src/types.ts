@@ -47,3 +47,17 @@ export interface SubmitCodeRepresentationPayload {
 export interface IAnalyzeTextDocumentOnSave {
   document: TextDocument;
 }
+
+export interface CreateSessionRequest {
+  apiKey: string;
+  sessionToken?: string;
+}
+
+export interface CreateSessionResponse {
+  session: string;
+}
+
+export interface getUserSessionResponse {
+  data: null;
+  status: 200;
+}
