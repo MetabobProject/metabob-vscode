@@ -61,3 +61,12 @@ export interface getUserSessionResponse {
   data: null;
   status: 200;
 }
+
+export interface IDocumentMetaData {
+  filePath: string;
+  relativePath: string;
+  fileContent: string;
+  isTextDocument: boolean;
+  languageId: string;
+  endLine: number;
+}
