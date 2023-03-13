@@ -1,10 +1,10 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { merge } from 'lodash';
 import { err, ok, Result } from 'rusty-result-ts';
-import { getAPIBaseURL } from '../config';
+import { getAPIBaseURLConfig } from '../config';
 import { ApiErrorBase } from './base.error';
 
-const apiBase = getAPIBaseURL();
+const apiBase = getAPIBaseURLConfig();
 
 export class ApiServiceBase {
   protected urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase;
