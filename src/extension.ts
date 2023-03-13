@@ -38,9 +38,23 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
       if (e.affectsConfiguration('metabob.apiKey') === true) {
         vscode.window.showInformationMessage('Metabob: API Key Changed');
+        return;
       }
       if (e.affectsConfiguration('metabob.baseURl') === true) {
         vscode.window.showInformationMessage('Metabob: Base URL Changed');
+        return;
+      }
+      if (e.affectsConfiguration('metabob.analyzeDocumentOnSave') === true) {
+        const reloadWindowItem = { title: 'Reload Window' };
+        vscode.window
+          .showInformationMessage('Reload the window to apply changes?', reloadWindowItem)
+          .then(selection => {
+            if (selection === reloadWindowItem) {
+              vscode.commands.executeCommand('workbench.action.reloadWindow');
+              return;
+            }
+            return;
+          });
       }
     })
   );

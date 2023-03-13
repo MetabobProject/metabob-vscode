@@ -42,7 +42,7 @@ export const handleDocumentAnalyze = async (
   if (verifiedResponse.results) {
     const editor = vscode.window.activeTextEditor;
 
-    if (editor) {
+    if (editor && editor.document.fileName === metaDataDocument.filePath) {
       const decorationFromResponse = transformResponseToDecorations(
         verifiedResponse.results,
         editor
@@ -52,7 +52,6 @@ export const handleDocumentAnalyze = async (
         decorationFromResponse.decorationType,
         decorationFromResponse.decorations
       );
-      vscode.window.showInformationMessage('Decorations shown');
     }
   }
 

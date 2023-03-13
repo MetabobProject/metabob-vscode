@@ -11,7 +11,6 @@ export function AnalyzeDocumentOnSave(
 ) {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
-    vscode.window.showErrorMessage('Editor is not Selected');
     return;
   }
 
