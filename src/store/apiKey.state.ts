@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { CONSTANTS } from '../constants';
-import { ExtensionState } from './base.state';
+import { ExtensionState, ExtensionStateValue } from './base.state';
 
 export class ApiKeyState extends ExtensionState<string> {
   constructor(context: vscode.ExtensionContext) {
     super(context, CONSTANTS.apiKey);
   }
 
-  get(): string | undefined {
-    return this.context.globalState.get<string>(this.key);
+  get(): ExtensionStateValue<string> | undefined {
+    return this.context.globalState.get<ExtensionStateValue<string>>(this.key);
   }
 
   set(value: string): Thenable<void> {
@@ -18,7 +18,7 @@ export class ApiKeyState extends ExtensionState<string> {
 
   update(callback: (value: string) => string): Thenable<void | undefined> {
     const value = this.get();
-    const updatedValue = callback(value as string);
+    const updatedValue = callback(value?.value || '');
     return this.set(updatedValue);
   }
 }

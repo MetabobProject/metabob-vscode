@@ -5,6 +5,10 @@ import { submitService } from '../services/submit/submit.service';
 import { withProgress } from '../helpers/withProgress';
 import { SessionState } from '../store/session.state';
 import { transformResponseToDecorations } from '../helpers/transformResponseToDecorations';
+import { Ok, Result } from 'rusty-result-ts';
+import { SubmitRepresentationResponse } from '../types';
+import { ApiErrorBase } from '../services/base.error';
+import { queue } from '../helpers/queue';
 
 interface IDocumentMetaData {
   filePath: string;
@@ -34,6 +38,23 @@ function extractMetaDataFromDocument(document: vscode.TextDocument): IDocumentMe
   };
 }
 
+const verifyResponseOfSubmit = (
+  response: Result<SubmitRepresentationResponse | null, ApiErrorBase>
+) => {
+  if (response.isErr()) {
+    return;
+  }
+
+  if (response.isOk()) {
+    if (response.value?.status === 'complete') {
+      return response.value;
+    } else if (response.value?.status === 'pending' || response.value?.status === 'running') {
+      queue?.enqueue(response.value);
+    }
+  }
+  return;
+};
+
 const handleTextDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string
@@ -44,14 +65,28 @@ const handleTextDocumentAnalyze = async (
     metaDataDocument.filePath,
     sessionToken
   );
-  // verify if we need to queue the request
+  const verifiedResponse = verifyResponseOfSubmit(response);
+  if (!verifiedResponse) {
+    vscode.window.showErrorMessage('Metabob: Error Analyzing the Document');
+    return;
+  }
+  if (verifiedResponse.results) {
+    const editor = vscode.window.activeTextEditor;
 
-  // create decoration
-  const decorationFromResponse = transformResponseToDecorations(response);
+    if (editor) {
+      const decorationFromResponse = transformResponseToDecorations(
+        verifiedResponse.results,
+        editor
+      );
 
-  // update global state for this relative path response
+      editor.setDecorations(
+        decorationFromResponse.decorationType,
+        decorationFromResponse.decorations
+      );
+      vscode.window.showInformationMessage('Decorations shown');
+    }
+  }
 
-  // if current editor is relative path then show decorations
   return;
 };
 
