@@ -68,43 +68,6 @@ const handleTextDocumentAnalyze = async (
   return;
 };
 
-const handleCodeDocumentAnalyze = async (
-  metaDataDocument: IDocumentMetaData,
-  sessionToken: string
-) => {
-  const codeRepresentation: SubmitCodeRepresentationPayload = {
-    format: 'full',
-    identities: {
-      [metaDataDocument.filePath]: {
-        language: metaDataDocument.languageId,
-        filePath: metaDataDocument.filePath,
-        startLine: 0,
-        endLine: metaDataDocument.endLine,
-        text: metaDataDocument.fileContent,
-      },
-    },
-    nodes: {
-      [metaDataDocument.filePath]: [
-        {
-          type: 'FILE',
-          identity: metaDataDocument.filePath,
-        },
-      ],
-    },
-    edges: {},
-  };
-
-  const response = await submitService.submitCodeFile(codeRepresentation, sessionToken);
-
-  if (response.isOk()) {
-    const computeOutput = computeDocumentResponse(response);
-    // const editor = vscode.window.activeTextEditor;
-  }
-
-  if (response.isErr()) {
-  }
-};
-
 export function activateAnalyzeCommand(
   context: vscode.ExtensionContext,
   _debug?: vscode.OutputChannel
@@ -120,22 +83,12 @@ export function activateAnalyzeCommand(
 
     if (Util.isValidDocument(editor.document)) {
       const documentMetaData = extractMetaDataFromDocument(editor.document);
-      if (documentMetaData.isTextDocument) {
-        const sessionState = new SessionState(context).get();
-        if (sessionState) {
-          withProgress<void>(
-            handleTextDocumentAnalyze(documentMetaData, sessionState.value),
-            'Metabob: Analyzing Document'
-          );
-        }
-      } else {
-        const sessionState = new SessionState(context).get();
-        if (sessionState) {
-          withProgress<void>(
-            handleTextDocumentAnalyze(documentMetaData, sessionState.value),
-            'Metabob: Analyzing Document'
-          );
-        }
+      const sessionState = new SessionState(context).get();
+      if (sessionState) {
+        withProgress<void>(
+          handleTextDocumentAnalyze(documentMetaData, sessionState.value),
+          'Metabob: Analyzing Document'
+        );
       }
     } else {
       vscode.window.showErrorMessage('Metabob: Selected Document is invalid');
