@@ -2,12 +2,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { Util } from '../utils';
 import { submitService } from '../services/submit/submit.service';
-import { SubmitCodeRepresentationPayload, SubmitRepresentationResponse } from '../types';
-import { Result } from 'rusty-result-ts';
-import { ApiErrorBase } from '../services/base.error';
-import { GenerateDecorations } from '../helpers/generateDecorations';
 import { withProgress } from '../helpers/withProgress';
 import { SessionState } from '../store/session.state';
+import { transformResponseToDecorations } from '../helpers/transformResponseToDecorations';
 
 interface IDocumentMetaData {
   filePath: string;
@@ -37,23 +34,6 @@ function extractMetaDataFromDocument(document: vscode.TextDocument): IDocumentMe
   };
 }
 
-function computeDocumentResponse(
-  response: Result<SubmitRepresentationResponse | null, ApiErrorBase>
-) {
-  if (response.isOk()) {
-    if (response.value?.results) {
-      const decor = GenerateDecorations(response.value.results);
-      return decor;
-    }
-  }
-  if (response.isErr()) {
-    // if(response.error.)
-    return;
-  }
-
-  return undefined;
-}
-
 const handleTextDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string
@@ -64,7 +44,14 @@ const handleTextDocumentAnalyze = async (
     metaDataDocument.filePath,
     sessionToken
   );
-  const computeOutput = computeDocumentResponse(response);
+  // verify if we need to queue the request
+
+  // create decoration
+  const decorationFromResponse = transformResponseToDecorations(response);
+
+  // update global state for this relative path response
+
+  // if current editor is relative path then show decorations
   return;
 };
 
@@ -91,7 +78,7 @@ export function activateAnalyzeCommand(
         );
       }
     } else {
-      vscode.window.showErrorMessage('Metabob: Selected Document is invalid');
+      vscode.window.showErrorMessage('Metabob: Selected Document Is Invalid');
     }
   };
 

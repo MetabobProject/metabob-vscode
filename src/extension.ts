@@ -6,7 +6,6 @@ import { activateAnalyzeCommand } from './commands/anazlyzeDocument';
 import { Util } from './utils';
 import { createUserSession } from './helpers/createSession';
 import { AnalyzeTextDocumentOnSave } from './helpers/analyzeTextDocumentOnSave';
-import { AnalyzeCodeDocumentOnSave } from './helpers/analyzeCodeDocumentOnSave';
 
 let sessionInterval: any | null = null;
 export function activate(context: vscode.ExtensionContext) {
@@ -32,19 +31,9 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument(document => {
         if (Util.isValidDocument(document)) {
-          if (Util.isTextDocument(document)) {
-            AnalyzeTextDocumentOnSave({
-              text: true,
-              code: false,
-              document,
-            });
-          } else {
-            AnalyzeCodeDocumentOnSave({
-              text: true,
-              code: false,
-              document,
-            });
-          }
+          AnalyzeTextDocumentOnSave({
+            document,
+          });
         }
       })
     );

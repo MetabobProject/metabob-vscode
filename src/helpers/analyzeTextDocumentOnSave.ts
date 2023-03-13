@@ -1,6 +1,3 @@
-import * as vscode from 'vscode';
-export function AnalyzeTextDocumentOnSave(_payload: {
-  text: boolean;
-  code: boolean;
-  document: vscode.TextDocument;
-}) {}
+import { IAnalyzeTextDocumentOnSave } from '../types';
+
+export function AnalyzeTextDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave) {}

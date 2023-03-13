@@ -1,3 +1,5 @@
+import { TextDocument } from 'vscode';
+
 export interface SubmitRepresentationResponse {
   jobId: string;
   status: 'complete' | 'pending' | 'running' | 'failed';
@@ -40,4 +42,8 @@ export interface SubmitCodeRepresentationPayload {
   identities: Identity;
   nodes: Node;
   edges: Edge;
+}
+
+export interface IAnalyzeTextDocumentOnSave {
+  document: TextDocument;
 }
