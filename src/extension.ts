@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import { analyzeDocumentOnSaveConfig } from './config';
 import { SuggestionWebView } from './providers/suggestion.provider';
 import { RecommendationWebView } from './providers/recommendation.provider';
-import { activateAnalyzeCommand } from './commands/anazlyzeDocument';
+import { activateAnalyzeCommand } from './commands/AnalyzeDocument';
 import { Util } from './utils';
-import { createUserSession } from './helpers/createSession';
-import { AnalyzeDocumentOnSave } from './helpers/analyzeTextDocumentOnSave';
+import { createUserSession } from './helpers/CreateSession';
+import { AnalyzeDocumentOnSave } from './helpers/AnalyzeTextDocumentOnSave';
 
 let sessionInterval: any | null = null;
 export function activate(context: vscode.ExtensionContext) {

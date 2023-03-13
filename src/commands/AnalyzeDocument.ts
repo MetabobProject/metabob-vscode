@@ -2,13 +2,13 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { Util } from '../utils';
 import { submitService } from '../services/submit/submit.service';
-import { withProgress } from '../helpers/withProgress';
+import { withProgress } from '../helpers/WithProgress';
 import { SessionState } from '../store/session.state';
-import { transformResponseToDecorations } from '../helpers/transformResponseToDecorations';
+import { transformResponseToDecorations } from '../helpers/TransformResponseToDecorations';
 import { Ok, Result } from 'rusty-result-ts';
 import { SubmitRepresentationResponse } from '../types';
 import { ApiErrorBase } from '../services/base.error';
-import { queue } from '../helpers/queue';
+import { queue } from '../helpers/Queue';
 
 interface IDocumentMetaData {
   filePath: string;
