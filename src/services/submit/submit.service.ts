@@ -1,6 +1,5 @@
 import { ApiServiceBase } from '../base.service';
 import FormData from 'form-data';
-import * as path from 'path';
 import { SubmitRepresentationResponse, SubmitCodeRepresentationPayload } from '../../types';
 
 class SubmitService extends ApiServiceBase {
@@ -12,15 +11,16 @@ class SubmitService extends ApiServiceBase {
   async submitTextFile(
     relativePath: string,
     fileContent: any,
-    filePath: string,
+    _filePath: string,
     sessionToken: string
   ) {
     const formData = new FormData();
-    formData.append(relativePath, fileContent, { filename: path.basename(filePath) });
-
+    formData.append('type', 'text/plain');
+    formData.append('filename', relativePath);
+    formData.append('upload', Buffer.from(fileContent, 'utf-8'), relativePath);
     const response = await this.post<SubmitRepresentationResponse>('/submit', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        ...formData.getHeaders(),
         Authorization: `Bearer ${sessionToken}`,
       },
     });
@@ -30,14 +30,23 @@ class SubmitService extends ApiServiceBase {
 
   /**
    * @param codeRepresentation The Code Representation of the file
+   * @deprecated Not used in Vscode Extension
    */
   async submitCodeFile(codeRepresentation: SubmitCodeRepresentationPayload, sessionToken: string) {
-    const response = await this.post<SubmitRepresentationResponse>('/submit', codeRepresentation, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionToken}`,
+    const response = await this.post<SubmitRepresentationResponse>(
+      '/submit',
+      {
+        body: {
+          upload: codeRepresentation,
+        },
       },
-    });
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`,
+        },
+      }
+    );
     return response;
   }
 

@@ -132,7 +132,7 @@ export function activateAnalyzeCommand(
         const sessionState = new SessionState(context).get();
         if (sessionState) {
           withProgress<void>(
-            handleCodeDocumentAnalyze(documentMetaData, sessionState.value),
+            handleTextDocumentAnalyze(documentMetaData, sessionState.value),
             'Metabob: Analyzing Document'
           );
         }
