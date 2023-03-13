@@ -6,6 +6,8 @@ import { activateAnalyzeCommand } from './commands/AnalyzeDocument';
 import { Util } from './utils';
 import { createUserSession } from './helpers/CreateSession';
 import { AnalyzeDocumentOnSave } from './helpers/AnalyzeTextDocumentOnSave';
+import { MetaBobCodeActionProvider } from './providers/code-action.provider';
+import { diagnosticCollection } from './helpers/DiagnosticWrapper';
 
 let sessionInterval: any | null = null;
 export function activate(context: vscode.ExtensionContext) {
@@ -18,6 +20,18 @@ export function activate(context: vscode.ExtensionContext) {
   }, 60_000);
 
   activateAnalyzeCommand(context, debug);
+  if (diagnosticCollection) {
+    context.subscriptions.push(
+      vscode.languages.registerCodeActionsProvider(
+        { scheme: 'file', language: '*', pattern: '*' },
+        new MetaBobCodeActionProvider(),
+        {
+          providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
+        }
+      ),
+      diagnosticCollection
+    );
+  }
 
   if (analyzeDocumentOnSave && analyzeDocumentOnSave === true) {
     context.subscriptions.push(
