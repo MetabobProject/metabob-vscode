@@ -48,10 +48,15 @@ export const handleDocumentAnalyze = async (
         editor
       );
 
-      editor.setDecorations(
-        decorationFromResponse.decorationType,
-        decorationFromResponse.decorations
-      );
+      const decorationType = vscode.window.createTextEditorDecorationType({
+        backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
+        isWholeLine: true,
+        overviewRulerLane: 7,
+        overviewRulerColor: 'red',
+      });
+
+      editor.setDecorations(decorationType, []);
+      editor.setDecorations(decorationType, decorationFromResponse.decorations);
     }
   }
 

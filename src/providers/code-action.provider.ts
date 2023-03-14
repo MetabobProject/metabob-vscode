@@ -20,15 +20,28 @@ export class MetaBobCodeActionProvider implements vscode.CodeActionProvider {
     // Return an array of code actions with the apply fix command
     return [
       {
+        kind: vscode.CodeActionKind.QuickFix,
         command: 'metabob.applyFix',
         title: 'Apply Fix',
+        arguments: [document, range],
+      },
+      {
+        kind: vscode.CodeActionKind.QuickFix,
+        command: 'metabob.applyFix',
+        title: 'View Suggestion',
+        arguments: [document, range],
+      },
+      {
+        kind: vscode.CodeActionKind.QuickFix,
+        command: 'metabob.applyFix',
+        title: 'Discard Suggestion',
         arguments: [document, range],
       },
     ];
   }
 
   // Add a command to apply the fix
-  public applyFix(document: vscode.TextDocument, range: vscode.Range): void {
+  public applyFix(_document: vscode.TextDocument, _range: vscode.Range): void {
     // Implement the fix logic here
   }
 }
