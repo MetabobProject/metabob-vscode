@@ -38,9 +38,9 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
 
     const hoverDiscardMessage = `**[Discard](command:metabob.discardSuggestion?${hoverDiscardMessageURI})**`;
     const hoverEndorseMessage = `**[Endorse](command:metabob.endorseSuggestion?${endorseSuggestionURI})**`;
-    const hoverViewDescriptionMessage = `**[View Description](command:recommendation-panel-webview.focus?${viewDescriptionURI})**`;
+    const hoverViewDescriptionMessage = `**[Ask Question](command:recommendation-panel-webview.focus?${viewDescriptionURI})**`;
     const hoverMessage = new vscode.MarkdownString(
-      `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverDiscardMessage}\r${hoverEndorseMessage}\r${hoverViewDescriptionMessage}`
+      `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverDiscardMessage} |\r${hoverEndorseMessage} |\r${hoverViewDescriptionMessage}`
     );
     hoverMessage.isTrusted = true;
 
