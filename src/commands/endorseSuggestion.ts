@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { feedbackService } from '../services/feedback/feedback.service';
 import { SessionState } from '../store/session.state';
-import { Util } from '../utils';
 
 export function activateEndorseCommand(
   context: vscode.ExtensionContext,
