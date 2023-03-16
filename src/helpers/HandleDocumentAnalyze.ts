@@ -7,6 +7,13 @@ import { SubmitRepresentationResponse } from '../types';
 import { ApiErrorBase } from '../services/base.error';
 import { queue } from '../helpers/Queue';
 
+const decorationType = vscode.window.createTextEditorDecorationType({
+  backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
+  isWholeLine: true,
+  overviewRulerLane: 7,
+  overviewRulerColor: 'red',
+});
+
 export const verifyResponseOfSubmit = (
   response: Result<SubmitRepresentationResponse | null, ApiErrorBase>
 ) => {
@@ -47,13 +54,6 @@ export const handleDocumentAnalyze = async (
         verifiedResponse.results,
         editor
       );
-
-      const decorationType = vscode.window.createTextEditorDecorationType({
-        backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
-        isWholeLine: true,
-        overviewRulerLane: 7,
-        overviewRulerColor: 'red',
-      });
 
       editor.setDecorations(decorationType, []);
       editor.setDecorations(decorationType, decorationFromResponse.decorations);
