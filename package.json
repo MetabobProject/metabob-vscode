@@ -57,8 +57,30 @@
         "command": "metabob.analyzeDocument",
         "title": "Analyze Document",
         "category": "Metabob"
+      },
+      {
+        "command": "metabob.discardSuggestion",
+        "title": "Discard Suggestion",
+        "category": "Metabob"
+      },
+      {
+        "command": "metabob.endorseSuggestion",
+        "title": "Endorse Suggestion",
+        "category": "Metabob"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "metabob.discardSuggestion",
+          "when": "false"
+        },
+        {
+          "command": "metabob.endorseSuggestion",
+          "when": "false"
+        }
+      ]
+    },
     "configuration": {
       "title": "Metabob Extension configuration",
       "properties": {

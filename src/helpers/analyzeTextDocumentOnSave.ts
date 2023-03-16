@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { AnalyzeState } from '../store/analyze.state';
 import { SessionState } from '../store/session.state';
 import { IAnalyzeTextDocumentOnSave } from '../types';
 import { extractMetaDataFromDocument } from './ExtractMetaDataFromDocument';
@@ -16,9 +17,11 @@ export function AnalyzeDocumentOnSave(
 
   const documentMetaData = extractMetaDataFromDocument(editor.document);
   const sessionState = new SessionState(context).get();
+  const analyzeState = new AnalyzeState(context);
+
   if (sessionState) {
     withProgress<void>(
-      handleDocumentAnalyze(documentMetaData, sessionState.value),
+      handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
       'Metabob: Analyzing Document'
     );
   }

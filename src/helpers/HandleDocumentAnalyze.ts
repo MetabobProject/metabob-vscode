@@ -6,13 +6,7 @@ import { Result } from 'rusty-result-ts';
 import { SubmitRepresentationResponse } from '../types';
 import { ApiErrorBase } from '../services/base.error';
 import { queue } from '../helpers/Queue';
-
-const decorationType = vscode.window.createTextEditorDecorationType({
-  backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
-  isWholeLine: true,
-  overviewRulerLane: 7,
-  overviewRulerColor: 'red',
-});
+import { AnalyzeState } from '../store/analyze.state';
 
 export const verifyResponseOfSubmit = (
   response: Result<SubmitRepresentationResponse | null, ApiErrorBase>
@@ -33,7 +27,8 @@ export const verifyResponseOfSubmit = (
 
 export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
-  sessionToken: string
+  sessionToken: string,
+  analyzeState: AnalyzeState
 ) => {
   const response = await submitService.submitTextFile(
     metaDataDocument.relativePath,
@@ -48,6 +43,13 @@ export const handleDocumentAnalyze = async (
   }
   if (verifiedResponse.results) {
     const editor = vscode.window.activeTextEditor;
+    verifiedResponse.results.forEach(problem => {
+      analyzeState.set({
+        [`${problem.path}@@${problem.id}`]: {
+          ...problem,
+        },
+      });
+    });
 
     if (editor && editor.document.fileName === metaDataDocument.filePath) {
       const decorationFromResponse = transformResponseToDecorations(
@@ -55,8 +57,11 @@ export const handleDocumentAnalyze = async (
         editor
       );
 
-      editor.setDecorations(decorationType, []);
-      editor.setDecorations(decorationType, decorationFromResponse.decorations);
+      editor.setDecorations(decorationFromResponse.decorationType, []);
+      editor.setDecorations(
+        decorationFromResponse.decorationType,
+        decorationFromResponse.decorations
+      );
     }
   }
 

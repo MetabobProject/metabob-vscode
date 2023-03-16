@@ -1,61 +1,12 @@
 import * as vscode from 'vscode';
 import { Problem } from '../types';
 
-// export class DecorationProvider {
-//   private readonly decorations: vscode.TextEditorDecorationType[] = [];
-
-//   public updateDecorations(results: Problem[], editor: vscode.TextEditor): void {
-//     // Dispose of all existing decorations
-//     for (const decoration of this.decorations) {
-//       decoration.dispose();
-//     }
-//     this.decorations.length = 0;
-
-//     const newDecorations: vscode.DecorationOptions[] = results.map(vulnerability => {
-//       const range = new vscode.Range(
-//         vulnerability.startLine - 1,
-//         0,
-//         vulnerability.endLine - 1,
-//         editor.document.lineAt(vulnerability.endLine - 1).text.length
-//       );
-
-//       const hoverMessage = new vscode.MarkdownString(
-//         `**Category:** ${vulnerability.category}\n\n${vulnerability.summary}`
-//       );
-//       hoverMessage.isTrusted = true;
-
-//       const applyFixButton = new vscode.CodeAction(
-//         `Apply fix for ${vulnerability.path}`,
-//         vscode.CodeActionKind.QuickFix
-//       );
-//       applyFixButton.isPreferred = true;
-
-//       applyFixButton.command = {
-//         title: `Apply fix for ${vulnerability.path}`,
-//         command: 'vulnerability.applyFix',
-//         arguments: [vulnerability],
-//       };
-
-//       return {
-//         range,
-//         hoverMessage,
-//         renderOptions: {
-//           after: {
-//             contentText: '×',
-//             color: 'red',
-//           },
-//         },
-//         // command: {
-//         //   title: `Apply fix for ${vulnerability.path}`,
-//         //   command: 'vulnerability.applyFix',
-//         //   arguments: [vulnerability],
-//         // },
-//       } satisfies vscode.DecorationOptions;
-//     });
-
-//     this.decorations.push(newDecorations);
-//   }
-// }
+const decorationType = vscode.window.createTextEditorDecorationType({
+  backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
+  isWholeLine: true,
+  overviewRulerLane: 7,
+  overviewRulerColor: 'red',
+});
 
 export function GenerateDecorations(results: Problem[], editor: vscode.TextEditor) {
   const decorations: vscode.DecorationOptions[] = results.map(vulnerability => {
@@ -66,22 +17,32 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
       editor.document.lineAt(vulnerability.endLine - 1).text.length
     );
 
+    const hoverDiscardMessageURI = encodeURI(
+      JSON.stringify({
+        id: vulnerability.id,
+        path: vulnerability.path,
+      })
+    );
+    const endorseSuggestionURI = encodeURI(
+      JSON.stringify({
+        id: vulnerability.id,
+      })
+    );
+
+    const viewDescriptionURI = encodeURI(
+      JSON.stringify({
+        filepath: vulnerability.path,
+        id: vulnerability.id,
+      })
+    );
+
+    const hoverDiscardMessage = `**[Discard](command:metabob.discardSuggestion?${hoverDiscardMessageURI})**`;
+    const hoverEndorseMessage = `**[Endorse](command:metabob.endorseSuggestion?${endorseSuggestionURI})**`;
+    const hoverViewDescriptionMessage = `**[View Description](command:recommendation-panel-webview.focus?${viewDescriptionURI})**`;
     const hoverMessage = new vscode.MarkdownString(
-      `**Category:** ${vulnerability.category}\n\n${vulnerability.summary}`
+      `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverDiscardMessage}\r${hoverEndorseMessage}\r${hoverViewDescriptionMessage}`
     );
     hoverMessage.isTrusted = true;
-
-    const applyFixButton = new vscode.CodeAction(
-      `Apply fix for ${vulnerability.path}`,
-      vscode.CodeActionKind.QuickFix
-    );
-    applyFixButton.isPreferred = true;
-
-    applyFixButton.command = {
-      title: `Apply fix for ${vulnerability.path}`,
-      command: 'vulnerability.applyFix',
-      arguments: [vulnerability],
-    };
 
     return {
       range,
@@ -92,19 +53,7 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
           color: 'red',
         },
       },
-      // command: {
-      //   title: `Apply fix for ${vulnerability.path}`,
-      //   command: 'vulnerability.applyFix',
-      //   arguments: [vulnerability],
-      // },
     } satisfies vscode.DecorationOptions;
-  });
-
-  const decorationType = vscode.window.createTextEditorDecorationType({
-    backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
-    isWholeLine: true,
-    overviewRulerLane: 7,
-    overviewRulerColor: 'red',
   });
 
   return {
