@@ -1,29 +1,28 @@
-import * as vscode from 'vscode';
-import { submitService } from '../services/submit/submit.service';
-import { IDocumentMetaData } from '../types';
-import { transformResponseToDecorations } from './TransformResponseToDecorations';
-import { Result } from 'rusty-result-ts';
-import { SubmitRepresentationResponse } from '../types';
-import { ApiErrorBase } from '../services/base.error';
-import { queue } from '../helpers/Queue';
-import { AnalyzeState } from '../store/analyze.state';
+import * as vscode from 'vscode'
+import { submitService } from '../services/submit/submit.service'
+import { IDocumentMetaData } from '../types'
+import { transformResponseToDecorations } from './TransformResponseToDecorations'
+import { Result } from 'rusty-result-ts'
+import { SubmitRepresentationResponse } from '../types'
+import { ApiErrorBase } from '../services/base.error'
+import { queue } from '../helpers/Queue'
+import { AnalyzeState } from '../store/analyze.state'
 
-export const verifyResponseOfSubmit = (
-  response: Result<SubmitRepresentationResponse | null, ApiErrorBase>
-) => {
+export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResponse | null, ApiErrorBase>) => {
   if (response.isErr()) {
-    return;
+    return
   }
 
   if (response.isOk()) {
     if (response.value?.status === 'complete') {
-      return response.value;
+      return response.value
     } else if (response.value?.status === 'pending' || response.value?.status === 'running') {
-      queue?.enqueue(response.value);
+      queue?.enqueue(response.value)
     }
   }
-  return;
-};
+
+  return
+}
 
 export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
@@ -35,35 +34,30 @@ export const handleDocumentAnalyze = async (
     metaDataDocument.fileContent,
     metaDataDocument.filePath,
     sessionToken
-  );
-  const verifiedResponse = verifyResponseOfSubmit(response);
+  )
+  const verifiedResponse = verifyResponseOfSubmit(response)
   if (!verifiedResponse) {
-    vscode.window.showErrorMessage('Metabob: Error Analyzing the Document');
-    return;
+    vscode.window.showErrorMessage('Metabob: Error Analyzing the Document')
+
+    return
   }
   if (verifiedResponse.results) {
-    const editor = vscode.window.activeTextEditor;
+    const editor = vscode.window.activeTextEditor
     verifiedResponse.results.forEach(problem => {
       analyzeState.set({
         [`${problem.path}@@${problem.id}`]: {
-          ...problem,
-        },
-      });
-    });
+          ...problem
+        }
+      })
+    })
 
     if (editor && editor.document.fileName === metaDataDocument.filePath) {
-      const decorationFromResponse = transformResponseToDecorations(
-        verifiedResponse.results,
-        editor
-      );
+      const decorationFromResponse = transformResponseToDecorations(verifiedResponse.results, editor)
 
-      editor.setDecorations(decorationFromResponse.decorationType, []);
-      editor.setDecorations(
-        decorationFromResponse.decorationType,
-        decorationFromResponse.decorations
-      );
+      editor.setDecorations(decorationFromResponse.decorationType, [])
+      editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)
     }
   }
 
-  return;
-};
+  return
+}

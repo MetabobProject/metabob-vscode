@@ -1,5 +1,5 @@
-import { CreateSessionRequest, CreateSessionResponse, getUserSessionResponse } from '../../types';
-import { ApiServiceBase } from '../base.service';
+import { CreateSessionRequest, CreateSessionResponse, getUserSessionResponse } from '../../types'
+import { ApiServiceBase } from '../base.service'
 
 class SessionService extends ApiServiceBase {
   /**
@@ -13,13 +13,14 @@ class SessionService extends ApiServiceBase {
    */
   async createUserSession(payload: CreateSessionRequest) {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (payload.sessionToken) {
-      headers['Authorization'] = `Bearer ${payload.sessionToken}`;
+      'Content-Type': 'application/json'
     }
-    const response = await this.post<CreateSessionResponse>('/session', payload, headers);
-    return response;
+    if (payload.sessionToken) {
+      headers['Authorization'] = `Bearer ${payload.sessionToken}`
+    }
+    const response = await this.post<CreateSessionResponse>('/session', payload, headers)
+
+    return response
   }
 
   /**
@@ -31,10 +32,11 @@ class SessionService extends ApiServiceBase {
   async deleteUserSession(sessionToken: string) {
     const response = await this.delete('/session', {
       headers: {
-        Authorization: `Bearer ${sessionToken}`,
-      },
-    });
-    return response;
+        Authorization: `Bearer ${sessionToken}`
+      }
+    })
+
+    return response
   }
 
   /**
@@ -46,11 +48,12 @@ class SessionService extends ApiServiceBase {
   async getUserSession(sessionToken: string) {
     const response = await this.get<getUserSessionResponse>('/session', {
       headers: {
-        Authorization: `Bearer ${sessionToken}`,
-      },
-    });
-    return response;
+        Authorization: `Bearer ${sessionToken}`
+      }
+    })
+
+    return response
   }
 }
 
-export const sessionService = new SessionService();
+export const sessionService = new SessionService()

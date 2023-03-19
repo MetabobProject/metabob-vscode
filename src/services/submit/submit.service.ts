@@ -1,6 +1,6 @@
-import { ApiServiceBase } from '../base.service';
-import FormData from 'form-data';
-import { SubmitRepresentationResponse, SubmitCodeRepresentationPayload } from '../../types';
+import { ApiServiceBase } from '../base.service'
+import FormData from 'form-data'
+import { SubmitRepresentationResponse, SubmitCodeRepresentationPayload } from '../../types'
 
 class SubmitService extends ApiServiceBase {
   /**
@@ -8,24 +8,19 @@ class SubmitService extends ApiServiceBase {
    * @param fileContent Buffer Contents of the txt file
    * @param filePath Path of the file
    */
-  async submitTextFile(
-    relativePath: string,
-    fileContent: any,
-    _filePath: string,
-    sessionToken: string
-  ) {
-    const formData = new FormData();
-    formData.append('type', 'text/plain');
-    formData.append('filename', relativePath);
-    formData.append('upload', Buffer.from(fileContent, 'utf-8'), relativePath);
+  async submitTextFile(relativePath: string, fileContent: any, _filePath: string, sessionToken: string) {
+    const formData = new FormData()
+    formData.append('type', 'text/plain')
+    formData.append('filename', relativePath)
+    formData.append('upload', Buffer.from(fileContent, 'utf-8'), relativePath)
     const response = await this.post<SubmitRepresentationResponse>('/submit', formData, {
       headers: {
         ...formData.getHeaders(),
-        Authorization: `Bearer ${sessionToken}`,
-      },
-    });
+        Authorization: `Bearer ${sessionToken}`
+      }
+    })
 
-    return response;
+    return response
   }
 
   /**
@@ -37,17 +32,18 @@ class SubmitService extends ApiServiceBase {
       '/submit',
       {
         body: {
-          upload: codeRepresentation,
-        },
+          upload: codeRepresentation
+        }
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`,
-        },
+          Authorization: `Bearer ${sessionToken}`
+        }
       }
-    );
-    return response;
+    )
+
+    return response
   }
 
   /**
@@ -57,10 +53,11 @@ class SubmitService extends ApiServiceBase {
    * @param jobId The Job Id of the submission
    */
   async getJobStatus(jobId?: string) {
-    const url = `/analysis${jobId ? `?job=${jobId}` : ''}`;
-    const response = this.post<SubmitRepresentationResponse>(url);
-    return response;
+    const url = `/analysis${jobId ? `?job=${jobId}` : ''}`
+    const response = this.post<SubmitRepresentationResponse>(url)
+
+    return response
   }
 }
 
-export const submitService = new SubmitService();
+export const submitService = new SubmitService()

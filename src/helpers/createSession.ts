@@ -7,7 +7,7 @@ import { CreateSessionRequest } from '../types';
 export async function createUserSession(context: vscode.ExtensionContext) {
   const sessionState = new SessionState(context);
   const apiKey = getAPIConfig();
-  let payload: CreateSessionRequest = {
+  const payload: CreateSessionRequest = {
     apiKey: apiKey || '123-123-123-123-123',
   };
 

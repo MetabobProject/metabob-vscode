@@ -23,12 +23,14 @@ export class Util {
 
   static isValidDocument(doc: TextDocument): boolean {
     const textLanguageIds = ['markdown', 'asciidoc'];
-    return !(languages.match(textLanguageIds, doc) > 0);
+    
+return !(languages.match(textLanguageIds, doc) > 0);
   }
 
   static isTextDocument(doc: TextDocument): boolean {
     const textLanguageIds = ['plaintext'];
-    return languages.match(textLanguageIds, doc) > 0;
+    
+return languages.match(textLanguageIds, doc) > 0;
   }
 
   static getNonce() {
@@ -37,14 +39,16 @@ export class Util {
     for (let i = 0; i < 32; i++) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
-    return text;
+    
+return text;
   }
 
   static sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
   static getWorkspacePath() {
     const folders = vscode.workspace.workspaceFolders;
-    return folders ? folders![0].uri.fsPath : undefined;
+    
+return folders ? folders![0].uri.fsPath : undefined;
   }
 
   static getResource(rel: string) {

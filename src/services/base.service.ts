@@ -1,20 +1,20 @@
-import axios, { AxiosRequestConfig } from 'axios';
-import { merge } from 'lodash';
-import { err, ok, Result } from 'rusty-result-ts';
-import { getAPIBaseURLConfig } from '../config';
-import { ApiErrorBase } from './base.error';
+import axios, { AxiosRequestConfig } from 'axios'
+import { merge } from 'lodash'
+import { err, ok, Result } from 'rusty-result-ts'
+import { getAPIBaseURLConfig } from '../config'
+import { ApiErrorBase } from './base.error'
 
-const apiBase = getAPIBaseURLConfig();
+const apiBase = getAPIBaseURLConfig()
 
 export class ApiServiceBase {
-  protected urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase;
+  protected urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase
 
   /**
    * Creates a new service instance.
    * @param path A base path for all requests this service will make. Defaults to `/api`.
    */
   public constructor() {
-    this.urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase;
+    this.urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase
   }
 
   /**
@@ -28,9 +28,9 @@ export class ApiServiceBase {
         Accept: '*/*',
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        Authorization: '',
-      },
-    };
+        Authorization: ''
+      }
+    }
   }
 
   /**
@@ -44,8 +44,8 @@ export class ApiServiceBase {
     configOverrides: AxiosRequestConfig | undefined = undefined
   ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.get(fullPath, config);
-    });
+      return axios.get(fullPath, config)
+    })
   }
 
   /**
@@ -61,8 +61,8 @@ export class ApiServiceBase {
     configOverrides: AxiosRequestConfig | undefined = undefined
   ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.post(fullPath, data, config);
-    });
+      return axios.post(fullPath, data, config)
+    })
   }
 
   /**
@@ -78,8 +78,8 @@ export class ApiServiceBase {
     configOverrides: AxiosRequestConfig | undefined = undefined
   ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.put(fullPath, data, config);
-    });
+      return axios.put(fullPath, data, config)
+    })
   }
 
   /**
@@ -95,8 +95,8 @@ export class ApiServiceBase {
     configOverrides: AxiosRequestConfig | undefined = undefined
   ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.patch(fullPath, data, config);
-    });
+      return axios.patch(fullPath, data, config)
+    })
   }
 
   /**
@@ -110,31 +110,27 @@ export class ApiServiceBase {
     configOverrides: AxiosRequestConfig | undefined = undefined
   ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.delete(fullPath, config);
-    });
+      return axios.delete(fullPath, config)
+    })
   }
 
   private async requestResultWrapper<T>(
     subPath: string,
     configOverrides: AxiosRequestConfig | undefined,
-    request: (
-      fullPath: string,
-      config: AxiosRequestConfig | undefined
-    ) => Promise<{ data: unknown } | null>
+    request: (fullPath: string, config: AxiosRequestConfig | undefined) => Promise<{ data: unknown } | null>
   ): Promise<Result<T | null, ApiErrorBase>> {
     if (subPath.length > 0 && subPath[0] !== '/') {
-      subPath = `/${subPath}`;
+      subPath = `/${subPath}`
     }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
-    const config = merge(this.getConfig() || {}, configOverrides || {});
+    const config = merge(this.getConfig() || {}, configOverrides || {})
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      const responseData: T | null =
-        ((await request(`${this.urlBase}${subPath}`, config))?.data as T) ?? null;
+      const responseData: T | null = ((await request(`${this.urlBase}${subPath}`, config))?.data as T) ?? null
 
-      return ok(responseData);
+      return ok(responseData)
     } catch (e: unknown) {
-      return err(new ApiErrorBase(e));
+      return err(new ApiErrorBase(e))
     }
   }
 }

@@ -1,53 +1,54 @@
 class Queue {
-  private readonly queue: any[];
-  private start: number;
-  private end: number;
+  private readonly queue: any[]
+  private start: number
+  private end: number
 
   constructor(array: any[] = []) {
-    this.queue = array;
+    this.queue = array
 
     // pointers
-    this.start = 0;
-    this.end = array.length;
+    this.start = 0
+    this.end = array.length
   }
 
   isEmpty() {
-    return this.end === this.start;
+    return this.end === this.start
   }
 
   dequeue() {
     if (this.isEmpty()) {
-      throw new Error('Queue is empty.');
+      throw new Error('Queue is empty.')
     } else {
-      return this.queue[this.start++];
+      return this.queue[this.start++]
     }
   }
 
   enqueue(value: any) {
-    this.queue.push(value);
-    this.end += 1;
+    this.queue.push(value)
+    this.end += 1
   }
 
   toString() {
-    return `Queue (${this.end - this.start})`;
+    return `Queue (${this.end - this.start})`
   }
 
   [Symbol.iterator]() {
-    let index = this.start;
+    let index = this.start
+
     return {
       next: () =>
         index < this.end
           ? {
-              value: this.queue[index++],
+              value: this.queue[index++]
             }
-          : { done: true },
-    };
+          : { done: true }
+    }
   }
 }
 
-let queue: null | Queue = null;
+let queue: null | Queue = null
 if (!queue) {
-  queue = new Queue();
+  queue = new Queue()
 }
 
-export { queue };
+export { queue }

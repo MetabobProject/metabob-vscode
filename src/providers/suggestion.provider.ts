@@ -1,33 +1,33 @@
-import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window } from 'vscode';
-import { Util } from '../utils';
+import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window } from 'vscode'
+import { Util } from '../utils'
 
 export class SuggestionWebView implements WebviewViewProvider {
-  private _view?: WebviewView | null = null;
-  private readonly extensionPath: Uri;
+  private _view?: WebviewView | null = null
+  private readonly extensionPath: Uri
 
   constructor(extensionPath: Uri) {
-    this.extensionPath = extensionPath;
+    this.extensionPath = extensionPath
   }
 
   private onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<
     any | undefined | null | void
-  >();
+  >()
 
   refresh(): void {
-    this.onDidChangeTreeData.fire(null);
+    this.onDidChangeTreeData.fire(null)
     if (this._view) {
-      this._view.webview.html = this._getHtmlForWebview(this._view?.webview);
+      this._view.webview.html = this._getHtmlForWebview(this._view?.webview)
     }
   }
 
   resolveWebviewView(webviewView: WebviewView): void | Thenable<void> {
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this.extensionPath],
-    };
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-    this._view = webviewView;
-    this.activateMessageListener();
+      localResourceRoots: [this.extensionPath]
+    }
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
+    this._view = webviewView
+    this.activateMessageListener()
   }
 
   private activateMessageListener() {
@@ -35,23 +35,19 @@ export class SuggestionWebView implements WebviewViewProvider {
       this._view.webview.onDidReceiveMessage((message: any) => {
         switch (message.action) {
           case 'SHOW_WARNING_LOG':
-            window.showWarningMessage(message.data.message);
-            break;
+            window.showWarningMessage(message.data.message)
+            break
           default:
-            break;
+            break
         }
-      });
+      })
     }
   }
 
   private _getHtmlForWebview(webview: Webview) {
-    const nonce = Util.getNonce();
-    const styleVSCodeUri = webview.asWebviewUri(
-      Uri.joinPath(this.extensionPath, 'media', 'vscode.css')
-    );
-    const styleResetUri = webview.asWebviewUri(
-      Uri.joinPath(this.extensionPath, 'media', 'reset.css')
-    );
+    const nonce = Util.getNonce()
+    const styleVSCodeUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'vscode.css'))
+    const styleResetUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'reset.css'))
 
     return /*html*/ `
     <html>
@@ -73,6 +69,6 @@ export class SuggestionWebView implements WebviewViewProvider {
                 <h1>hello</h1>
                 <button>hello</button>
               </body>
-            </html>`;
+            </html>`
   }
 }
