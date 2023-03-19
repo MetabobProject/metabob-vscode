@@ -23,19 +23,6 @@ export function activate(context: vscode.ExtensionContext) {
   activateDiscardCommand(context, debug);
   activateEndorseCommand(context, debug);
 
-  // if (diagnosticCollection) {
-  //   context.subscriptions.push(
-  //     vscode.languages.registerCodeActionsProvider(
-  //       { scheme: 'file', language: '*', pattern: '*' },
-  //       new MetaBobCodeActionProvider(),
-  //       {
-  //         providedCodeActionKinds: [vscode.CodeActionKind.QuickFix],
-  //       }
-  //     ),
-  //     diagnosticCollection
-  //   );
-  // }
-
   if (analyzeDocumentOnSave && analyzeDocumentOnSave === true) {
     context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument(document => {
