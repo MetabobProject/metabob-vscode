@@ -35,9 +35,9 @@ export class RecommendationWebView implements WebviewViewProvider {
   private activateMessageListener() {
     if (this._view) {
       this._view.webview.onDidReceiveMessage((message: any) => {
-        switch (message.action) {
-          case 'SHOW_WARNING_LOG':
-            window.showWarningMessage(message.data.message)
+        switch (message.type) {
+          case 'onSuggestionClicked':
+            window.showInformationMessage(message.data)
             break
           default:
             console.log(message)
@@ -51,6 +51,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     const styleVSCodeUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'vscode.css'))
     const styleResetUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'reset.css'))
     const styleLocalUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'recomendation.css'))
+    const recomendationScriptUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'recomendation.js'))
 
     return /*html*/ `
     <html>
@@ -72,16 +73,16 @@ export class RecommendationWebView implements WebviewViewProvider {
   <body>
                 <h4 id="category-text">CATEGORY: </h4>
                 <div class="button-group">
-                  <button class="small-button"> < </button>
-                  <button class="small-button"> > </button>
-                  <button class="med-button">Apply >></button>
+                  <button id="back-button" class="small-button"> < </button>
+                  <button id="forward-button" class="small-button"> > </button>
+                  <button id="apply-suggestion-button" class="med-button">Apply >></button>
                 </div>
                 <div class="card">
                 <p class="description-content">content</p>
-                <form style="display: flex; gap: 10px; ">
-                  <input type="text" style="width: 80%"></input>
-                  <button style="width: 15%">Ask</button>
-                </form>
+                <div style="display: flex; gap: 10px;">
+                  <input id="explain-input" type="text" style="width: 80%"></input>
+                  <button id="explain-submit" style="width: 15%">Ask</button>
+                </div>
                 </div>
 
                 <h4><b>Recomendation</b></h4>
@@ -92,7 +93,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                   <button style="width: 15%">Update</button>
                 </form>
                 </div>
-
+           <script nonce="${nonce}" src="${recomendationScriptUri}"></script>
     </body>
     </html>`
   }

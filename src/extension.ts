@@ -7,6 +7,7 @@ import { createUserSession } from './helpers/CreateSession'
 import { AnalyzeDocumentOnSave } from './helpers/AnalyzeTextDocumentOnSave'
 import { activateDiscardCommand } from './commands/discardSuggestion'
 import { activateEndorseCommand } from './commands/endorseSuggestion'
+import { activateFocusRecomendCommand } from './commands/focusRecomendation'
 
 let sessionInterval: any | null = null
 export function activate(context: vscode.ExtensionContext) {
@@ -21,6 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
   activateAnalyzeCommand(context, debug)
   activateDiscardCommand(context, debug)
   activateEndorseCommand(context, debug)
+  activateFocusRecomendCommand(context, debug)
 
   if (analyzeDocumentOnSave && analyzeDocumentOnSave === true) {
     context.subscriptions.push(

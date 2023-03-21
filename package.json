@@ -61,6 +61,11 @@
         "command": "metabob.endorseSuggestion",
         "title": "Endorse Suggestion",
         "category": "Metabob"
+      },
+      {
+        "command": "metabob.focusRecomened",
+        "title": "Focus Recomendation Panel",
+        "category": "Metabob"
       }
     ],
     "menus": {
@@ -71,6 +76,10 @@
         },
         {
           "command": "metabob.endorseSuggestion",
+          "when": "false"
+        },
+        {
+          "command": "metabob.focusRecomened",
           "when": "false"
         }
       ]
