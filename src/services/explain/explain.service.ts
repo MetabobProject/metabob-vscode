@@ -53,7 +53,7 @@ export class ExplainService extends ApiServiceBase {
     const response = await this.post<IExplainProblemResponse>(
       '/explain',
       {
-        problemId: payload.problemId
+        ...payload
       },
       headers
     )

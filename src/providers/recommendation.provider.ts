@@ -41,7 +41,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.activateMessageListener()
   }
   handleSuggestionClick(input: string, initData: ICurrentQuestionState) {
-    const sessopnKey = new SessionState(this.extensionContext).get()
+    const sessionKey = new SessionState(this.extensionContext).get()
     explainService
       .explainProblem(
         {
@@ -49,7 +49,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           prompt: input,
           description: initData?.vuln?.description as string
         },
-        sessopnKey?.value as string
+        sessionKey?.value as string
       )
       .then(response => {
         if (response.isOk()) {
@@ -58,10 +58,9 @@ export class RecommendationWebView implements WebviewViewProvider {
             type: 'onSuggestionClicked:Response',
             data: payload
           })
-        } else {
-          debugger
-
-          window.showErrorMessage(`Metabob: Error`)
+        }
+        if (response.isErr()) {
+          window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
         }
       })
   }
