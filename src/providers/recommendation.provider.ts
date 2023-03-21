@@ -138,7 +138,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                 </div>
                 </div>
 
-                <h4><b>Recomendation</b></h4>
+                <div style="display: flex; flex-direction: row; gap: 35%;"><span><h4><b>Recomendation</b></h4></span><button style="width: 40%;">Generate Recomendation</button></div>
                 <div class="card">
                 <p class="recomendation-content">recomendation</p>
                 <form style="display: flex; gap: 10px; ">
