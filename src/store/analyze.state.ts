@@ -2,22 +2,20 @@ import * as vscode from 'vscode'
 import { CONSTANTS } from '../constants'
 import { ExtensionState, ExtensionStateValue } from './base.state'
 
-export type IAnalyzeState = [
-  {
-    [filepath: string]: [
-      {
-        id: string
-        path: string
-        startLine: number
-        endLine: number
-        category: string
-        summary: string
-        description: string
-        isDiscarded?: boolean
-      }
-    ]
-  }
-]
+export type IAnalyzeState = {
+  [filepath: string]: [
+    {
+      id: string
+      path: string
+      startLine: number
+      endLine: number
+      category: string
+      summary: string
+      description: string
+      isDiscarded?: boolean
+    }
+  ]
+}
 
 export class AnalyzeState extends ExtensionState<IAnalyzeState> {
   constructor(context: vscode.ExtensionContext) {
@@ -36,7 +34,7 @@ export class AnalyzeState extends ExtensionState<IAnalyzeState> {
 
   update(callback: (value: IAnalyzeState) => IAnalyzeState): Thenable<void | undefined> {
     const value = this.get()
-    const updatedValue = callback(value?.value || [{}])
+    const updatedValue = callback(value?.value || {})
 
     return this.set(updatedValue)
   }

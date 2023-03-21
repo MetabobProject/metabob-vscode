@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { submitService } from '../services/submit/submit.service'
-import { IDocumentMetaData } from '../types'
+import { IDocumentMetaData, Problem } from '../types'
 import { transformResponseToDecorations } from './TransformResponseToDecorations'
 import { Result } from 'rusty-result-ts'
 import { SubmitRepresentationResponse } from '../types'
@@ -45,9 +45,12 @@ export const handleDocumentAnalyze = async (
     const editor = vscode.window.activeTextEditor
     verifiedResponse.results.forEach(problem => {
       analyzeState.set({
-        [`${problem.path}@@${problem.id}`]: {
-          ...problem
-        }
+        [`${problem.path}@@${problem.id}`]: [
+          {
+            ...problem,
+            isDiscarded: false
+          }
+        ]
       })
     })
 
