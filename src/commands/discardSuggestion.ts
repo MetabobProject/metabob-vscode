@@ -34,7 +34,6 @@ export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?
           ...value[key],
           isDiscarded: true
         }
-
         const valueKeys = Object.keys(value)
         const results = []
 
@@ -55,6 +54,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?
 
         return value
       })
+      console.log(analyzeState.get()?.value)
     } else {
       _debug?.append('Metabob: Selected Document is Invalid')
       vscode.window.showErrorMessage('Metabob: Selected Document Is Invalid')

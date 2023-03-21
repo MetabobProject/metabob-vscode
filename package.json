@@ -40,12 +40,6 @@
       "metabob-webview": [
         {
           "type": "webview",
-          "id": "suggestion-panel-webview",
-          "name": "Suggestion",
-          "icon": "./src/assets/extension-icon.png"
-        },
-        {
-          "type": "webview",
           "id": "recommendation-panel-webview",
           "name": "Recommendation",
           "icon": "./src/assets/extension-icon.png"

@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
 import { analyzeDocumentOnSaveConfig } from './config'
-import { SuggestionWebView } from './providers/suggestion.provider'
 import { RecommendationWebView } from './providers/recommendation.provider'
 import { activateAnalyzeCommand } from './commands/AnalyzeDocument'
 import { Util } from './utils'
@@ -68,13 +67,9 @@ export function activate(context: vscode.ExtensionContext) {
   )
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('suggestion-panel-webview', new SuggestionWebView(context?.extensionUri))
-  )
-
-  context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       'recommendation-panel-webview',
-      new RecommendationWebView(context?.extensionUri)
+      new RecommendationWebView(context?.extensionUri, context)
     )
   )
 }

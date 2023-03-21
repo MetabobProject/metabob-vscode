@@ -1,12 +1,14 @@
-import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window } from 'vscode'
+import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window, ExtensionContext } from 'vscode'
 import { Util } from '../utils'
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null
   private readonly extensionPath: Uri
+  private readonly extensionContext: ExtensionContext
 
-  constructor(extensionPath: Uri) {
+  constructor(extensionPath: Uri, context: ExtensionContext) {
     this.extensionPath = extensionPath
+    this.extensionContext = context
   }
 
   private onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<
@@ -48,6 +50,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     const nonce = Util.getNonce()
     const styleVSCodeUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'vscode.css'))
     const styleResetUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'reset.css'))
+    const styleLocalUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'recomendation.css'))
 
     return /*html*/ `
     <html>
@@ -59,16 +62,32 @@ export class RecommendationWebView implements WebviewViewProvider {
                             font-src ${webview.cspSource};
                             style-src ${webview.cspSource} 'unsafe-inline';
                             script-src 'nonce-${nonce}'
-							
-							;">             
+                            
+                    ;">             
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="${styleLocalUri}" rel="stylesheet">
                     <link href="${styleResetUri}" rel="stylesheet">
                     <link href="${styleVSCodeUri}" rel="stylesheet">
-                </head>
-               <body>
-                <h1>hello</h1>
-                <button>hello</button>
-              </body>
-            </html>`
+  </head>
+  <body>
+                <h4 id="category-text">CATEGORY: </h4>
+                <div class="button-group">
+                  <button class="small-button"> < </button>
+                  <button class="small-button"> > </button>
+                  <button class="med-button">Apply >></button>
+                </div>
+                <p class="description-content">content</p>
+                <form style="display: flex; gap: 20px; ">
+                  <input type="text" style="width: 80%"></input>
+                  <button style="width: 20%">Ask</button>
+                </form>
+                <h4>Recomendation</h4>
+                <p class="recomendation-content">recomendation</p>
+                <form style="display: flex; gap: 20px; ">
+                  <input type="text" style="width: 80%"></input>
+                  <button style="width: 20%">Update</button>
+                </form>
+    </body>
+    </html>`
   }
 }
