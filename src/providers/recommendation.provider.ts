@@ -1,5 +1,7 @@
 import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window, ExtensionContext } from 'vscode'
-import { currentQuestionState } from '../store/currentQuestion.state'
+import { explainService } from '../services/explain/explain.service'
+import { currentQuestionState, ICurrentQuestionState } from '../store/currentQuestion.state'
+import { SessionState } from '../store/session.state'
 import { Util } from '../utils'
 
 export class RecommendationWebView implements WebviewViewProvider {
@@ -38,12 +40,45 @@ export class RecommendationWebView implements WebviewViewProvider {
     this._view = webviewView
     this.activateMessageListener()
   }
+  handleSuggestionClick(input: string, initData: ICurrentQuestionState) {
+    const sessopnKey = new SessionState(this.extensionContext).get()
+    explainService
+      .explainProblem(
+        {
+          problemId: initData?.id as string,
+          prompt: input,
+          description: initData?.vuln?.description as string
+        },
+        sessopnKey?.value as string
+      )
+      .then(response => {
+        if (response.isOk()) {
+          const payload = response.value
+          this._view?.webview.postMessage({
+            type: 'onSuggestionClicked:Response',
+            data: payload
+          })
+        } else {
+          window.showErrorMessage(`Metabob: Error in Query to server`)
+        }
+      })
+  }
 
   private activateMessageListener() {
     if (this._view) {
       this._view.webview.onDidReceiveMessage((message: any) => {
+        const data = message.data
         switch (message.type) {
           case 'onSuggestionClicked': {
+            const input = data?.input
+            const initData = data?.initData
+            if (initData === null) {
+              window.showErrorMessage('Metabob: Error in Query to server')
+
+              return
+            }
+            this.handleSuggestionClick(input, initData)
+
             window.showInformationMessage(message.data)
             break
           }

@@ -15,8 +15,8 @@ window.addEventListener('message', message => {
       handleInitData(data)
       break
     }
-    case 'nothing': {
-      handleSuggestion(data)
+    case 'onSuggestionClicked:Response': {
+      handleSuggestionResponse(data)
       break
     }
   }
@@ -28,6 +28,7 @@ setInterval(() => {
 }, 1000)
 
 let bufferInput = null
+let initData = null
 
 explainInput.addEventListener('input', e => {
   bufferInput = e.target.value
@@ -37,23 +38,29 @@ explainButton.addEventListener('click', e => {
   e.preventDefault()
   vscode.postMessage({
     type: 'onSuggestionClicked',
-    data: bufferInput
+    data: {
+      input: bufferInput,
+      initData
+    }
   })
 })
 
 function populateInitData(data) {
   category_text.innerText = `CATEGORY: ${data.vuln.category}`
   descriptionContent.innerText = `${data.vuln.description}`
+  initData = data
 
   return
 }
+
 function handleInitData(data) {
   populateInitData(data)
 
   return
 }
 
-function handleSuggestion(data) {
+function handleSuggestionResponse(data) {
   console.log(data)
+  descriptionContent.innerText = `${data.description}`
 }
 console.log(category_text, backButton, applySuggestionButton, forwardButton, explainInput, explainButton)
