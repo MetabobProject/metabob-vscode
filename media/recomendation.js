@@ -4,12 +4,28 @@ const applySuggestionButton = document.getElementById('apply-suggestion-button')
 const forwardButton = document.getElementById('forward-button')
 const explainInput = document.getElementById('explain-input')
 const explainButton = document.getElementById('explain-submit')
+const descriptionContent = document.getElementById('description-content')
+
 const vscode = acquireVsCodeApi()
+
+window.addEventListener('message', message => {
+  const data = message.data.data
+  switch (message.data.type) {
+    case 'initData': {
+      handleInitData(data)
+      break
+    }
+    case 'nothing': {
+      handleSuggestion(data)
+      break
+    }
+  }
+})
 
 vscode.postMessage({ type: 'getInitData' })
 setInterval(() => {
   vscode.postMessage({ type: 'getInitData' })
-}, 500)
+}, 1000)
 
 let bufferInput = null
 
@@ -27,27 +43,15 @@ explainButton.addEventListener('click', e => {
 
 function populateInitData(data) {
   category_text.innerText = `CATEGORY: ${data.vuln.category}`
+  descriptionContent.innerText = `${data.vuln.description}`
+
+  return
 }
 function handleInitData(data) {
-  console.log(data)
   populateInitData(data)
-}
 
-window.addEventListener('message', message => {
-  const data = message.data
-  switch (message.type) {
-    case 'initData': {
-      handleInitData(data)
-      break
-    }
-    case 'nothing': {
-      handleSuggestion(data)
-      break
-    }
-    default:
-      break
-  }
-})
+  return
+}
 
 function handleSuggestion(data) {
   console.log(data)
