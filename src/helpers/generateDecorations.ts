@@ -31,8 +31,9 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
 
     const viewDescriptionURI = encodeURI(
       JSON.stringify({
-        filepath: vulnerability.path,
-        id: vulnerability.id
+        path: vulnerability.path,
+        id: vulnerability.id,
+        vuln: vulnerability
       })
     )
 

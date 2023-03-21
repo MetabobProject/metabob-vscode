@@ -40,7 +40,7 @@ export class RecommendationWebView implements WebviewViewProvider {
             window.showWarningMessage(message.data.message)
             break
           default:
-            break
+            console.log(message)
         }
       })
     }
@@ -80,7 +80,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                 <p class="description-content">content</p>
                 <form style="display: flex; gap: 10px; ">
                   <input type="text" style="width: 80%"></input>
-                  <button style="width: 10%">Ask</button>
+                  <button style="width: 15%">Ask</button>
                 </form>
                 </div>
 
