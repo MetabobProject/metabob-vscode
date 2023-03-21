@@ -50,7 +50,13 @@ export class ExplainService extends ApiServiceBase {
       Authorization: `Bearer ${sessionToken}`
     }
 
-    const response = await this.post<IExplainProblemResponse>('/explain', payload, headers)
+    const response = await this.post<IExplainProblemResponse>(
+      '/explain',
+      {
+        problemId: payload.problemId
+      },
+      headers
+    )
 
     return response
   }

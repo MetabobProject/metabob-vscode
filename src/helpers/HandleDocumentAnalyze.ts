@@ -35,6 +35,9 @@ export const handleDocumentAnalyze = async (
     metaDataDocument.filePath,
     sessionToken
   )
+
+  debugger
+
   const verifiedResponse = verifyResponseOfSubmit(response)
   if (!verifiedResponse) {
     vscode.window.showErrorMessage('Metabob: Error Analyzing the Document')

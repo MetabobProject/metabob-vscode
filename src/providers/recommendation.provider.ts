@@ -59,7 +59,9 @@ export class RecommendationWebView implements WebviewViewProvider {
             data: payload
           })
         } else {
-          window.showErrorMessage(`Metabob: Error in Query to server`)
+          debugger
+
+          window.showErrorMessage(`Metabob: Error`)
         }
       })
   }
@@ -73,7 +75,7 @@ export class RecommendationWebView implements WebviewViewProvider {
             const input = data?.input
             const initData = data?.initData
             if (initData === null) {
-              window.showErrorMessage('Metabob: Error in Query to server')
+              window.showErrorMessage('Metabob: Init Data is null')
 
               return
             }
