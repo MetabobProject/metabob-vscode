@@ -67,4 +67,4 @@ export class ExplainService extends ApiServiceBase {
   }
 }
 
-export const feedbackService = new ExplainService()
+export const explainService = new ExplainService()
