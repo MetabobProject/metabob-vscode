@@ -1,4 +1,5 @@
 import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window, ExtensionContext } from 'vscode'
+import { currentQuestionState } from '../store/currentQuestion.state'
 import { Util } from '../utils'
 
 export class RecommendationWebView implements WebviewViewProvider {
@@ -14,6 +15,12 @@ export class RecommendationWebView implements WebviewViewProvider {
   private onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<
     any | undefined | null | void
   >()
+
+  getCurrentState() {
+    const state = new currentQuestionState(this.extensionContext).get()
+
+    return state?.value
+  }
 
   refresh(): void {
     this.onDidChangeTreeData.fire(null)
@@ -36,9 +43,18 @@ export class RecommendationWebView implements WebviewViewProvider {
     if (this._view) {
       this._view.webview.onDidReceiveMessage((message: any) => {
         switch (message.type) {
-          case 'onSuggestionClicked':
+          case 'onSuggestionClicked': {
             window.showInformationMessage(message.data)
             break
+          }
+          case 'getInitData': {
+            const state = this.getCurrentState()
+            this._view?.webview.postMessage({
+              type: 'initData',
+              data: { ...state }
+            })
+            break
+          }
           default:
             console.log(message)
         }

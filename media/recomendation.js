@@ -6,6 +6,11 @@ const explainInput = document.getElementById('explain-input')
 const explainButton = document.getElementById('explain-submit')
 const vscode = acquireVsCodeApi()
 
+vscode.postMessage({ type: 'getInitData' })
+setInterval(() => {
+  vscode.postMessage({ type: 'getInitData' })
+}, 500)
+
 let bufferInput = null
 
 explainInput.addEventListener('input', e => {
@@ -20,10 +25,22 @@ explainButton.addEventListener('click', e => {
   })
 })
 
+function populateInitData(data) {
+  category_text.innerText = `CATEGORY: ${data.vuln.category}`
+}
+function handleInitData(data) {
+  console.log(data)
+  populateInitData(data)
+}
+
 window.addEventListener('message', message => {
   const data = message.data
   switch (message.type) {
-    case '': {
+    case 'initData': {
+      handleInitData(data)
+      break
+    }
+    case 'nothing': {
       handleSuggestion(data)
       break
     }

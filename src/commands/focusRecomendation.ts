@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { currentQuestionState } from '../store/currentQuestion.state'
 import { Problem } from '../types'
 
 export function activateFocusRecomendCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
@@ -6,8 +7,14 @@ export function activateFocusRecomendCommand(context: vscode.ExtensionContext, _
 
   const commandHandler = async (args: { path: string; id: string; vuln: Problem }) => {
     _debug?.append(`Recomendations initiated for ${args.path} with Problem ${args.id} `)
+    const state = new currentQuestionState(context)
+    state.set({
+      path: args.path,
+      id: args.id,
+      vuln: args.vuln
+    })
+    vscode.commands.executeCommand('recommendation-panel-webview.focus')
   }
 
-  vscode.commands.executeCommand('')
   context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler))
 }
