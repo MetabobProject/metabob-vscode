@@ -14,6 +14,7 @@ export function activateEndorseCommand(context: vscode.ExtensionContext, _debug?
           sessionToken: session
         })
         .then(() => {
+          _debug?.appendLine(`Metabob: Endorsed Problem With ${args.id}`)
           vscode.window.showInformationMessage('Metabob: Thank you for Endorsing The Problem.')
         })
     }

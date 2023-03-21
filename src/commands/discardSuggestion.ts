@@ -1,4 +1,3 @@
-import { debug } from 'console'
 import * as vscode from 'vscode'
 import { GenerateDecorations } from '../helpers/GenerateDecorations'
 import { feedbackService } from '../services/feedback/feedback.service'
@@ -35,6 +34,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?
           ...value[key],
           isDiscarded: true
         }
+
         const valueKeys = Object.keys(value)
         const results = []
 
@@ -56,6 +56,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?
         return value
       })
     } else {
+      _debug?.append('Metabob: Selected Document is Invalid')
       vscode.window.showErrorMessage('Metabob: Selected Document Is Invalid')
     }
   }

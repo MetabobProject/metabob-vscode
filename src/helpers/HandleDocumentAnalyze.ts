@@ -46,12 +46,10 @@ export const handleDocumentAnalyze = async (
     const editor = vscode.window.activeTextEditor
     verifiedResponse.results.forEach(problem => {
       analyzeState.set({
-        [`${problem.path}@@${problem.id}`]: [
-          {
-            ...problem,
-            isDiscarded: false
-          }
-        ]
+        [`${problem.path}@@${problem.id}`]: {
+          ...problem,
+          isDiscarded: false
+        }
       })
     })
 

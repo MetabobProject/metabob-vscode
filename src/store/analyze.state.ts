@@ -3,18 +3,16 @@ import { CONSTANTS } from '../constants'
 import { ExtensionState, ExtensionStateValue } from './base.state'
 
 export type IAnalyzeState = {
-  [filepath: string]: [
-    {
-      id: string
-      path: string
-      startLine: number
-      endLine: number
-      category: string
-      summary: string
-      description: string
-      isDiscarded?: boolean
-    }
-  ]
+  [filepathAndProblemId: string]: {
+    id: string
+    path: string
+    startLine: number
+    endLine: number
+    category: string
+    summary: string
+    description: string
+    isDiscarded?: boolean
+  }
 }
 
 export class AnalyzeState extends ExtensionState<IAnalyzeState> {

@@ -27,6 +27,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
           handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
           'Metabob: Analyzing Document'
         )
+        _debug?.appendLine(`Metabob: Analyzed file ${documentMetaData.filePath}`)
       }
     } else {
       vscode.window.showErrorMessage('Metabob: Selected Document Is Invalid')
