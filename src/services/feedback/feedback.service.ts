@@ -1,4 +1,4 @@
-import { CreateSessionRequest, CreateSessionResponse, getUserSessionResponse } from '../../types'
+import { CreateSessionResponse } from '../../types'
 import { ApiServiceBase } from '../base.service'
 
 export interface IFeedbackSuggestion {
