@@ -21,3 +21,15 @@
   flex-direction: row;
   padding-bottom: var(--input-padding-vertical);
 }
+
+.card {
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 10px;
+  width: 95%;
+}

@@ -76,17 +76,23 @@ export class RecommendationWebView implements WebviewViewProvider {
                   <button class="small-button"> > </button>
                   <button class="med-button">Apply >></button>
                 </div>
+                <div class="card">
                 <p class="description-content">content</p>
-                <form style="display: flex; gap: 20px; ">
+                <form style="display: flex; gap: 10px; ">
                   <input type="text" style="width: 80%"></input>
-                  <button style="width: 20%">Ask</button>
+                  <button style="width: 10%">Ask</button>
                 </form>
-                <h4>Recomendation</h4>
+                </div>
+
+                <h4><b>Recomendation</b></h4>
+                <div class="card">
                 <p class="recomendation-content">recomendation</p>
-                <form style="display: flex; gap: 20px; ">
+                <form style="display: flex; gap: 10px; ">
                   <input type="text" style="width: 80%"></input>
-                  <button style="width: 20%">Update</button>
+                  <button style="width: 15%">Update</button>
                 </form>
+                </div>
+
     </body>
     </html>`
   }
