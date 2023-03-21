@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { submitService } from '../services/submit/submit.service'
-import { IDocumentMetaData, Problem } from '../types'
+import { IDocumentMetaData } from '../types'
 import { transformResponseToDecorations } from './TransformResponseToDecorations'
 import { Result } from 'rusty-result-ts'
 import { SubmitRepresentationResponse } from '../types'
@@ -41,6 +41,7 @@ export const handleDocumentAnalyze = async (
 
     return
   }
+
   if (verifiedResponse.results) {
     const editor = vscode.window.activeTextEditor
     verifiedResponse.results.forEach(problem => {
