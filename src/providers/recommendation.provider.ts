@@ -130,7 +130,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                   <button id="apply-suggestion-button" class="med-button">Apply >></button>
                 </div>
                 <div class="card">
-                <p id="description-content" class="description-content">content</p>
+                <p id="description-content">content</p>
                 <div style="display: flex; gap: 10px;">
                   <input id="explain-input" type="text" style="width: 80%"></input>
                   <button id="explain-submit" style="width: 15%">Ask</button>

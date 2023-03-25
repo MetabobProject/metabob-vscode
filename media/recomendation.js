@@ -8,6 +8,9 @@ const descriptionContent = document.getElementById('description-content')
 
 const vscode = acquireVsCodeApi()
 
+// let doIGetCurrentValueAgain = true
+let intervalRef = null
+
 window.addEventListener('message', message => {
   const data = message.data.data
   switch (message.data.type) {
@@ -23,6 +26,7 @@ window.addEventListener('message', message => {
 })
 
 vscode.postMessage({ type: 'getInitData' })
+
 setInterval(() => {
   vscode.postMessage({ type: 'getInitData' })
 }, 1000)
@@ -47,7 +51,8 @@ explainButton.addEventListener('click', e => {
 
 function populateInitData(data) {
   category_text.innerText = `CATEGORY: ${data.vuln.category}`
-  descriptionContent.innerText = `${data.vuln.description}`
+
+  // descriptionContent.innerText = `${data.vuln.description}`
   initData = data
 
   return
@@ -59,8 +64,11 @@ function handleInitData(data) {
   return
 }
 
-function handleSuggestionResponse(data) {
-  console.log(data)
-  descriptionContent.innerText = `${data.description}`
+function handleSuggestionResponse({ description }) {
+  doIGetCurrentValueAgain = false
+  clearInterval(intervalRef)
+  descriptionContent.innerText = ''
+  descriptionContent.innerText = `${description}`
 }
+
 console.log(category_text, backButton, applySuggestionButton, forwardButton, explainInput, explainButton)

@@ -45,6 +45,8 @@ export const handleDocumentAnalyze = async (
 
   if (verifiedResponse.results) {
     const editor = vscode.window.activeTextEditor
+    const jobId = verifiedResponse.jobId
+
     verifiedResponse.results.forEach(problem => {
       analyzeState.set({
         [`${problem.path}@@${problem.id}`]: {
@@ -55,7 +57,7 @@ export const handleDocumentAnalyze = async (
     })
 
     if (editor && editor.document.fileName === metaDataDocument.filePath) {
-      const decorationFromResponse = transformResponseToDecorations(verifiedResponse.results, editor)
+      const decorationFromResponse = transformResponseToDecorations(verifiedResponse.results, editor, jobId)
 
       editor.setDecorations(decorationFromResponse.decorationType, [])
       editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)

@@ -8,7 +8,7 @@ const decorationType = vscode.window.createTextEditorDecorationType({
   overviewRulerColor: 'red'
 })
 
-export function GenerateDecorations(results: Problem[], editor: vscode.TextEditor) {
+export function GenerateDecorations(results: Problem[], editor: vscode.TextEditor, jobId?: string) {
   const decorations: vscode.DecorationOptions[] = results.map(vulnerability => {
     const range = new vscode.Range(
       vulnerability.startLine - 1,
@@ -33,7 +33,8 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
       JSON.stringify({
         path: vulnerability.path,
         id: vulnerability.id,
-        vuln: vulnerability
+        vuln: vulnerability,
+        jobId
       })
     )
 

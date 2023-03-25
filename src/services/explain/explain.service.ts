@@ -45,17 +45,18 @@ interface ISuggestRecomendationResponse {
 
 export class ExplainService extends ApiServiceBase {
   async explainProblem(payload: IExplainProblemPayload, sessionToken: string) {
-    const headers: Record<string, string> = {
-      'Content-Type': "application/json",
-      Authorization: `Bearer ${sessionToken}`
-    }
-
     const response = await this.post<IExplainProblemResponse>(
       '/explain',
       {
-        problemId: payload.problemId
+        problemId: payload.problemId,
+        prompt: payload.prompt
       },
-      headers
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        }
+      }
     )
 
     return response
