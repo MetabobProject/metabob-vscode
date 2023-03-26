@@ -235,19 +235,37 @@ export class RecommendationWebView implements WebviewViewProvider {
                     <link href="${styleVSCodeUri}" rel="stylesheet">
   </head>
   <body>
-                <h4 id="category-text">CATEGORY: </h4>
-                <p id="question-description"></p>
+                <h4>Problem Category
+                  <b>
+                    <span id="category-text">
+                    </span>
+                  </b>
+                </h4>
+                <div style="width: 100%">
+                    Problem Description
+                    <b>
+                      <span id="question-description">
+                      </span>
+                    </b>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4>
+                      <b>
+                        Suggestion
+                      </b>
+                    </h4>
+                  </div>
                 <div class="button-group">
                   <button id="back-button" class="small-button"> < </button>
                   <button id="forward-button" class="small-button"> > </button>
                   <button id="apply-suggestion-button" class="med-button">Apply >></button>
                 </div>
                 <div class="card">
-                <p id="description-content"></p>
-                <div style="display: flex; gap: 10px;">
-                  <input id="explain-input" type="text" style="width: 80%"></input>
-                  <button id="explain-submit" style="width: 15%">Ask</button>
-                </div>
+                  <p id="description-content"></p>
+                  <div style="display: flex; gap: 10px;">
+                    <input id="explain-input" type="text" style="width: 80%"></input>
+                    <button id="explain-submit" style="width: 15%">Ask</button>
+                  </div>
                 </div>
                 <div style="display: flex; flex-direction: row; gap: 15%;">
                   <div>

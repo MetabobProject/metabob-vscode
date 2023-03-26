@@ -106,7 +106,7 @@ explainButton.addEventListener('click', e => {
 })
 
 function populateInitData(data) {
-  category_text.innerText = `CATEGORY: ${data.vuln.category}`
+  category_text.innerText = `${data.vuln.category}`
   questionDescriptionParagraph.innerText = `${data.vuln.description}`
   initData = data
 
@@ -120,10 +120,12 @@ function handleInitData(data) {
 }
 
 function handleSuggestionResponse({ description }) {
+  descriptionContent.innerText = ''
   descriptionContent.innerText = `${description}`
 }
 
 function handleGenerateResponse({ description }) {
+  RecomendationContent.innerText = ''
   RecomendationContent.innerText = `${description}`
 }
 
