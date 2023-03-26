@@ -5,11 +5,12 @@ const forwardButton = document.getElementById('forward-button')
 const explainInput = document.getElementById('explain-input')
 const explainButton = document.getElementById('explain-submit')
 const descriptionContent = document.getElementById('description-content')
+const generateRecomendationButton = document.getElementById('gen-recom')
+const RecomendationContent = document.getElementById('recomendation-content')
+const updateRecomendationContent = document.getElementById('gen-update-button')
+const updateRecomendationInput = document.getElementById('gen-update-input')
 
 const vscode = acquireVsCodeApi()
-
-// let doIGetCurrentValueAgain = true
-let intervalRef = null
 
 window.addEventListener('message', message => {
   const data = message.data.data
@@ -22,6 +23,10 @@ window.addEventListener('message', message => {
       handleSuggestionResponse(data)
       break
     }
+    case 'onGenerateClicked:Response': {
+      handleGenerateResponse(data)
+      break
+    }
   }
 })
 
@@ -32,10 +37,37 @@ setInterval(() => {
 }, 1000)
 
 let bufferInput = null
+let recoBufferInput = null
 let initData = null
 
 explainInput.addEventListener('input', e => {
   bufferInput = e.target.value
+})
+
+updateRecomendationInput.addEventListener('input', e => {
+  recoBufferInput = e.target.value
+})
+
+generateRecomendationButton.addEventListener('click', e => {
+  e.preventDefault()
+  vscode.postMessage({
+    type: 'onGenerateClicked',
+    data: {
+      input: bufferInput,
+      initData
+    }
+  })
+})
+
+updateRecomendationContent.addEventListener('click', e => {
+  e.preventDefault()
+  vscode.postMessage({
+    type: 'onGenerateClicked',
+    data: {
+      input: recoBufferInput,
+      initData
+    }
+  })
 })
 
 explainButton.addEventListener('click', e => {
@@ -65,10 +97,12 @@ function handleInitData(data) {
 }
 
 function handleSuggestionResponse({ description }) {
-  doIGetCurrentValueAgain = false
-  clearInterval(intervalRef)
-  descriptionContent.innerText = ''
   descriptionContent.innerText = `${description}`
+}
+
+function handleGenerateResponse({ description }) {
+  console.log(description)
+  RecomendationContent.innerText = `${description}`
 }
 
 console.log(category_text, backButton, applySuggestionButton, forwardButton, explainInput, explainButton)

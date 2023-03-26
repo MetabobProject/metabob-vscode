@@ -65,6 +65,31 @@ export class RecommendationWebView implements WebviewViewProvider {
       })
   }
 
+  handleRecomendationClick(input: string, initData: ICurrentQuestionState) {
+    const sessionKey = new SessionState(this.extensionContext).get()
+    explainService
+      .explainProblem(
+        {
+          problemId: initData?.id as string,
+          prompt: input,
+          description: initData?.vuln?.description as string
+        },
+        sessionKey?.value as string
+      )
+      .then(response => {
+        if (response.isOk()) {
+          const payload = response.value
+          this._view?.webview.postMessage({
+            type: 'onGenerateClicked:Response',
+            data: payload
+          })
+        }
+        if (response.isErr()) {
+          window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
+        }
+      })
+  }
+
   private activateMessageListener() {
     if (this._view) {
       this._view.webview.onDidReceiveMessage((message: any) => {
@@ -89,6 +114,20 @@ export class RecommendationWebView implements WebviewViewProvider {
               type: 'initData',
               data: { ...state }
             })
+            break
+          }
+          case 'onGenerateClicked': {
+            const input = data?.input
+            const initData = data?.initData
+            if (initData === null) {
+              window.showErrorMessage('Metabob: Init Data is null')
+
+              return
+            }
+            this.handleRecomendationClick(input, initData)
+
+            window.showInformationMessage(message.data)
+
             break
           }
           default:
@@ -130,20 +169,20 @@ export class RecommendationWebView implements WebviewViewProvider {
                   <button id="apply-suggestion-button" class="med-button">Apply >></button>
                 </div>
                 <div class="card">
-                <p id="description-content">content</p>
+                <p id="description-content"></p>
                 <div style="display: flex; gap: 10px;">
                   <input id="explain-input" type="text" style="width: 80%"></input>
                   <button id="explain-submit" style="width: 15%">Ask</button>
                 </div>
                 </div>
 
-                <div style="display: flex; flex-direction: row; gap: 35%;"><span><h4><b>Recomendation</b></h4></span><button style="width: 40%;">Generate Recomendation</button></div>
+                <div style="display: flex; flex-direction: row; gap: 35%;"><span><h4><b>Recomendation</b></h4></span><button id="gen-recom" style="width: 40%;">Generate Recomendation</button></div>
                 <div class="card">
-                <p class="recomendation-content">recomendation</p>
-                <form style="display: flex; gap: 10px; ">
-                  <input type="text" style="width: 80%"></input>
-                  <button style="width: 15%">Update</button>
-                </form>
+                <p id="recomendation-content" class="recomendation-content"></p>
+                <div style="display: flex; gap: 10px; ">
+                  <input id='gen-update-input' type="text" style="width: 80%"></input>
+                  <button id="gen-update-button" style="width: 15%">Update</button>
+                </div>
                 </div>
            <script nonce="${nonce}" src="${recomendationScriptUri}"></script>
     </body>

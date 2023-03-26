@@ -63,12 +63,18 @@ export class ExplainService extends ApiServiceBase {
   }
 
   async recomendSuggestion(payload: IRecomendSuggestionPayload, sessionToken: string) {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${sessionToken}`
-    }
-
-    const response = await this.post<ISuggestRecomendationResponse>('/recommend', payload, headers)
+    const response = await this.post<ISuggestRecomendationResponse>(
+      '/recommend',
+      {
+        ...payload
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        }
+      }
+    )
 
     return response
   }
