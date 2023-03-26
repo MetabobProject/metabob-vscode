@@ -1,4 +1,16 @@
-import { WebviewViewProvider, WebviewView, Webview, Uri, EventEmitter, window, ExtensionContext } from 'vscode'
+import {
+  WebviewViewProvider,
+  WebviewView,
+  Webview,
+  Uri,
+  EventEmitter,
+  window,
+  ExtensionContext,
+  TextEditorEdit,
+  Position,
+  Range
+} from 'vscode'
+import { GenerateDecorations } from '../helpers/GenerateDecorations'
 import { explainService } from '../services/explain/explain.service'
 import { currentQuestionState, ICurrentQuestionState } from '../store/currentQuestion.state'
 import { SessionState } from '../store/session.state'
@@ -90,6 +102,44 @@ export class RecommendationWebView implements WebviewViewProvider {
       })
   }
 
+  handleApplySuggestion(input: string, initData: ICurrentQuestionState) {
+    const editor = window.activeTextEditor
+    if (!editor) {
+      return
+    }
+    const startLine = initData.vuln?.startLine
+    const comment = `\t\t#${input}`
+    if (startLine) {
+      const position = new Position(startLine - 1, 0) // convert line number to position
+
+      editor.edit((editBuilder: TextEditorEdit) => {
+        editBuilder.insert(position, comment + '\n')
+      })
+    }
+  }
+
+  handleApplyRecomendation(input: string, initData: ICurrentQuestionState) {
+    const editor = window.activeTextEditor
+    if (!editor) {
+      return
+    }
+    const startLine = initData.vuln?.startLine
+    const endLine = initData.vuln?.endLine
+    const comment = `\t\t${input}`
+
+    if (startLine && endLine && initData.vuln) {
+      const data = initData.vuln
+      const start = new Position(startLine - 1, 0) // convert line number to position
+      const end = new Position(endLine, 0) // convert line number to position
+      const range = new Range(start, end)
+      editor.edit((editBuilder: TextEditorEdit) => {
+        const decorations = GenerateDecorations([{ ...data }], editor)
+        editor.setDecorations(decorations.decorationType, [])
+        editBuilder.replace(range, comment + '\n')
+      })
+    }
+  }
+
   private activateMessageListener() {
     if (this._view) {
       this._view.webview.onDidReceiveMessage((message: any) => {
@@ -130,6 +180,29 @@ export class RecommendationWebView implements WebviewViewProvider {
 
             break
           }
+          case 'applySuggestion': {
+            const input = data?.input
+            const initData = data?.initData
+            if (initData === null) {
+              window.showErrorMessage('Metabob: Init Data is null')
+
+              return
+            }
+            this.handleApplySuggestion(input, initData)
+
+            break
+          }
+          case 'applyRecomendation': {
+            const input = data?.input
+            const initData = data?.initData
+            if (initData === null) {
+              window.showErrorMessage('Metabob: Init Data is null')
+
+              return
+            }
+            this.handleApplyRecomendation(input, initData)
+            break
+          }
           default:
             console.log(message)
         }
@@ -163,6 +236,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   </head>
   <body>
                 <h4 id="category-text">CATEGORY: </h4>
+                <p id="question-description"></p>
                 <div class="button-group">
                   <button id="back-button" class="small-button"> < </button>
                   <button id="forward-button" class="small-button"> > </button>
@@ -175,8 +249,23 @@ export class RecommendationWebView implements WebviewViewProvider {
                   <button id="explain-submit" style="width: 15%">Ask</button>
                 </div>
                 </div>
-
-                <div style="display: flex; flex-direction: row; gap: 35%;"><span><h4><b>Recomendation</b></h4></span><button id="gen-recom" style="width: 40%;">Generate Recomendation</button></div>
+                <div style="display: flex; flex-direction: row; gap: 15%;">
+                  <div>
+                    <h4>
+                      <b>
+                        Recomendation
+                      </b>
+                    </h4>
+                  </div>
+                  <div style="display: flex; flex-direction: row; gap: 10%; margin-left: 30%">
+                    <button id="gen-recom" class="med-button">
+                      Generate
+                    </button>
+                    <button id="apply-recomendation" class-"med-button">
+                      Apply
+                    </button>
+                  </div>
+                </div>
                 <div class="card">
                 <p id="recomendation-content" class="recomendation-content"></p>
                 <div style="display: flex; gap: 10px; ">

@@ -8,6 +8,11 @@
   height: 25px;
 }
 
+.lg-button {
+  width: 150px;
+  height: 25px;
+}
+
 .button-group {
   display: flex;
   align-items: flex-end;

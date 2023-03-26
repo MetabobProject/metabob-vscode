@@ -9,6 +9,8 @@ const generateRecomendationButton = document.getElementById('gen-recom')
 const RecomendationContent = document.getElementById('recomendation-content')
 const updateRecomendationContent = document.getElementById('gen-update-button')
 const updateRecomendationInput = document.getElementById('gen-update-input')
+const questionDescriptionParagraph = document.getElementById('question-description')
+const applyRecomendation = document.getElementById('apply-recomendation')
 
 const vscode = acquireVsCodeApi()
 
@@ -48,6 +50,17 @@ updateRecomendationInput.addEventListener('input', e => {
   recoBufferInput = e.target.value
 })
 
+applyRecomendation.addEventListener('click', e => {
+  e.preventDefault()
+  const recomendation = RecomendationContent.textContent
+  vscode.postMessage({
+    type: 'applyRecomendation',
+    data: {
+      input: recomendation,
+      initData
+    }
+  })
+})
 generateRecomendationButton.addEventListener('click', e => {
   e.preventDefault()
   vscode.postMessage({
@@ -59,6 +72,17 @@ generateRecomendationButton.addEventListener('click', e => {
   })
 })
 
+applySuggestionButton.addEventListener('click', e => {
+  e.preventDefault()
+  const suggestion = descriptionContent.textContent
+  vscode.postMessage({
+    type: 'applySuggestion',
+    data: {
+      input: suggestion,
+      initData
+    }
+  })
+})
 updateRecomendationContent.addEventListener('click', e => {
   e.preventDefault()
   vscode.postMessage({
@@ -83,8 +107,7 @@ explainButton.addEventListener('click', e => {
 
 function populateInitData(data) {
   category_text.innerText = `CATEGORY: ${data.vuln.category}`
-
-  // descriptionContent.innerText = `${data.vuln.description}`
+  questionDescriptionParagraph.innerText = `${data.vuln.description}`
   initData = data
 
   return
@@ -101,7 +124,6 @@ function handleSuggestionResponse({ description }) {
 }
 
 function handleGenerateResponse({ description }) {
-  console.log(description)
   RecomendationContent.innerText = `${description}`
 }
 
