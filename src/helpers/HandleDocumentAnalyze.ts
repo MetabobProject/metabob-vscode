@@ -7,6 +7,7 @@ import { ApiErrorBase } from '../services/base.error'
 import { queue } from '../helpers/Queue'
 import { AnalyzeState } from '../store/analyze.state'
 import { Util } from '../utils'
+import { CONSTANTS } from '../constants'
 
 export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResponse | null, ApiErrorBase>) => {
   if (response.isErr()) {
@@ -38,7 +39,7 @@ export const handleDocumentAnalyze = async (
 
   const verifiedResponse = verifyResponseOfSubmit(response)
   if (!verifiedResponse) {
-    vscode.window.showErrorMessage('Metabob: Error Analyzing the Document')
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage)
 
     return
   }

@@ -24,7 +24,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
       if (sessionState) {
         Util.withProgress<void>(
           handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
-          'Metabob: Analyzing Document'
+          CONSTANTS.analyzeCommandProgressMessage
         )
         _debug?.appendLine(`Metabob: Analyzed file ${documentMetaData.filePath}`)
       }
