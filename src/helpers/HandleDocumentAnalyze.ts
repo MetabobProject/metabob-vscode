@@ -1,12 +1,12 @@
 import * as vscode from 'vscode'
 import { submitService } from '../services/submit/submit.service'
 import { IDocumentMetaData } from '../types'
-import { transformResponseToDecorations } from './TransformResponseToDecorations'
 import { Result } from 'rusty-result-ts'
 import { SubmitRepresentationResponse } from '../types'
 import { ApiErrorBase } from '../services/base.error'
 import { queue } from '../helpers/Queue'
 import { AnalyzeState } from '../store/analyze.state'
+import { Util } from '../utils'
 
 export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResponse | null, ApiErrorBase>) => {
   if (response.isErr()) {
@@ -57,7 +57,7 @@ export const handleDocumentAnalyze = async (
     })
 
     if (editor && editor.document.fileName === metaDataDocument.filePath) {
-      const decorationFromResponse = transformResponseToDecorations(verifiedResponse.results, editor, jobId)
+      const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
 
       editor.setDecorations(decorationFromResponse.decorationType, [])
       editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)

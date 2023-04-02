@@ -2,6 +2,8 @@ import * as vscode from 'vscode'
 import { CONSTANTS } from '../constants'
 import { ExtensionState, ExtensionStateValue } from './base.state'
 
+// Store the Session of the user, that is changed by the user from the config.
+// Used to add Authorization Header in the requests
 export class SessionState extends ExtensionState<string> {
   constructor(context: vscode.ExtensionContext) {
     super(context, CONSTANTS.sessionKey)

@@ -15,6 +15,7 @@ export type IRecomendationState = [
   }
 ]
 
+// This is used when user performs recomendation from the Metabob, this state store the current value.
 export class RecomendationState extends ExtensionState<IRecomendationState> {
   constructor(context: vscode.ExtensionContext) {
     super(context, CONSTANTS.recomendations)

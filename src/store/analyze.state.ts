@@ -15,6 +15,8 @@ export type IAnalyzeState = {
   }
 }
 
+// Whenver the user Analyze the file, we will store the response of the request in
+// a store, so user will be able to see decorations upon changing files.
 export class AnalyzeState extends ExtensionState<IAnalyzeState> {
   constructor(context: vscode.ExtensionContext) {
     super(context, CONSTANTS.apiKey)

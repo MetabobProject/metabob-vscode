@@ -217,7 +217,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     const styleLocalUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'recomendation.css'))
     const recomendationScriptUri = webview.asWebviewUri(Uri.joinPath(this.extensionPath, 'media', 'recomendation.js'))
 
-    return /*html*/ `
+    const normalMetabobUI = /*html*/ ` 
     <html>
     <head>
                     <meta charSet="utf-8"/>
@@ -294,5 +294,7 @@ export class RecommendationWebView implements WebviewViewProvider {
            <script nonce="${nonce}" src="${recomendationScriptUri}"></script>
     </body>
     </html>`
+
+    return normalMetabobUI
   }
 }

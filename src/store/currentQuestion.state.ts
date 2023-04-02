@@ -3,6 +3,9 @@ import { CONSTANTS } from '../constants'
 import { Problem } from '../types'
 import { ExtensionState, ExtensionStateValue } from './base.state'
 
+// Whenver the Metabob extension is opened by the user, we want to
+// add previous question performed by the user, so upon asking question,
+// we update this state and upon activate we perform get from this state
 export type ICurrentQuestionState = {
   path?: string
   id?: string
