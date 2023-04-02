@@ -280,7 +280,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                       Generate
                     </button>
                     <button id="apply-recomendation" class-"med-button">
-                      Apply
+                      Apply >>
                     </button>
                   </div>
                 </div>
