@@ -1,7 +1,9 @@
 const category_text = document.getElementById('category-text')
-const backButton = document.getElementById('back-button')
+
+// const backButton = document.getElementById('back-button')
 const applySuggestionButton = document.getElementById('apply-suggestion-button')
-const forwardButton = document.getElementById('forward-button')
+
+// const forwardButton = document.getElementById('forward-button')
 const explainInput = document.getElementById('explain-input')
 const explainButton = document.getElementById('explain-submit')
 const descriptionContent = document.getElementById('description-content')
@@ -128,5 +130,3 @@ function handleGenerateResponse({ description }) {
   RecomendationContent.innerText = ''
   RecomendationContent.innerText = `${description}`
 }
-
-console.log(category_text, backButton, applySuggestionButton, forwardButton, explainInput, explainButton)
