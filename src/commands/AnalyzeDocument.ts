@@ -3,14 +3,15 @@ import { Util } from '../utils'
 import { SessionState } from '../store/session.state'
 import { handleDocumentAnalyze } from '../helpers/HandleDocumentAnalyze'
 import { AnalyzeState } from '../store/analyze.state'
+import { CONSTANTS } from '../constants'
 
 export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
-  const command = 'metabob.analyzeDocument'
+  const command = CONSTANTS.analyzeDocumentCommand
 
   const commandHandler = async () => {
     const editor = vscode.window.activeTextEditor
     if (!editor) {
-      vscode.window.showErrorMessage('Editor is not Selected')
+      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError)
 
       return
     }
@@ -28,7 +29,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
         _debug?.appendLine(`Metabob: Analyzed file ${documentMetaData.filePath}`)
       }
     } else {
-      vscode.window.showErrorMessage('Metabob: Selected Document Is Invalid')
+      vscode.window.showErrorMessage(CONSTANTS.editorSelectedIsInvalid)
     }
   }
 

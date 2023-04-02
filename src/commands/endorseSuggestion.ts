@@ -1,9 +1,10 @@
 import * as vscode from 'vscode'
+import { CONSTANTS } from '../constants'
 import { feedbackService } from '../services/feedback/feedback.service'
 import { SessionState } from '../store/session.state'
 
 export function activateEndorseCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
-  const command = 'metabob.endorseSuggestion'
+  const command = CONSTANTS.endorseSuggestionCommand
 
   const commandHandler = async (args: { id: string }) => {
     const session = new SessionState(context).get()?.value
@@ -15,7 +16,11 @@ export function activateEndorseCommand(context: vscode.ExtensionContext, _debug?
         })
         .then(() => {
           _debug?.appendLine(`Metabob: Endorsed Problem With ${args.id}`)
-          vscode.window.showInformationMessage('Metabob: Thank you for Endorsing The Problem.')
+          vscode.window.showInformationMessage(CONSTANTS.endorseCommandSuccessMessage)
+        })
+        .catch(() => {
+          _debug?.appendLine(`Metabob: Error Endorsing Problem With ${args.id}`)
+          vscode.window.showErrorMessage(CONSTANTS.endorseCommandErrorMessage)
         })
     }
   }
