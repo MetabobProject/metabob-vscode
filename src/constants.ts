@@ -12,11 +12,11 @@ export const CONSTANTS = {
   endorseSuggestionCommand: 'metabob.endorseSuggestion',
 
   // Command Messages
-  endorseCommandSuccessMessage: 'Metabob: Thank you for Endorsing The Problem.',
-  endorseCommandErrorMessage: 'Metabob: Error Endorsing Problem! Please try again later...',
-  discardCommandErrorMessage: 'Metabob: Error Discard Suggestion! Please try again later...',
+  endorseCommandSuccessMessage: 'Metabob: Thank you for endorsing the problem.',
+  endorseCommandErrorMessage: 'Metabob: error in endorsing problem! Please try again later...',
+  discardCommandErrorMessage: 'Metabob: error in discarding suggestion! Please try again later...',
 
   // Error Constants
-  editorNotSelectorError: 'Metabob: Kindly select an editor to perform this command',
-  editorSelectedIsInvalid: 'Metabob: Selected Document Is Invalid'
+  editorNotSelectorError: 'Metabob: kindly select an editor to perform this command',
+  editorSelectedIsInvalid: 'Metabob: selected document is invalid'
 }
