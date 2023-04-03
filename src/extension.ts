@@ -9,7 +9,7 @@ import { activateDiscardCommand } from './commands/discardSuggestion'
 import { activateEndorseCommand } from './commands/endorseSuggestion'
 import { activateFocusRecomendCommand } from './commands/focusRecomendation'
 
-let sessionInterval: any | null = null
+// let sessionInterval: NodeJS.Timer | null = null
 export function activate(context: vscode.ExtensionContext) {
   const debug = vscode.window.createOutputChannel('Metabob-Debug')
   const analyzeDocumentOnSave = analyzeDocumentOnSaveConfig()
@@ -18,9 +18,15 @@ export function activate(context: vscode.ExtensionContext) {
   // otherwise, ping server every 60 second to not destory the token
   // if the user has not done any activity
   createOrUpdateUserSession(context)
-  sessionInterval = setInterval(() => {
-    createOrUpdateUserSession(context)
-  }, 60_000)
+
+  // TODO: Redo this implementation. at the moment Bug seems to be on the extension host end.
+  // https://github.com/microsoft/vscode/issues/109014#issuecomment-712913566
+
+  // if (!sessionInterval) {
+  //   sessionInterval = setInterval(() => {
+  //     createOrUpdateUserSession(context, debug)
+  //   }, 60_000)
+  // }
 
   // Analyze command that hit /analyze endpoint with current file content
   // then decorate current file with error
@@ -96,7 +102,7 @@ export function activate(context: vscode.ExtensionContext) {
 // Since, We don't want to get Refresh Tokens after User has closed the extension
 // So we will clear Session Interval upon deactivate
 export function deactivate() {
-  if (sessionInterval) {
-    clearInterval(sessionInterval)
-  }
+  // if (sessionInterval) {
+  //   clearInterval(sessionInterval)
+  // }
 }

@@ -235,19 +235,23 @@ export class RecommendationWebView implements WebviewViewProvider {
                     <link href="${styleVSCodeUri}" rel="stylesheet">
   </head>
   <body>
-                <h4>Problem Category
-                  <b>
-                    <span id="category-text">
-                    </span>
-                  </b>
-                </h4>
+                
                 <div style="width: 100%">
-                    Problem Description
+                <b>
+                    Problem Category:
+                </b>
+
+                      <span id="category-text">
+                      </span>
+                </div>
+                <div style="width: 100%">
                     <b>
+                      Problem Description:
+                    </b>
                       <span id="question-description">
                       </span>
-                    </b>
                 </div>
+
                 <div style="margin-top: 20px;">
                     <h4>
                       <b>
