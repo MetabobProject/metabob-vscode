@@ -19,6 +19,8 @@ export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResp
       return response.value
     } else if (response.value?.status === 'pending' || response.value?.status === 'running') {
       queue?.enqueue(response.value)
+
+      return null
     }
   }
 

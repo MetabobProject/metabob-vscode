@@ -3,7 +3,7 @@ import { analyzeDocumentOnSaveConfig } from './config'
 import { RecommendationWebView } from './providers/recommendation.provider'
 import { activateAnalyzeCommand } from './commands/AnalyzeDocument'
 import { Util } from './utils'
-import { createUserSession } from './helpers/CreateSession'
+import { createOrUpdateUserSession } from './helpers/CreateOrUpdateUserSession'
 import { AnalyzeDocumentOnSave } from './helpers/AnalyzeTextDocumentOnSave'
 import { activateDiscardCommand } from './commands/discardSuggestion'
 import { activateEndorseCommand } from './commands/endorseSuggestion'
@@ -17,9 +17,9 @@ export function activate(context: vscode.ExtensionContext) {
   // Create User Session, If already created get the refresh token
   // otherwise, ping server every 60 second to not destory the token
   // if the user has not done any activity
-  createUserSession(context)
+  createOrUpdateUserSession(context)
   sessionInterval = setInterval(() => {
-    createUserSession(context)
+    createOrUpdateUserSession(context)
   }, 60_000)
 
   // Analyze command that hit /analyze endpoint with current file content
