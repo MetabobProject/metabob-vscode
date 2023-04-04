@@ -126,7 +126,7 @@ function handleSuggestionResponse({ description }) {
   descriptionContent.innerText = `${description}`
 }
 
-function handleGenerateResponse({ description }) {
+function handleGenerateResponse({ recommendation }) {
   RecomendationContent.innerText = ''
-  RecomendationContent.innerText = `${description}`
+  RecomendationContent.innerText = `${recommendation}`
 }
