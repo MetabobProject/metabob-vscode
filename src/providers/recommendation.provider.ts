@@ -80,11 +80,13 @@ export class RecommendationWebView implements WebviewViewProvider {
   handleRecomendationClick(input: string, initData: ICurrentQuestionState) {
     const sessionKey = new SessionState(this.extensionContext).get()
     explainService
-      .explainProblem(
+      .recomendSuggestion(
         {
           problemId: initData?.id as string,
           prompt: input,
-          description: initData?.vuln?.description as string
+          description: initData?.vuln?.description as string,
+          context: '',
+          recommendation: ''
         },
         sessionKey?.value as string
       )
@@ -125,7 +127,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
     const startLine = initData.vuln?.startLine
     const endLine = initData.vuln?.endLine
-    const comment = `\t\t${input}`
+    const comment = `${input.replace('```', '').replace('\n', '\\n')}`
 
     if (startLine && endLine && initData.vuln) {
       const data = initData.vuln
@@ -289,7 +291,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                   </div>
                 </div>
                 <div class="card">
-                <p id="recomendation-content" class="recomendation-content"></p>
+                <pre><p id="recomendation-content" class="recomendation-content"></p></pre>
                 <div style="display: flex; gap: 10px; ">
                   <input id='gen-update-input' type="text" style="width: 80%"></input>
                   <button id="gen-update-button" style="width: 15%">Update</button>
