@@ -254,9 +254,16 @@ export class RecommendationWebView implements WebviewViewProvider {
                       </span>
                 </div>
                 
-                  <div class="grid-container">
-                    <button id="" class="med-button">Discard</button>
-                    <button id="" class="med-button">Endorse</button>
+                  <div class="grid-container-button-group">
+                    <div>
+                      <button id="" class="med-button">Discard</button>
+                    </div>
+                    <div>
+                      <button id="" class="med-button">Endorse</button>
+                    </div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
                   </div>
 
                 <div style="margin-top: 20px;">
@@ -267,9 +274,18 @@ export class RecommendationWebView implements WebviewViewProvider {
                     </h4>
                 </div>
                 <div class="grid-container-button-group">
-                  <button id="back-button" class="small-button"> < </button>
-                  <button id="forward-button" class="small-button"> > </button>
-                  <button id="apply-suggestion-button" class="med-button">Apply >></button>
+                  <div></div>
+                  <div></div>
+                  <div>
+                    <button id="back-button" class="small-button"> < </button>
+                  </div>
+                  <div>
+                    <button id="forward-button" class="small-button"> > </button>
+                  </div>
+                  <div>
+                    <button id="apply-suggestion-button" class="med-button">Apply >></button>
+                  </div>
+          
                 </div>
                 <div class="card">
                   <p id="description-content"></p>
@@ -278,20 +294,24 @@ export class RecommendationWebView implements WebviewViewProvider {
                     <button id="explain-submit" style="width: 15%">Ask</button>
                   </div>
                 </div>
-                <div style="display: flex; flex-direction: row; gap: 15%;">
-                  <div>
+                <div>
                     <h4>
                       <b>
                         Recomendation
                       </b>
                     </h4>
                   </div>
-                  <div style="display: flex; flex-direction: row; gap: 10%; margin-left: 30%">
+                <div class="grid-container-button-group-b">
+                  <div></div>
+                  <div></div>
+                  <div>
                     <button id="gen-recom" class="med-button">
-                      Generate
-                    </button>
+                        Generate
+                      </button>
+                  </div>
+                  <div>
                     <button id="apply-recomendation" class-"med-button">
-                      Apply >>
+                       Apply >>
                     </button>
                   </div>
                 </div>
