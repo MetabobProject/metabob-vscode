@@ -38,3 +38,9 @@
   padding-left: 10px;
   width: 95%;
 }
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 20px;
+}

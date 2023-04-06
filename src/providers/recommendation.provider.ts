@@ -253,6 +253,11 @@ export class RecommendationWebView implements WebviewViewProvider {
                       <span id="question-description">
                       </span>
                 </div>
+                
+                  <div class="grid-container">
+                    <button id="" class="med-button">Discard</button>
+                    <button id="" class="med-button">Endorse</button>
+                  </div>
 
                 <div style="margin-top: 20px;">
                     <h4>
@@ -260,7 +265,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                         Suggestion
                       </b>
                     </h4>
-                  </div>
+                </div>
                 <div class="button-group">
                   <button id="back-button" class="small-button"> < </button>
                   <button id="forward-button" class="small-button"> > </button>
