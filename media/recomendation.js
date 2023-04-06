@@ -13,6 +13,8 @@ const updateRecomendationContent = document.getElementById('gen-update-button')
 const updateRecomendationInput = document.getElementById('gen-update-input')
 const questionDescriptionParagraph = document.getElementById('question-description')
 const applyRecomendation = document.getElementById('apply-recomendation')
+const discardSuggestion = document.getElementById('discard-suggestion')
+const endorseSuggestion = document.getElementById('endorse-suggestion')
 
 const vscode = acquireVsCodeApi()
 
@@ -51,6 +53,26 @@ window.addEventListener('message', message => {
     case 'onSuggestionClicked:Error': {
       explainButton.classList.remove('loading')
       explainButton.innerText = 'ASK'
+      break
+    }
+    case 'onDiscardSuggestionClicked:Success': {
+      discardSuggestion.classList.remove('loading')
+      discardSuggestion.innerText = 'Discard'
+      break
+    }
+    case 'onDiscardSuggestionClicked:Error': {
+      discardSuggestion.classList.remove('loading')
+      discardSuggestion.innerText = 'Discard'
+      break
+    }
+    case 'onEndorseSuggestionClicked:Success': {
+      endorseSuggestion.classList.remove('loading')
+      endorseSuggestion.innerText = 'Endorse'
+      break
+    }
+    case 'onEndorseSuggestionClicked:Error': {
+      endorseSuggestion.classList.remove('loading')
+      endorseSuggestion.innerText = 'Endorse'
       break
     }
   }
@@ -139,6 +161,27 @@ explainButton.addEventListener('click', e => {
   })
 })
 
+discardSuggestion.addEventListener('click', e => {
+  e.preventDefault()
+  discardSuggestion.classList.add('loading')
+  vscode.postMessage({
+    type: 'onDiscardSuggestionClicked',
+    data: {
+      initData
+    }
+  })
+})
+
+endorseSuggestion.addEventListener('click', e => {
+  e.preventDefault()
+  endorseSuggestion.classList.add('loading')
+  vscode.postMessage({
+    type: 'onEndorseSuggestionClicked',
+    data: {
+      initData
+    }
+  })
+})
 function populateInitData(data) {
   category_text.innerText = `${data.vuln.category}`
   questionDescriptionParagraph.innerText = `${data.vuln.description}`

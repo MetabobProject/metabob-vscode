@@ -8,7 +8,8 @@ import {
   ExtensionContext,
   TextEditorEdit,
   Position,
-  Range
+  Range,
+  commands
 } from 'vscode'
 import { GenerateDecorations } from '../helpers/GenerateDecorations'
 import { explainService } from '../services/explain/explain.service'
@@ -229,6 +230,63 @@ export class RecommendationWebView implements WebviewViewProvider {
               return
             }
             this.handleApplyRecomendation(input, initData)
+            break
+          }
+          case 'onEndorseSuggestionClicked': {
+            const initData = data?.initData
+            if (initData === null) {
+              window.showErrorMessage('Metabob: Init Data is null')
+
+              return
+            }
+            try {
+              commands.executeCommand('metabob.endorseSuggestion', {
+                id: initData.id,
+                path: initData.path
+              })
+              if (this._view) {
+                this._view.webview.postMessage({
+                  type: 'onEndorseSuggestionClicked:Success',
+                  data: {}
+                })
+              }
+            } catch (error) {
+              if (this._view) {
+                this._view.webview.postMessage({
+                  type: 'onEndorseSuggestionClicked:Error',
+                  data: {}
+                })
+              }
+            }
+            break
+          }
+          case 'onDiscardSuggestionClicked': {
+            const initData = data?.initData
+            if (initData === null) {
+              window.showErrorMessage('Metabob: Init Data is null')
+
+              return
+            }
+            try {
+              commands.executeCommand('metabob.discardSuggestion', {
+                id: initData.id,
+                path: initData.path
+              })
+              if (this._view) {
+                this._view.webview.postMessage({
+                  type: 'onDiscardSuggestionClicked:Success',
+                  data: {}
+                })
+              }
+            } catch (error) {
+              if (this._view) {
+                this._view.webview.postMessage({
+                  type: 'onDiscardSuggestionClicked:Error',
+                  data: {}
+                })
+              }
+            }
+
             break
           }
           default:
