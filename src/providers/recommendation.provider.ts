@@ -72,8 +72,20 @@ export class RecommendationWebView implements WebviewViewProvider {
           })
         }
         if (response.isErr()) {
-          window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
+          if (this._view) {
+            this._view.webview.postMessage({
+              type: 'onSuggestionClicked:Error',
+              data: {}
+            })
+            window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
+          }
         }
+      })
+      .catch(() => {
+        this._view?.webview.postMessage({
+          type: 'onSuggestionClicked:Error',
+          data: {}
+        })
       })
   }
 
@@ -99,7 +111,21 @@ export class RecommendationWebView implements WebviewViewProvider {
           })
         }
         if (response.isErr()) {
-          window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
+          if (this._view) {
+            this._view?.webview.postMessage({
+              type: 'onGenerateClicked:Error',
+              data: {}
+            })
+            window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
+          }
+        }
+      })
+      .catch(() => {
+        if (this._view) {
+          this._view?.webview.postMessage({
+            type: 'onGenerateClicked:Error',
+            data: {}
+          })
         }
       })
   }

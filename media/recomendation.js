@@ -41,6 +41,18 @@ window.addEventListener('message', message => {
       updateRecomendationContent.innerText = 'Update'
       break
     }
+    case 'onGenerateClicked:Error': {
+      generateRecomendationButton.classList.remove('loading')
+      updateRecomendationContent.classList.remove('loading')
+      generateRecomendationButton.innerText = 'Generate'
+      updateRecomendationContent.innerText = 'Update'
+      break
+    }
+    case 'onSuggestionClicked:Error': {
+      explainButton.classList.remove('loading')
+      explainButton.innerText = 'ASK'
+      break
+    }
   }
 })
 
