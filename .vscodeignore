@@ -11,3 +11,4 @@ vsc-extension-quickstart.md
 **/*.ts
 .prettierrc
 screenshot.gif
+!media/**
