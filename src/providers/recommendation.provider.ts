@@ -266,7 +266,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                       </b>
                     </h4>
                 </div>
-                <div class="button-group">
+                <div class="grid-container-button-group">
                   <button id="back-button" class="small-button"> < </button>
                   <button id="forward-button" class="small-button"> > </button>
                   <button id="apply-suggestion-button" class="med-button">Apply >></button>

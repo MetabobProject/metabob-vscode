@@ -42,5 +42,10 @@
 .grid-container {
   display: grid;
   grid-template-columns: auto auto auto;
-  gap: 20px;
+  gap: 5px;
+}
+
+.grid-container-button-group {
+  display: grid;
+  grid-template-columns: auto auto auto;
 }
