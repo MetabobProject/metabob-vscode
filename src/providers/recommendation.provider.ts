@@ -256,10 +256,10 @@ export class RecommendationWebView implements WebviewViewProvider {
                 
                   <div class="grid-container-button-group">
                     <div>
-                      <button id="" class="med-button">Discard</button>
+                      <button id="" class="med-button loading-button">Discard</button>
                     </div>
                     <div>
-                      <button id="" class="med-button">Endorse</button>
+                      <button id="" class="med-button loading-button">Endorse</button>
                     </div>
                     <div></div>
                     <div></div>
@@ -276,22 +276,17 @@ export class RecommendationWebView implements WebviewViewProvider {
                 <div class="grid-container-button-group">
                   <div></div>
                   <div></div>
+                  <div></div>
+                  <div></div>
                   <div>
-                    <button id="back-button" class="small-button"> < </button>
+                    <button id="apply-suggestion-button" class="med-button loading-button">Apply >></button>
                   </div>
-                  <div>
-                    <button id="forward-button" class="small-button"> > </button>
-                  </div>
-                  <div>
-                    <button id="apply-suggestion-button" class="med-button">Apply >></button>
-                  </div>
-          
                 </div>
                 <div class="card">
                   <p id="description-content"></p>
                   <div style="display: flex; gap: 10px;">
                     <input id="explain-input" type="text" style="width: 80%"></input>
-                    <button id="explain-submit" style="width: 15%">Ask</button>
+                    <button id="explain-submit" style="width: 15%" class="loading-button">Ask</button>
                   </div>
                 </div>
                 <div>
@@ -305,21 +300,21 @@ export class RecommendationWebView implements WebviewViewProvider {
                   <div></div>
                   <div></div>
                   <div>
-                    <button id="gen-recom" class="med-button">
+                    <button id="gen-recom" class="med-button loading-button">
                         Generate
                       </button>
                   </div>
                   <div>
-                    <button id="apply-recomendation" class-"med-button">
+                    <button id="apply-recomendation" class="med-button loading-button">
                        Apply >>
                     </button>
                   </div>
                 </div>
                 <div class="card">
-                <pre><p id="recomendation-content" class="recomendation-content"></p></pre>
+                <p id="recomendation-content" class="recomendation-content"></p>
                 <div style="display: flex; gap: 10px; ">
                   <input id='gen-update-input' type="text" style="width: 80%"></input>
-                  <button id="gen-update-button" style="width: 15%">Update</button>
+                  <button id="gen-update-button" class="med-button loading-button">Update</button>
                 </div>
                 </div>
            <script nonce="${nonce}" src="${recomendationScriptUri}"></script>

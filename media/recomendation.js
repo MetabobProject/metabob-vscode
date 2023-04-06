@@ -16,6 +16,10 @@ const applyRecomendation = document.getElementById('apply-recomendation')
 
 const vscode = acquireVsCodeApi()
 
+let applySuggestionLoading = false
+
+if (applySuggestionLoading) {
+}
 window.addEventListener('message', message => {
   const data = message.data.data
   switch (message.data.type) {
@@ -25,10 +29,16 @@ window.addEventListener('message', message => {
     }
     case 'onSuggestionClicked:Response': {
       handleSuggestionResponse(data)
+      explainButton.classList.remove('loading')
+      explainButton.innerText = 'ASK'
       break
     }
     case 'onGenerateClicked:Response': {
       handleGenerateResponse(data)
+      generateRecomendationButton.classList.remove('loading')
+      updateRecomendationContent.classList.remove('loading')
+      generateRecomendationButton.innerText = 'Generate'
+      updateRecomendationContent.innerText = 'Update'
       break
     }
   }
@@ -65,6 +75,8 @@ applyRecomendation.addEventListener('click', e => {
 })
 generateRecomendationButton.addEventListener('click', e => {
   e.preventDefault()
+  generateRecomendationButton.classList.add('loading')
+  generateRecomendationButton.innerText = ''
   vscode.postMessage({
     type: 'onGenerateClicked',
     data: {
@@ -76,6 +88,8 @@ generateRecomendationButton.addEventListener('click', e => {
 
 applySuggestionButton.addEventListener('click', e => {
   e.preventDefault()
+  applySuggestionButton.classList.add('loading')
+  applySuggestionButton.innerText = ''
   const suggestion = descriptionContent.textContent
   vscode.postMessage({
     type: 'applySuggestion',
@@ -84,8 +98,12 @@ applySuggestionButton.addEventListener('click', e => {
       initData
     }
   })
+  applySuggestionButton.classList.remove('loading')
+  applySuggestionButton.innerText = 'Apply >>'
 })
 updateRecomendationContent.addEventListener('click', e => {
+  updateRecomendationContent.classList.add('loading')
+  updateRecomendationContent.innerText = ''
   e.preventDefault()
   vscode.postMessage({
     type: 'onGenerateClicked',
@@ -97,6 +115,8 @@ updateRecomendationContent.addEventListener('click', e => {
 })
 
 explainButton.addEventListener('click', e => {
+  explainButton.classList.add('loading')
+  explainButton.innerText = ''
   e.preventDefault()
   vscode.postMessage({
     type: 'onSuggestionClicked',
