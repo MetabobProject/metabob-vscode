@@ -9,6 +9,7 @@ import { activateDiscardCommand } from './commands/discardSuggestion'
 import { activateEndorseCommand } from './commands/endorseSuggestion'
 import { activateFocusRecomendCommand } from './commands/focusRecomendation'
 import { ChatGPTViewerProvider } from './providers/chat.provider'
+import { activateDetailSuggestionCommand } from './commands/detailDocument'
 
 // let sessionInterval: NodeJS.Timer | null = null
 export function activate(context: vscode.ExtensionContext) {
@@ -41,7 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
   // Used to notify the model about positive feedback
   activateEndorseCommand(context, debug)
 
+  // Depreceated
   activateFocusRecomendCommand(context, debug)
+
+  // When the user click the detail button on the problem
+  activateDetailSuggestionCommand(context, debug)
 
   // Analyze on Save functionality is only ran if the user enabled it.
   if (analyzeDocumentOnSave && analyzeDocumentOnSave === true) {

@@ -11,7 +11,7 @@ export const CONSTANTS = {
   discardSuggestionCommand: 'metabob.discardSuggestion',
   endorseSuggestionCommand: 'metabob.endorseSuggestion',
   fixSuggestionCommand: 'metabob.fixSuggestion',
-  showDetailSuggestionCommand: 'metabob.showDetail',
+  showDetailSuggestionCommand: 'metabob.showDetailSuggestion',
 
   // Command Messages
   endorseCommandSuccessMessage: 'Metabob: Thank you for endorsing the problem.',

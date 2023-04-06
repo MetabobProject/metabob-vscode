@@ -79,7 +79,7 @@
         "category": "Metabob"
       },
       {
-        "command": "metabob.showDetail",
+        "command": "metabob.showDetailSuggestion",
         "title": "Show Detail",
         "category": "Metabob"
       },
@@ -108,7 +108,7 @@
           "when": "false"
         },
         {
-          "command": "metabob.showDetail",
+          "command": "metabob.showDetailSuggestion",
           "when": "false"
         }
       ]
