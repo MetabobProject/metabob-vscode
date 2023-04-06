@@ -282,10 +282,10 @@ export class RecommendationWebView implements WebviewViewProvider {
                 
                   <div class="grid-container-button-group">
                     <div>
-                      <button id="" class="med-button loading-button">Discard</button>
+                      <button id="discard-suggestion" class="med-button loading-button">Discard</button>
                     </div>
                     <div>
-                      <button id="" class="med-button loading-button">Endorse</button>
+                      <button id="endorse-suggestion" class="med-button loading-button">Endorse</button>
                     </div>
                     <div></div>
                     <div></div>

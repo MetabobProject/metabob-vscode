@@ -37,7 +37,7 @@
         {
           "id": "metabob-webview",
           "title": "Metabob Extension",
-          "icon": "./src/assets/extension-icon.png"
+          "icon": "./media/extension-icon.png"
         }
       ]
     },
@@ -68,6 +68,16 @@
         "category": "Metabob"
       },
       {
+        "command": "metabob.fixSuggestion",
+        "title": "Fix Suggestion",
+        "category": "Metabob"
+      },
+      {
+        "command": "metabob.showDetail",
+        "title": "Show Detail",
+        "category": "Metabob"
+      },
+      {
         "command": "metabob.focusRecomened",
         "title": "Focus Recomendation Panel",
         "category": "Metabob"
@@ -85,6 +95,14 @@
         },
         {
           "command": "metabob.focusRecomened",
+          "when": "false"
+        },
+        {
+          "command": "metabob.fixSuggestion",
+          "when": "false"
+        },
+        {
+          "command": "metabob.showDetail",
           "when": "false"
         }
       ]
@@ -120,7 +138,8 @@
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint src --ext ts",
+    "package": "vsce package --no-yarn"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",

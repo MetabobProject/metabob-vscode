@@ -10,6 +10,8 @@ export const CONSTANTS = {
   analyzeDocumentCommand: 'metabob.analyzeDocument',
   discardSuggestionCommand: 'metabob.discardSuggestion',
   endorseSuggestionCommand: 'metabob.endorseSuggestion',
+  fixSuggestionCommand: 'metabob.fixSuggestion',
+  showDetail: 'metabob.showDetail',
 
   // Command Messages
   endorseCommandSuccessMessage: 'Metabob: Thank you for endorsing the problem.',
