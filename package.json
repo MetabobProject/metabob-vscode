@@ -1,152 +1,158 @@
 {
-    "name": "metabob-vscode",
-    "displayName": "Metabob VScode",
-    "description": "AI static code analysis to ensure high code quality and software security",
-    "version": "0.0.1",
-    "repository": {
-        "url": "https://github.com/MetabobProject/metabob-vscode",
-        "type": "git"
-    },
-    "publisher": "metabob",
-    "engines": {
-        "vscode": "^1.64.0"
-    },
-    "categories": [
-        "Linters",
-        "Programming Languages",
-        "Snippets",
-        "Debuggers",
-        "Other"
-    ],
-    "keywords": [
-        "linter",
-        "lint",
-        "code",
-        "google",
-        "api",
-        "aip",
-        "metabob"
-    ],
-    "activationEvents": [
-        "onStartupFinished"
-    ],
-    "main": "./out/src/extension.js",
-    "contributes": {
-        "viewsContainers": {
-            "activitybar": [{
-                "id": "metabob-webview",
-                "title": "Metabob Extension",
-                "icon": "./src/assets/extension-icon.png"
-            }]
-        },
-        "views": {
-            "metabob-webview": [{
-                "type": "webview",
-                "id": "recommendation-panel-webview",
-                "name": "Recommendation",
-                "icon": "./src/assets/extension-icon.png"
-            }]
-        },
-        "commands": [{
-                "command": "metabob.analyzeDocument",
-                "title": "Analyze Document",
-                "category": "Metabob"
-            },
-            {
-                "command": "metabob.discardSuggestion",
-                "title": "Discard Suggestion",
-                "category": "Metabob"
-            },
-            {
-                "command": "metabob.endorseSuggestion",
-                "title": "Endorse Suggestion",
-                "category": "Metabob"
-            },
-            {
-                "command": "metabob.focusRecomened",
-                "title": "Focus Recomendation Panel",
-                "category": "Metabob"
-            }
-        ],
-        "menus": {
-            "commandPalette": [{
-                    "command": "metabob.discardSuggestion",
-                    "when": "false"
-                },
-                {
-                    "command": "metabob.endorseSuggestion",
-                    "when": "false"
-                },
-                {
-                    "command": "metabob.focusRecomened",
-                    "when": "false"
-                }
-            ]
-        },
-        "configuration": {
-            "title": "Metabob Extension configuration",
-            "properties": {
-                "metabob.apiKey": {
-                    "description": "API key to use for authentication",
-                    "type": "string",
-                    "default": "",
-                    "category": "Metabob"
-                },
-                "metabob.baseURl": {
-                    "description": "Endpoint of the backend service",
-                    "type": "string",
-                    "default": "",
-                    "category": "Metabob"
-                },
-                "metabob.analyzeDocumentOnSave": {
-                    "description": "Analyze Document On Save",
-                    "type": "boolean",
-                    "default": true,
-                    "category": "Metabob"
-                }
-            }
+  "name": "metabob-vscode",
+  "displayName": "Metabob VScode",
+  "description": "AI static code analysis to ensure high code quality and software security",
+  "version": "0.0.1",
+  "repository": {
+    "url": "https://github.com/MetabobProject/metabob-vscode",
+    "type": "git"
+  },
+  "publisher": "metabob",
+  "engines": {
+    "vscode": "^1.64.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Snippets",
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "linter",
+    "lint",
+    "code",
+    "google",
+    "api",
+    "aip",
+    "metabob"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "metabob-webview",
+          "title": "Metabob Extension",
+          "icon": "./src/assets/extension-icon.png"
         }
+      ]
     },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "npm-run-all compile:*",
-        "compile:extension": "tsc -p ./",
-        "watch": "npm-run-all -p watch:*",
-        "watch:extension": "tsc -watch -p ./",
-        "pretest": "npm run compile && npm run lint",
-        "lint": "eslint src --ext ts"
+    "views": {
+      "metabob-webview": [
+        {
+          "type": "webview",
+          "id": "recommendation-panel-webview",
+          "name": "Recommendation",
+          "icon": "./media/extension-icon.png"
+        }
+      ]
     },
-    "devDependencies": {
-        "@types/glob": "^7.1.3",
-        "@types/lodash": "^4.14.191",
-        "@types/mocha": "^8.0.4",
-        "@types/node": "^12.11.7",
-        "@types/react": "^17.0.1",
-        "@types/react-dom": "^17.0.0",
-        "@types/react-router-dom": "^5.1.7",
-        "@types/vscode": "^1.52.0",
-        "@typescript-eslint/eslint-plugin": "^4.9.0",
-        "@typescript-eslint/parser": "^4.9.0",
-        "css-loader": "^5.0.1",
-        "eslint": "^7.15.0",
-        "eslint-config-prettier": "^8.7.0",
-        "eslint-plugin-react-hooks": "^4.2.0",
-        "glob": "^7.1.6",
-        "mocha": "^8.1.3",
-        "npm-run-all": "^4.1.5",
-        "prettier": "^2.8.4",
-        "style-loader": "^2.0.0",
-        "ts-loader": "^8.0.15",
-        "typescript": "^4.1.2",
-        "vscode-test": "^1.4.1",
-        "webpack": "^5.21.1",
-        "webpack-cli": "^4.5.0"
+    "commands": [
+      {
+        "command": "metabob.analyzeDocument",
+        "title": "Analyze Document",
+        "category": "Metabob"
+      },
+      {
+        "command": "metabob.discardSuggestion",
+        "title": "Discard Suggestion",
+        "category": "Metabob"
+      },
+      {
+        "command": "metabob.endorseSuggestion",
+        "title": "Endorse Suggestion",
+        "category": "Metabob"
+      },
+      {
+        "command": "metabob.focusRecomened",
+        "title": "Focus Recomendation Panel",
+        "category": "Metabob"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "metabob.discardSuggestion",
+          "when": "false"
+        },
+        {
+          "command": "metabob.endorseSuggestion",
+          "when": "false"
+        },
+        {
+          "command": "metabob.focusRecomened",
+          "when": "false"
+        }
+      ]
     },
-    "dependencies": {
-        "@vscode/webview-ui-toolkit": "^1.2.2",
-        "axios": "^1.3.4",
-        "form-data": "^4.0.0",
-        "lodash": "^4.17.21",
-        "rusty-result-ts": "^0.1.0"
+    "configuration": {
+      "title": "Metabob Extension configuration",
+      "properties": {
+        "metabob.apiKey": {
+          "description": "API key to use for authentication",
+          "type": "string",
+          "default": "",
+          "category": "Metabob"
+        },
+        "metabob.baseURl": {
+          "description": "Endpoint of the backend service",
+          "type": "string",
+          "default": "",
+          "category": "Metabob"
+        },
+        "metabob.analyzeDocumentOnSave": {
+          "description": "Analyze Document On Save",
+          "type": "boolean",
+          "default": true,
+          "category": "Metabob"
+        }
+      }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "npm-run-all compile:*",
+    "compile:extension": "tsc -p ./",
+    "watch": "npm-run-all -p watch:*",
+    "watch:extension": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.3",
+    "@types/lodash": "^4.14.191",
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^12.11.7",
+    "@types/react": "^17.0.1",
+    "@types/react-dom": "^17.0.0",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/vscode": "^1.52.0",
+    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/parser": "^4.9.0",
+    "css-loader": "^5.0.1",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^8.7.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "glob": "^7.1.6",
+    "mocha": "^8.1.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.8.4",
+    "style-loader": "^2.0.0",
+    "ts-loader": "^8.0.15",
+    "typescript": "^4.1.2",
+    "vscode-test": "^1.4.1",
+    "webpack": "^5.21.1",
+    "webpack-cli": "^4.5.0"
+  },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^1.2.2",
+    "axios": "^1.3.4",
+    "form-data": "^4.0.0",
+    "lodash": "^4.17.21",
+    "rusty-result-ts": "^0.1.0"
+  }
 }
