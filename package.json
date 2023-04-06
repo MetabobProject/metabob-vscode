@@ -48,6 +48,12 @@
           "id": "recommendation-panel-webview",
           "name": "Recommendation",
           "icon": "./media/extension-icon.png"
+        },
+        {
+          "type": "webview",
+          "id": "chatgpt-panel-webview",
+          "name": "ChatGPT",
+          "icon": "./media/extension-icon.png"
         }
       ]
     },
