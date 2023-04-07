@@ -9,6 +9,7 @@ import { activateDiscardCommand } from './commands/discardSuggestion'
 import { activateEndorseCommand } from './commands/endorseSuggestion'
 import { activateFocusRecomendCommand } from './commands/focusRecomendation'
 import { activateDetailSuggestionCommand } from './commands/detailDocument'
+import { activateFixSuggestionCommand } from './commands/fixDocument'
 
 // let sessionInterval: NodeJS.Timer | null = null
 export function activate(context: vscode.ExtensionContext) {
@@ -47,6 +48,9 @@ export function activate(context: vscode.ExtensionContext) {
   // When the user click the detail button on the problem
   activateDetailSuggestionCommand(context, debug)
 
+  // Whenever the user clicks the fix button
+  activateFixSuggestionCommand(context, debug)
+
   // Analyze on Save functionality is only ran if the user enabled it.
   if (analyzeDocumentOnSave && analyzeDocumentOnSave === true) {
     context.subscriptions.push(
@@ -77,6 +81,25 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage('Metabob: Base URL Changed')
 
         return
+      }
+      if (e.affectsConfiguration('metabob.chatgptToken') === true) {
+        vscode.window.showInformationMessage('Metabob: ChatGPT API Changed')
+
+        return
+      }
+      if (e.affectsConfiguration('metabob.backendSelection') === true) {
+        const reloadWindowItem = { title: 'Reload Window' }
+        vscode.window
+          .showInformationMessage('Reload the window to apply changes?', reloadWindowItem)
+          .then(selection => {
+            if (selection === reloadWindowItem) {
+              vscode.commands.executeCommand('workbench.action.reloadWindow')
+
+              return
+            }
+
+            return
+          })
       }
       if (e.affectsConfiguration('metabob.analyzeDocumentOnSave') === true) {
         const reloadWindowItem = { title: 'Reload Window' }

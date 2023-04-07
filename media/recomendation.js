@@ -19,6 +19,7 @@ const endorseSuggestion = document.getElementById('endorse-suggestion')
 const vscode = acquireVsCodeApi()
 
 let applySuggestionLoading = false
+let isFirstTime = false
 
 if (applySuggestionLoading) {
 }
@@ -195,6 +196,18 @@ endorseSuggestion.addEventListener('click', e => {
   })
 })
 function populateInitData(data) {
+  if (data.isFix && !isFirstTime) {
+    generateRecomendationButton.classList.add('loading')
+    generateRecomendationButton.innerText = ''
+    vscode.postMessage({
+      type: 'onGenerateClicked',
+      data: {
+        input: bufferInput,
+        initData: data
+      }
+    })
+    isFirstTime = true
+  }
   category_text.innerText = `${data.vuln.category}`
   questionDescriptionParagraph.innerText = `${data.vuln.description}`
   initData = data

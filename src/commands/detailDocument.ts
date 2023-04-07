@@ -12,7 +12,8 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     state.set({
       path: args.path,
       id: args.id,
-      vuln: args.vuln
+      vuln: args.vuln,
+      isFix: false
     })
     vscode.commands.executeCommand('recommendation-panel-webview.focus')
   }

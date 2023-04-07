@@ -10,6 +10,7 @@ export type ICurrentQuestionState = {
   path?: string
   id?: string
   vuln?: Problem
+  isFix?: boolean
 }
 
 export class currentQuestionState extends ExtensionState<ICurrentQuestionState> {

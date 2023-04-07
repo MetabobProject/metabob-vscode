@@ -38,7 +38,7 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
       })
     )
 
-    const hoverDiscardMessage = `**[Fix](command:metabob.discardSuggestion?${hoverDiscardMessageURI})**`
+    const hoverDiscardMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI})**`
     const hoverEndorseMessage = `**[Details](command:metabob.showDetailSuggestion?${viewDescriptionURI})**`
     const hoverViewDescriptionMessage = `**[Ask Question](command:metabob.focusRecomened?${viewDescriptionURI})**`
     const hoverMessage = new vscode.MarkdownString(
