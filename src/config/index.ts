@@ -17,3 +17,15 @@ export const analyzeDocumentOnSaveConfig = () => {
 
   return config
 }
+
+export const getChatGPTToken = () => {
+  const config = vscode.workspace.getConfiguration('metabob').get<string>('chatgptToken')
+
+  return config
+}
+
+export const backendService = () => {
+  const config = vscode.workspace.getConfiguration('metabob').get<string>('backendSelection')
+
+  return config
+}

@@ -16,6 +16,8 @@ import { explainService } from '../services/explain/explain.service'
 import { currentQuestionState, ICurrentQuestionState } from '../store/currentQuestion.state'
 import { SessionState } from '../store/session.state'
 import { Util } from '../utils'
+import { backendService, getChatGPTToken } from '../config'
+import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai'
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null
@@ -54,7 +56,9 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.activateMessageListener()
   }
   handleSuggestionClick(input: string, initData: ICurrentQuestionState) {
-    const sessionKey = new SessionState(this.extensionContext).get()
+    const backendServiceConfig = backendService()
+    if (!backendService) return
+    let sessionKey = new SessionState(this.extensionContext).get()?.value
     explainService
       .explainProblem(
         {
@@ -62,15 +66,52 @@ export class RecommendationWebView implements WebviewViewProvider {
           prompt: input,
           description: initData?.vuln?.description as string
         },
-        sessionKey?.value as string
+        sessionKey as string,
+        backendServiceConfig === 'openai/chatgpt'
       )
-      .then(response => {
-        if (response.isOk()) {
-          const payload = response.value
-          this._view?.webview.postMessage({
-            type: 'onSuggestionClicked:Response',
-            data: payload
-          })
+      .then(async response => {
+        if (backendServiceConfig === 'openai/chatgpt') {
+          if (response.isOk()) {
+            const token = getChatGPTToken()
+            const configuration = new Configuration({
+              apiKey: token
+            })
+            const openai = new OpenAIApi(configuration)
+            const payload: CreateChatCompletionRequest = {
+              model: 'gpt-3.5-turbo',
+              messages: [
+                {
+                  role: 'system',
+                  // @ts-ignore
+                  content: response.value.prompt
+                },
+                {
+                  role: 'user',
+                  content: input
+                }
+              ]
+            }
+            try {
+              const chatresponse = await openai.createChatCompletion({ ...payload })
+              this._view?.webview.postMessage({
+                type: 'onSuggestionClickedGPT:Response',
+                data: { ...chatresponse.data }
+              })
+            } catch (error) {
+              this._view?.webview.postMessage({
+                type: 'onSuggestionClicked:Error',
+                data: {}
+              })
+            }
+          }
+        } else {
+          if (response.isOk()) {
+            const payload = response.value
+            this._view?.webview.postMessage({
+              type: 'onSuggestionClicked:Response',
+              data: payload
+            })
+          }
         }
         if (response.isErr()) {
           if (this._view) {
@@ -91,6 +132,8 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   handleRecomendationClick(input: string, initData: ICurrentQuestionState) {
+    const backendServiceConfig = backendService()
+    if (!backendService) return
     const sessionKey = new SessionState(this.extensionContext).get()
     explainService
       .recomendSuggestion(
@@ -101,16 +144,10 @@ export class RecommendationWebView implements WebviewViewProvider {
           context: '',
           recommendation: ''
         },
-        sessionKey?.value as string
+        sessionKey?.value as string,
+        backendServiceConfig === 'openai/chatgpt'
       )
-      .then(response => {
-        if (response.isOk()) {
-          const payload = response.value
-          this._view?.webview.postMessage({
-            type: 'onGenerateClicked:Response',
-            data: payload
-          })
-        }
+      .then(async response => {
         if (response.isErr()) {
           if (this._view) {
             this._view?.webview.postMessage({
@@ -118,6 +155,50 @@ export class RecommendationWebView implements WebviewViewProvider {
               data: {}
             })
             window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
+          }
+          return
+        }
+        if (backendServiceConfig === 'openai/chatgpt') {
+          if (response.isOk()) {
+            const token = getChatGPTToken()
+            const configuration = new Configuration({
+              apiKey: token
+            })
+            const openai = new OpenAIApi(configuration)
+            const payload: CreateChatCompletionRequest = {
+              model: 'gpt-3.5-turbo',
+              messages: [
+                {
+                  role: 'system',
+                  // @ts-ignore
+                  content: response.value.prompt
+                },
+                {
+                  role: 'user',
+                  content: input
+                }
+              ]
+            }
+            try {
+              const chatresponse = await openai.createChatCompletion({ ...payload })
+              this._view?.webview.postMessage({
+                type: 'onGenerateClickedGPT:Response',
+                data: { ...chatresponse.data }
+              })
+            } catch (error) {
+              this._view?.webview.postMessage({
+                type: 'onGenerateClicked:Error',
+                data: {}
+              })
+            }
+          }
+        } else {
+          if (response.isOk()) {
+            const payload = response.value
+            this._view?.webview.postMessage({
+              type: 'onGenerateClicked:Response',
+              data: payload
+            })
           }
         }
       })

@@ -44,9 +44,10 @@ interface ISuggestRecomendationResponse {
 }
 
 export class ExplainService extends ApiServiceBase {
-  async explainProblem(payload: IExplainProblemPayload, sessionToken: string) {
+  async explainProblem(payload: IExplainProblemPayload, sessionToken: string, isChatConfigEnabled?: boolean) {
+    const endpoint = isChatConfigEnabled ? '/explain?prompt_only=true' : '/explain'
     const response = await this.post<IExplainProblemResponse>(
-      '/explain',
+      endpoint,
       {
         problemId: payload.problemId,
         prompt: payload.prompt
@@ -62,9 +63,10 @@ export class ExplainService extends ApiServiceBase {
     return response
   }
 
-  async recomendSuggestion(payload: IRecomendSuggestionPayload, sessionToken: string) {
+  async recomendSuggestion(payload: IRecomendSuggestionPayload, sessionToken: string, isChatConfigEnabled?: boolean) {
+    const endpoint = isChatConfigEnabled ? '/recommend?prompt_only=true' : '/recommend'
     const response = await this.post<ISuggestRecomendationResponse>(
-      '/recommend',
+      endpoint,
       {
         ...payload
       },

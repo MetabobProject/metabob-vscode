@@ -35,6 +35,20 @@ window.addEventListener('message', message => {
       explainButton.innerText = 'ASK'
       break
     }
+    case 'onSuggestionClickedGPT:Response': {
+      handleChatGPTResponse(data)
+      explainButton.classList.remove('loading')
+      explainButton.innerText = 'ASK'
+      break
+    }
+    case 'onGenerateClickedGPT:Response': {
+      handleGenerateResponseGPT(data)
+      generateRecomendationButton.classList.remove('loading')
+      updateRecomendationContent.classList.remove('loading')
+      generateRecomendationButton.innerText = 'Generate'
+      updateRecomendationContent.innerText = 'Update'
+      break
+    }
     case 'onGenerateClicked:Response': {
       handleGenerateResponse(data)
       generateRecomendationButton.classList.remove('loading')
@@ -202,4 +216,14 @@ function handleSuggestionResponse({ description }) {
 function handleGenerateResponse({ recommendation }) {
   RecomendationContent.innerText = ''
   RecomendationContent.innerText = `${recommendation}`
+}
+
+function handleChatGPTResponse(data) {
+  descriptionContent.innerText = ''
+  descriptionContent.innerText = data.choices[0].message.content
+}
+
+function handleGenerateResponseGPT(data) {
+  RecomendationContent.innerText = ''
+  RecomendationContent.innerText = data.choices[0].message.content
 }
