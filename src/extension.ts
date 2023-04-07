@@ -8,7 +8,6 @@ import { AnalyzeDocumentOnSave } from './helpers/AnalyzeTextDocumentOnSave'
 import { activateDiscardCommand } from './commands/discardSuggestion'
 import { activateEndorseCommand } from './commands/endorseSuggestion'
 import { activateFocusRecomendCommand } from './commands/focusRecomendation'
-import { ChatGPTViewerProvider } from './providers/chat.provider'
 import { activateDetailSuggestionCommand } from './commands/detailDocument'
 
 // let sessionInterval: NodeJS.Timer | null = null
@@ -101,14 +100,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider(
       'recommendation-panel-webview',
       new RecommendationWebView(context?.extensionUri, context)
-    )
-  )
-
-  // ChatGPT Panel Webview Provider that is the normal Metabob workflow
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      'chatgpt-panel-webview',
-      new ChatGPTViewerProvider(context?.extensionUri, context)
     )
   )
 }

@@ -163,7 +163,6 @@ explainButton.addEventListener('click', e => {
 
 discardSuggestion.addEventListener('click', e => {
   e.preventDefault()
-  discardSuggestion.classList.add('loading')
   vscode.postMessage({
     type: 'onDiscardSuggestionClicked',
     data: {
@@ -174,7 +173,6 @@ discardSuggestion.addEventListener('click', e => {
 
 endorseSuggestion.addEventListener('click', e => {
   e.preventDefault()
-  endorseSuggestion.classList.add('loading')
   vscode.postMessage({
     type: 'onEndorseSuggestionClicked',
     data: {
