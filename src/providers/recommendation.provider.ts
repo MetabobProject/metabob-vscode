@@ -73,6 +73,14 @@ export class RecommendationWebView implements WebviewViewProvider {
         if (backendServiceConfig === 'openai/chatgpt') {
           if (response.isOk()) {
             const token = getChatGPTToken()
+            if (token === '' || !token) {
+              window.showErrorMessage('Metabob: ChatGPT API Key is required when openai/chatgpt backend is selected')
+              this._view?.webview.postMessage({
+                type: 'onSuggestionClicked:Error',
+                data: {}
+              })
+              return
+            }
             const configuration = new Configuration({
               apiKey: token
             })
@@ -161,6 +169,14 @@ export class RecommendationWebView implements WebviewViewProvider {
         if (backendServiceConfig === 'openai/chatgpt') {
           if (response.isOk()) {
             const token = getChatGPTToken()
+            if (token === '' || !token) {
+              window.showErrorMessage('Metabob: ChatGPT API Key is required when openai/chatgpt backend is selected')
+              this._view?.webview.postMessage({
+                type: 'onGenerateClicked:Error',
+                data: {}
+              })
+              return
+            }
             const configuration = new Configuration({
               apiKey: token
             })
