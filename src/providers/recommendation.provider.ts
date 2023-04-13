@@ -416,6 +416,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                     <link href="${styleLocalUri}" rel="stylesheet">
                     <link href="${styleResetUri}" rel="stylesheet">
                     <link href="${styleVSCodeUri}" rel="stylesheet">
+                    
   </head>
   <body>
                 
@@ -499,6 +500,8 @@ export class RecommendationWebView implements WebviewViewProvider {
                 </div>
                 </div>
            <script nonce="${nonce}" src="${recomendationScriptUri}"></script>
+           <script nonce="${nonce}" src="https://cdn.tailwindcss.com"></script>
+
     </body>
     </html>`
 
