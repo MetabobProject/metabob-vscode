@@ -420,85 +420,48 @@ export class RecommendationWebView implements WebviewViewProvider {
   </head>
   <body>
                 
-                <div style="width: 100%">
-                <b>
-                    Problem Category:
-                </b>
-
-                      <span id="category-text">
-                      </span>
-                </div>
-                <div style="width: 100%">
-                    <b>
-                      Problem Description:
-                    </b>
-                      <span id="question-description">
-                      </span>
-                </div>
+              <div style="w-100">
+                  <span class="font-bold text-clifford text-1xl">
+                      Problem Category:
+                  </span>
+                  <span id="category-text">
+                  </span>
+              </div>
+              <div style="w-100">
+                  <span class="font-bold text-clifford text-1xl">
+                    Problem Description:
+                  </span>                      
+                  <span id="question-description">
+                  </span>
+              </div>
                 
-                  <div class="grid-container-button-group">
-                    <div>
-                      <button id="discard-suggestion" class="med-button loading-button">Discard</button>
-                    </div>
-                    <div>
-                      <button id="endorse-suggestion" class="med-button loading-button">Endorse</button>
-                    </div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                  </div>
-
-                <div style="margin-top: 20px;">
-                    <h4>
-                      <b>
-                        Suggestion
-                      </b>
-                    </h4>
-                </div>
-                <div class="grid-container-button-group">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
+              <div class="flex flex-row mx-auto space-x-4">
                   <div>
-                    <button id="apply-suggestion-button" class="med-button loading-button">Apply >></button>
+                    <button id="discard-suggestion" class="flex-none p-1 shadow-sm font-medium loading-button">Discard</button>
                   </div>
-                </div>
-                <div class="card">
+                  <div>
+                    <button id="endorse-suggestion" class="flex-none p-1 shadow-sm font-medium loading-button">Endorse</button>                
+                  </div>
+              </div>
+             
+                <div class="p-1">
                   <p id="description-content"></p>
                   <div style="display: flex; gap: 10px;">
                     <input id="explain-input" type="text" style="width: 80%"></input>
                     <button id="explain-submit" style="width: 15%" class="loading-button">Ask</button>
                   </div>
                 </div>
-                <div>
-                    <h4>
-                      <b>
-                        Recomendation
-                      </b>
-                    </h4>
-                  </div>
-                <div class="grid-container-button-group-b">
-                  <div></div>
-                  <div></div>
-                  <div>
-                    <button id="gen-recom" class="med-button loading-button">
+                <div class="flex flex-row mx-auto space-x-4">
+                    <span class="font-bold text-clifford text-1xl basis-1/4">Recomendation</span>
+                    <span class="font-bold text-clifford text-1xl basis-1/4"></span>
+                    <span class="font-bold text-clifford text-1xl basis-1/4"></span>
+                    <span class="order-last basis-1/4"> 
+                      <button id="gen-recom" class="flex-none p-1 shadow-sm font-medium loading-button">
                         Generate
                       </button>
-                  </div>
-                  <div>
-                    <button id="apply-recomendation" class="med-button loading-button">
-                       Apply >>
-                    </button>
-                  </div>
+                    </span>
                 </div>
-                <div class="card">
-                <p id="recomendation-content" class="recomendation-content"></p>
-                <div style="display: flex; gap: 10px; ">
-                  <input id='gen-update-input' type="text" style="width: 80%"></input>
-                  <button id="gen-update-button" class="med-button loading-button">Update</button>
-                </div>
-                </div>
+          </div>
            <script nonce="${nonce}" src="${recomendationScriptUri}"></script>
            <script nonce="${nonce}" src="https://cdn.tailwindcss.com"></script>
 
