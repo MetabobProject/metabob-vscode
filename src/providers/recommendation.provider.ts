@@ -424,43 +424,44 @@ export class RecommendationWebView implements WebviewViewProvider {
                   <span class="font-bold text-clifford text-1xl">
                       Problem Category:
                   </span>
-                  <span id="category-text">
+                  <span id="category-text" class="whitespace-pre-wrap">
                   </span>
               </div>
               <div style="w-100">
-                  <span class="font-bold text-clifford text-1xl">
+                  <span class="font-bold text-clifford text-1xl antialiased">
                     Problem Description:
                   </span>                      
-                  <span id="question-description">
+                  <span id="question-description" class="antialiased whitespace-pre-wrap">
                   </span>
               </div>
                 
-              <div class="flex flex-row mx-auto space-x-4">
-                  <div>
-                    <button id="discard-suggestion" class="flex-none p-1 shadow-sm font-medium loading-button">Discard</button>
+                <div class="flex flex-wrap my-3 flex-row mx-auto space-x-4 ">
+                    <div>
+                      <button id="discard-suggestion" class="flex-none p-1 shadow-sm font-medium antialiased loading-button">Discard</button>
+                    </div>
+                    <div>
+                      <button id="endorse-suggestion" class="flex-none  p-1 shadow-sm font-medium antialiased loading-button">Endorse</button>                
+                    </div>
+                </div>
+
+                <div class="w-90">
+                  <div class="my-3 w-100">
+                    <p id="description-content" class="whitespace-pre-wrap"></p>
+                    <div style="display: flex; gap: 10px;" class="flex-wrap">
+                      <input id="explain-input" type="text" style="width: 80%" class="focus:outline-none"></input>
+                      <button id="explain-submit" style="width: 15%" class="flex-none shadow-sm text-xs loading-button focus:outline-none">Ask</button>
+                    </div>
                   </div>
-                  <div>
-                    <button id="endorse-suggestion" class="flex-none p-1 shadow-sm font-medium loading-button">Endorse</button>                
+                  <div class="flex flex-wrap my-3 flex-row mx-auto justify-between">
+                      <span class="font-bold text-clifford text-1xl transition duration-300 antialiased">Recomendation</span>
+                      <span class="order-last basis-1/4"> 
+                        <button id="gen-recom" class="antialiased shadow-sm text-xs transition duration-300 loading-button">
+                          Generate
+                        </button>
+                      </span>
                   </div>
               </div>
-             
-                <div class="p-1">
-                  <p id="description-content"></p>
-                  <div style="display: flex; gap: 10px;">
-                    <input id="explain-input" type="text" style="width: 80%"></input>
-                    <button id="explain-submit" style="width: 15%" class="loading-button">Ask</button>
-                  </div>
-                </div>
-                <div class="flex flex-row mx-auto space-x-4">
-                    <span class="font-bold text-clifford text-1xl basis-1/4">Recomendation</span>
-                    <span class="font-bold text-clifford text-1xl basis-1/4"></span>
-                    <span class="font-bold text-clifford text-1xl basis-1/4"></span>
-                    <span class="order-last basis-1/4"> 
-                      <button id="gen-recom" class="flex-none p-1 shadow-sm font-medium loading-button">
-                        Generate
-                      </button>
-                    </span>
-                </div>
+
           </div>
            <script nonce="${nonce}" src="${recomendationScriptUri}"></script>
            <script nonce="${nonce}" src="https://cdn.tailwindcss.com"></script>

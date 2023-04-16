@@ -101,3 +101,43 @@
     transform: rotate(360deg);
   }
 }
+
+#discard-suggestion {
+  border: none;
+  padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+  width: 100%;
+  text-align: center;
+  outline: 1px solid transparent;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
+
+#endorse-suggestion {
+  border: none;
+  padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+  width: 100%;
+  text-align: center;
+  outline: 1px solid transparent;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
+
+#explain-submit {
+  border: none;
+  padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+  width: 100%;
+  text-align: center;
+  outline: 1px solid transparent;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
+
+#gen-recom {
+  border: none;
+  padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+  width: 100%;
+  text-align: center;
+  outline: 1px solid transparent;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
