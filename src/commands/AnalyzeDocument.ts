@@ -20,12 +20,21 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
       const documentMetaData = Util.extractMetaDataFromDocument(editor.document)
       const sessionState = new SessionState(context).get()
       const analyzeState = new AnalyzeState(context)
+      let isInQueue = false
 
       if (sessionState) {
         Util.withProgress<void>(
-          handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
+          handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState).then(response => {
+            if (response === 'in-queue') {
+              isInQueue = true
+            }
+          }),
           CONSTANTS.analyzeCommandProgressMessage
         )
+
+        if (isInQueue) {
+        }
+
         _debug?.appendLine(`Metabob: Analyzed file ${documentMetaData.filePath}`)
       }
     } else {

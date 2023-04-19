@@ -20,7 +20,7 @@ export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResp
     } else if (response.value?.status === 'pending' || response.value?.status === 'running') {
       queue?.enqueue(response.value)
 
-      return null
+      return 'in-queue'
     }
   }
 
@@ -45,25 +45,28 @@ export const handleDocumentAnalyze = async (
 
     return
   }
+  if (verifiedResponse === 'in-queue') {
+    return 'in-queue'
+  } else {
+    if (verifiedResponse.results) {
+      const editor = vscode.window.activeTextEditor
+      const jobId = verifiedResponse.jobId
 
-  if (verifiedResponse.results) {
-    const editor = vscode.window.activeTextEditor
-    const jobId = verifiedResponse.jobId
-
-    verifiedResponse.results.forEach(problem => {
-      analyzeState.set({
-        [`${problem.path}@@${problem.id}`]: {
-          ...problem,
-          isDiscarded: false
-        }
+      verifiedResponse.results.forEach(problem => {
+        analyzeState.set({
+          [`${problem.path}@@${problem.id}`]: {
+            ...problem,
+            isDiscarded: false
+          }
+        })
       })
-    })
 
-    if (editor && editor.document.fileName === metaDataDocument.filePath) {
-      const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
+      if (editor && editor.document.fileName === metaDataDocument.filePath) {
+        const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
 
-      editor.setDecorations(decorationFromResponse.decorationType, [])
-      editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)
+        editor.setDecorations(decorationFromResponse.decorationType, [])
+        editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)
+      }
     }
   }
 

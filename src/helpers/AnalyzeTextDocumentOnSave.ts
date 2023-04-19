@@ -14,11 +14,27 @@ export function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave, cont
   const documentMetaData = Util.extractMetaDataFromDocument(editor.document)
   const sessionState = new SessionState(context).get()
   const analyzeState = new AnalyzeState(context)
+  let isInQueue = false
 
   if (sessionState) {
     Util.withProgress<void>(
-      handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
+      handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState).then(response => {
+        if (response === 'in-queue') {
+          isInQueue = true
+        }
+      }),
       'Metabob: Analyzing Document'
     )
+
+    if (isInQueue) {
+      Util.withProgress<void>(
+        handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState).then(response => {
+          if (response === 'in-queue') {
+            isInQueue = true
+          }
+        }),
+        'Metabob: Analyzing Document'
+      )
+    }
   }
 }
