@@ -4,6 +4,7 @@ import { SessionState } from '../store/session.state'
 import { IAnalyzeTextDocumentOnSave } from '../types'
 import { Util } from '../utils'
 import { handleDocumentAnalyze } from './HandleDocumentAnalyze'
+import { CONSTANTS } from '../constants'
 
 export function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave, context: vscode.ExtensionContext) {
   const editor = vscode.window.activeTextEditor
@@ -17,24 +18,28 @@ export function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave, cont
   let isInQueue = false
 
   if (sessionState) {
-    Util.withProgress<void>(
-      handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState).then(response => {
-        if (response === 'in-queue') {
-          isInQueue = true
-        }
-      }),
-      'Metabob: Analyzing Document'
-    )
+    Util.withProgress<string>(
+      handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
+      CONSTANTS.analyzeCommandErrorMessage
+    ).then(response => {
+      if (response === 'in-queue') {
+        isInQueue = true
+      }
+    })
 
     if (isInQueue) {
-      Util.withProgress<void>(
-        handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState).then(response => {
-          if (response === 'in-queue') {
-            isInQueue = true
-          }
-        }),
-        'Metabob: Analyzing Document'
-      )
+      Util.withProgress<string>(
+        handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
+        CONSTANTS.analyzeCommandQueueMessage
+      ).then(response => {
+        if (response === 'in-queue') {
+          isInQueue = true
+        } else if (response === 'success') {
+          isInQueue = false
+        } else {
+          isInQueue = false
+        }
+      })
     }
   }
 }

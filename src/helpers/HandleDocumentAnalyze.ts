@@ -18,8 +18,6 @@ export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResp
     if (response.value?.status === 'complete') {
       return response.value
     } else if (response.value?.status === 'pending' || response.value?.status === 'running') {
-      queue?.enqueue(response.value)
-
       return 'in-queue'
     }
   }
@@ -32,6 +30,7 @@ export const handleDocumentAnalyze = async (
   sessionToken: string,
   analyzeState: AnalyzeState
 ) => {
+  let responseReturn = ''
   const response = await submitService.submitTextFile(
     metaDataDocument.relativePath,
     metaDataDocument.fileContent,
@@ -43,11 +42,11 @@ export const handleDocumentAnalyze = async (
   if (!verifiedResponse) {
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage)
 
-    return
+    responseReturn = ''
   }
   if (verifiedResponse === 'in-queue') {
     return 'in-queue'
-  } else {
+  } else if (verifiedResponse) {
     if (verifiedResponse.results) {
       const editor = vscode.window.activeTextEditor
       const jobId = verifiedResponse.jobId
@@ -63,12 +62,12 @@ export const handleDocumentAnalyze = async (
 
       if (editor && editor.document.fileName === metaDataDocument.filePath) {
         const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
-
         editor.setDecorations(decorationFromResponse.decorationType, [])
         editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)
+        return 'success'
       }
     }
   }
 
-  return
+  return responseReturn
 }

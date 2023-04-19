@@ -18,6 +18,7 @@ export const CONSTANTS = {
   endorseCommandErrorMessage: 'Metabob: error in endorsing problem! Please try again later...',
   discardCommandErrorMessage: 'Metabob: error in discarding suggestion! Please try again later...',
   analyzeCommandProgressMessage: 'Metabob: Analyzing Document',
+  analyzeCommandQueueMessage: 'Metabob: Document is Queued',
   analyzeCommandErrorMessage: 'Metabob: Error Analyzing the Document',
 
   // Error Constants
