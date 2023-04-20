@@ -428,7 +428,11 @@ export class RecommendationWebView implements WebviewViewProvider {
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root"></div>
 				
+        <script>
+          window.acquireVsCodeApi = acquireVsCodeApi;
+        </script>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
+        <script nonce="${nonce}" src="https://cdn.tailwindcss.com"></script>
 			</body>
 			</html>`
   }
