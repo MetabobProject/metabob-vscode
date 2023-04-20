@@ -44,25 +44,13 @@ window.addEventListener('message', message => {
     }
     case 'onGenerateClickedGPT:Response': {
       handleGenerateResponseGPT(data)
-      generateRecomendationButton.classList.remove('loading')
-      updateRecomendationContent.classList.remove('loading')
-      generateRecomendationButton.innerText = 'Generate'
-      updateRecomendationContent.innerText = 'Update'
       break
     }
     case 'onGenerateClicked:Response': {
       handleGenerateResponse(data)
-      generateRecomendationButton.classList.remove('loading')
-      updateRecomendationContent.classList.remove('loading')
-      generateRecomendationButton.innerText = 'Generate'
-      updateRecomendationContent.innerText = 'Update'
       break
     }
     case 'onGenerateClicked:Error': {
-      generateRecomendationButton.classList.remove('loading')
-      updateRecomendationContent.classList.remove('loading')
-      generateRecomendationButton.innerText = 'Generate'
-      updateRecomendationContent.innerText = 'Update'
       break
     }
     case 'onSuggestionClicked:Error': {
@@ -124,8 +112,6 @@ applyRecomendation.addEventListener('click', e => {
 })
 generateRecomendationButton.addEventListener('click', e => {
   e.preventDefault()
-  generateRecomendationButton.classList.add('loading')
-  generateRecomendationButton.innerText = ''
   vscode.postMessage({
     type: 'onGenerateClicked',
     data: {
