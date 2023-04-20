@@ -397,15 +397,13 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
   }
 
-  private _getHtmlForWebview(_webview: Webview) {
+  private _getHtmlForWebview(webview: Webview) {
     const manifest = require(path.join(this.extensionPath, 'build', 'asset-manifest.json'))
     const mainScript = manifest['files']['main.js']
     const mainStyle = manifest['files']['main.css']
 
-    const scriptPathOnDisk = Uri.file(path.join(this.extensionPath, 'build', mainScript))
-    const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' })
-    const stylePathOnDisk = Uri.file(path.join(this.extensionPath, 'build', mainStyle))
-    const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' })
+    const scriptUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainScript))
+    const styleUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainStyle))
 
     // Use a nonce to whitelist which scripts can be run
     const nonce = Util.getNonce()
@@ -417,7 +415,12 @@ export class RecommendationWebView implements WebviewViewProvider {
 				<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 				<meta name="theme-color" content="#000000">
 				<link rel="stylesheet" type="text/css" href="${styleUri}">
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+        <meta http-equiv="Content-Security-Policy" 
+              content="default-src 'none'; 
+              img-src vscode-resource: https:;
+              script-src 'nonce-${nonce}';
+              style-src vscode-resource: 'unsafe-inline' http: https: data:
+        ;">
 				<base href="${Uri.file(path.join(this.extensionPath, 'build')).with({ scheme: 'vscode-resource' })}/">
 			</head>
 
