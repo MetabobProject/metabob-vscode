@@ -30,7 +30,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./out/src/extension.js",
+  "main": "./build/ext-src/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -149,18 +149,13 @@
     }
   },
   "scripts": {
-    "compile": "npm-run-all compile:*",
-    "compile:extension": "tsc -p ./",
     "watch": "npm-run-all -p watch:*",
-    "watch:extension": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
+    "watch:extension": "tsc -watch -p tsconfig.extension.json",
     "lint": "eslint src --ext ts",
     "package": "vsce package --no-yarn",
     "vscode:prepublish": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json",
     "start": "react-scripts start",
-    "build": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "build": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",

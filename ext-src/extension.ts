@@ -122,7 +122,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       'recommendation-panel-webview',
-      new RecommendationWebView(context?.extensionUri, context)
+      new RecommendationWebView(context?.extensionPath, context?.extensionUri, context)
     )
   )
 }
