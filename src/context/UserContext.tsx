@@ -10,7 +10,15 @@ const defaultProvider: AccountSettingTypes = {
   suggestion: '',
   generate: '',
   showSuggestionPaginatePanel: false,
-  showGeneratePaginatePanel: false
+  showGeneratePaginatePanel: false,
+  discardSuggestionClicked: false,
+  endorseSuggestionClicked: false,
+
+  // tslint:disable-next-line:no-empty-function
+  setDiscardSuggestionClicked: () => Boolean,
+
+  // tslint:disable-next-line:no-empty-function
+  setEndorseSuggestionClicked: () => Boolean
 }
 
 const AccountSettingContext = createContext(defaultProvider)
@@ -21,10 +29,12 @@ type Props = {
 
 const AccountSettingProvider = ({ children }: Props) => {
   const [initialState, setInitialState] = useState('')
-  const [showSuggestionPaginatePanel, setSuggestionPaginatePanel] = useState<boolean>(false)
-  const [showGeneratePaginatePanel, setGeneratePaginatePanel] = useState<boolean>(false)
+  const [showSuggestionPaginatePanel] = useState<boolean>(false)
+  const [showGeneratePaginatePanel] = useState<boolean>(false)
   const [suggestion, setSuggestion] = useState('')
   const [generate, setGenerate] = useState('')
+  const [discardSuggestionClicked, setDiscardSuggestionClicked] = useState(false)
+  const [endorseSuggestionClicked, setEndorseSuggestionClicked] = useState(false)
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
@@ -49,17 +59,25 @@ const AccountSettingProvider = ({ children }: Props) => {
           break
         case 'onSuggestionClicked:Error':
           break
-        case 'onDiscardSuggestionClicked:Success':
+        case 'onDiscardSuggestionClicked:Success': {
+          setDiscardSuggestionClicked(false)
           break
-        case 'onDiscardSuggestionClicked:Error':
+        }
+        case 'onDiscardSuggestionClicked:Error': {
+          setDiscardSuggestionClicked(false)
           break
-        case 'onEndorseSuggestionClicked:Success':
+        }
+        case 'onEndorseSuggestionClicked:Success': {
+          setEndorseSuggestionClicked(false)
           break
-        case 'onEndorseSuggestionClicked:Error':
+        }
+        case 'onEndorseSuggestionClicked:Error': {
+          setEndorseSuggestionClicked(false)
           break
+        }
       }
     },
-    [setInitialState, setSuggestion]
+    [setInitialState, setSuggestion, setEndorseSuggestionClicked, setDiscardSuggestionClicked]
   )
 
   // get initial state
@@ -91,7 +109,11 @@ const AccountSettingProvider = ({ children }: Props) => {
     suggestion,
     generate,
     showSuggestionPaginatePanel,
-    showGeneratePaginatePanel
+    showGeneratePaginatePanel,
+    discardSuggestionClicked,
+    endorseSuggestionClicked,
+    setDiscardSuggestionClicked,
+    setEndorseSuggestionClicked
   }
 
   return <AccountSettingContext.Provider value={values}>{children}</AccountSettingContext.Provider>
