@@ -15,6 +15,8 @@ export interface AccountSettingTypes {
   setUserQuestionAboutSuggestion: Dispatch<SetStateAction<string>>
   isSuggestionClicked: boolean
   setSuggestionClicked: Dispatch<SetStateAction<boolean>>
+  isGenerateWithoutQuestionLoading: boolean
+  setIsGenerateWithoutQuestionLoading: Dispatch<SetStateAction<boolean>>
 }
 
 export interface MessageType {

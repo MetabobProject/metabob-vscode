@@ -17,6 +17,7 @@ export const ReactMarkdownComponent = ({ text }: ReactMarkdownProps) => {
         <ReactMarkdown
           children={text}
           remarkPlugins={[remarkGfm]}
+          className="prose"
           components={{
             code({ inline, className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || '')

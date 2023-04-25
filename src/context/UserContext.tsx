@@ -25,7 +25,9 @@ const defaultProvider: AccountSettingTypes = {
   // tslint:disable-next-line:no-empty-function
   setUserQuestionAboutSuggestion: () => '',
   isSuggestionClicked: false,
-  setSuggestionClicked: () => Boolean
+  setSuggestionClicked: () => Boolean,
+  isGenerateWithoutQuestionLoading: false,
+  setIsGenerateWithoutQuestionLoading: () => Boolean
 }
 
 const AccountSettingContext = createContext(defaultProvider)
@@ -45,6 +47,7 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [isgenerateClicked, setIsgenerateClicked] = useState(false)
   const [userQuestionAboutSuggestion, setUserQuestionAboutSuggestion] = useState<string>('')
   const [isSuggestionClicked, setSuggestionClicked] = useState(false)
+  const [isGenerateWithoutQuestionLoading, setIsGenerateWithoutQuestionLoading] = useState<boolean>(false)
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
@@ -68,11 +71,16 @@ const AccountSettingProvider = ({ children }: Props) => {
           setGenerate(payload.choices[0].message.content)
           break
         case 'onGenerateClicked:Response':
-          setGenerate(payload)
+          const { recommendation } = payload
+          const adjustedRecomendation: string = recommendation
+          adjustedRecomendation.replace("'''", '')
+          setIsGenerateWithoutQuestionLoading(false)
+          setGenerate(`~~~python\n${recommendation}~~~`)
           setIsgenerateClicked(true)
           break
         case 'onGenerateClicked:Error':
           setGenerate('')
+          setIsGenerateWithoutQuestionLoading(false)
           setIsgenerateClicked(false)
           break
         case 'onSuggestionClicked:Error':
@@ -138,7 +146,9 @@ const AccountSettingProvider = ({ children }: Props) => {
     userQuestionAboutSuggestion,
     setUserQuestionAboutSuggestion,
     isSuggestionClicked,
-    setSuggestionClicked
+    setSuggestionClicked,
+    isGenerateWithoutQuestionLoading,
+    setIsGenerateWithoutQuestionLoading
   }
 
   return <AccountSettingContext.Provider value={values}>{children}</AccountSettingContext.Provider>
