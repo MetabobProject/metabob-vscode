@@ -10,6 +10,11 @@ export interface AccountSettingTypes {
   endorseSuggestionClicked: boolean
   setDiscardSuggestionClicked: Dispatch<SetStateAction<boolean>>
   setEndorseSuggestionClicked: Dispatch<SetStateAction<boolean>>
+  isgenerateClicked: boolean
+  userQuestionAboutSuggestion: string
+  setUserQuestionAboutSuggestion: Dispatch<SetStateAction<string>>
+  isSuggestionClicked: boolean
+  setSuggestionClicked: Dispatch<SetStateAction<boolean>>
 }
 
 export interface MessageType {

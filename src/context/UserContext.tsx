@@ -18,7 +18,14 @@ const defaultProvider: AccountSettingTypes = {
   setDiscardSuggestionClicked: () => Boolean,
 
   // tslint:disable-next-line:no-empty-function
-  setEndorseSuggestionClicked: () => Boolean
+  setEndorseSuggestionClicked: () => Boolean,
+  isgenerateClicked: false,
+  userQuestionAboutSuggestion: '',
+
+  // tslint:disable-next-line:no-empty-function
+  setUserQuestionAboutSuggestion: () => '',
+  isSuggestionClicked: false,
+  setSuggestionClicked: () => Boolean
 }
 
 const AccountSettingContext = createContext(defaultProvider)
@@ -35,19 +42,24 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [generate, setGenerate] = useState('')
   const [discardSuggestionClicked, setDiscardSuggestionClicked] = useState(false)
   const [endorseSuggestionClicked, setEndorseSuggestionClicked] = useState(false)
+  const [isgenerateClicked] = useState(false)
+  const [userQuestionAboutSuggestion, setUserQuestionAboutSuggestion] = useState<string>('')
+  const [isSuggestionClicked, setSuggestionClicked] = useState(false)
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data
-      console.log(payload)
       switch (event.data.type) {
         case 'initData':
           setInitialState({ ...payload })
           break
         case 'onSuggestionClicked:Response':
-          setSuggestion({ ...payload })
+          const { description } = payload
+          setSuggestion(description)
+          setSuggestionClicked(false)
           break
         case 'onSuggestionClickedGPT:Response':
+          setSuggestionClicked(false)
           setSuggestion(payload.choices[0].message.content)
           break
         case 'onGenerateClickedGPT:Response':
@@ -113,7 +125,12 @@ const AccountSettingProvider = ({ children }: Props) => {
     discardSuggestionClicked,
     endorseSuggestionClicked,
     setDiscardSuggestionClicked,
-    setEndorseSuggestionClicked
+    setEndorseSuggestionClicked,
+    isgenerateClicked,
+    userQuestionAboutSuggestion,
+    setUserQuestionAboutSuggestion,
+    isSuggestionClicked,
+    setSuggestionClicked
   }
 
   return <AccountSettingContext.Provider value={values}>{children}</AccountSettingContext.Provider>
