@@ -1,13 +1,16 @@
 import * as React from 'react'
 import { Header } from './Header'
 import './App.css'
+import { AccountSettingProvider } from './context/UserContext'
 
 const App = () => {
   return (
     <>
-      <Header />
-      <PaginatePanel />
-      <ProblemFeedback />
+      <AccountSettingProvider>
+        <Header />
+        <PaginatePanel />
+        <ProblemFeedback />
+      </AccountSettingProvider>
     </>
   )
 }

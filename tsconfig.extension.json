@@ -17,7 +17,8 @@
         "types": []
     },
     "include": [
-        "ext-src"
+        "ext-src",
+        "./src/global.d.ts"
     ],
     "exclude": [
         "node_modules",
