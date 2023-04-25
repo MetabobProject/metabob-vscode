@@ -8,7 +8,9 @@ import { AccountSettingTypes, MessageType } from '../types'
 const defaultProvider: AccountSettingTypes = {
   initialState: {},
   suggestion: '',
-  generate: ''
+  generate: '',
+  showSuggestionPaginatePanel: false,
+  showGeneratePaginatePanel: false
 }
 
 const AccountSettingContext = createContext(defaultProvider)
@@ -19,6 +21,8 @@ type Props = {
 
 const AccountSettingProvider = ({ children }: Props) => {
   const [initialState, setInitialState] = useState('')
+  const [showSuggestionPaginatePanel, setSuggestionPaginatePanel] = useState<boolean>(false)
+  const [showGeneratePaginatePanel, setGeneratePaginatePanel] = useState<boolean>(false)
   const [suggestion, setSuggestion] = useState('')
   const [generate, setGenerate] = useState('')
 
@@ -85,7 +89,9 @@ const AccountSettingProvider = ({ children }: Props) => {
   const values = {
     initialState,
     suggestion,
-    generate
+    generate,
+    showSuggestionPaginatePanel,
+    showGeneratePaginatePanel
   }
 
   return <AccountSettingContext.Provider value={values}>{children}</AccountSettingContext.Provider>
