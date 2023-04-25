@@ -11,6 +11,8 @@ export interface ReactMarkdownProps {
 // tslint:disable-block
 export const ReactMarkdownComponent = ({ text }: ReactMarkdownProps) => {
   
+  
+  const markedDownText = `~~~python\n${text}~~~`
   return (
     <>
       <div className='w-100'>

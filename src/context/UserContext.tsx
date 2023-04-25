@@ -87,7 +87,7 @@ const AccountSettingProvider = ({ children }: Props) => {
             setIsGenerateWithoutQuestionLoading(false)
             setIsRecomendationRegenerateLoading(false)
             setIsGenerateWithQuestionLoading(false)
-            setGenerate(`~~~python\n${recommendation}~~~`)
+            setGenerate(recommendation)
             setIsgenerateClicked(true)
           } else {
             setIsGenerateWithoutQuestionLoading(false)
