@@ -10,14 +10,13 @@ export interface ReactMarkdownProps {
 
 // tslint:disable-block
 export const ReactMarkdownComponent = ({ text }: ReactMarkdownProps) => {
-  
-  
   const markedDownText = `~~~python\n${text}~~~`
+  
   return (
     <>
       <div className='w-100'>
         <ReactMarkdown
-          children={text}
+          children={markedDownText}
           remarkPlugins={[remarkGfm]}
           className="prose"
           components={{
