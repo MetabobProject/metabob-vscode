@@ -12,3 +12,4 @@ vsc-extension-quickstart.md
 .prettierrc
 screenshot.gif
 !media/**
+ext-src/**
