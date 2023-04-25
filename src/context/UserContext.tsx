@@ -36,7 +36,7 @@ type Props = {
 
 const AccountSettingProvider = ({ children }: Props) => {
   const [initialState, setInitialState] = useState('')
-  const [showSuggestionPaginatePanel] = useState<boolean>(false)
+  const [showSuggestionPaginatePanel, setShowSuggestionPaginationPanel] = useState<boolean>(false)
   const [showGeneratePaginatePanel] = useState<boolean>(false)
   const [suggestion, setSuggestion] = useState('')
   const [generate, setGenerate] = useState('')
@@ -56,11 +56,13 @@ const AccountSettingProvider = ({ children }: Props) => {
         case 'onSuggestionClicked:Response':
           const { description } = payload
           setSuggestion(description)
+          setShowSuggestionPaginationPanel(true)
           setSuggestionClicked(false)
           break
         case 'onSuggestionClickedGPT:Response':
           setSuggestionClicked(false)
           setSuggestion(payload.choices[0].message.content)
+          setShowSuggestionPaginationPanel(true)
           break
         case 'onGenerateClickedGPT:Response':
           setGenerate(payload.choices[0].message.content)
@@ -70,6 +72,8 @@ const AccountSettingProvider = ({ children }: Props) => {
         case 'onGenerateClicked:Error':
           break
         case 'onSuggestionClicked:Error':
+          setShowSuggestionPaginationPanel(true)
+          setSuggestionClicked(false)
           break
         case 'onDiscardSuggestionClicked:Success': {
           setDiscardSuggestionClicked(false)

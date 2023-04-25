@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useUser } from './hooks/useUser'
 
 export const QuestionPanel = () => {
@@ -9,10 +9,11 @@ export const QuestionPanel = () => {
     isSuggestionClicked,
     setSuggestionClicked
   } = useUser()
+  const [userQuestion, setUserQuestion] = useState('')
 
   const handleQuestionChange = useCallback(
     (e: any) => {
-      setUserQuestionAboutSuggestion(e.target.value)
+      setUserQuestion(e.target.value)
     },
     [setUserQuestionAboutSuggestion]
   )
@@ -21,15 +22,16 @@ export const QuestionPanel = () => {
     (e: any) => {
       e.preventDefault()
       setSuggestionClicked(true)
+      setUserQuestionAboutSuggestion(userQuestion)
       vscode.postMessage({
         type: 'onSuggestionClicked',
         data: {
-          input: userQuestionAboutSuggestion,
+          input: userQuestion,
           initData: { ...initialState }
         }
       })
     },
-    [userQuestionAboutSuggestion, initialState]
+    [userQuestionAboutSuggestion, initialState, userQuestion]
   )
 
   return (
@@ -42,7 +44,7 @@ export const QuestionPanel = () => {
             placeholder='your question about the problem ?'
             aria-label='your question about the problem ?'
             onChange={handleQuestionChange}
-            value={userQuestionAboutSuggestion}
+            value={userQuestion}
           />
           <button
             className='flex-shrink-0 items-center px-2 py-1 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
