@@ -23,6 +23,8 @@ export interface AccountSettingTypes {
   setIsRecomendationRegenerateLoading: Dispatch<SetStateAction<boolean>>
   isGenerateWithQuestionLoading: boolean
   setIsGenerateWithQuestionLoading: Dispatch<SetStateAction<boolean>>
+  isSuggestionRegenerateLoading: boolean
+  setIsSuggestionRegenerateLoading: Dispatch<SetStateAction<boolean>>
 }
 
 export interface MessageType {

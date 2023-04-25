@@ -33,7 +33,9 @@ const defaultProvider: AccountSettingTypes = {
   isRecomendationRegenerateLoading: false,
   setIsRecomendationRegenerateLoading: () => Boolean,
   isGenerateWithQuestionLoading: false,
-  setIsGenerateWithQuestionLoading: () => Boolean
+  setIsGenerateWithQuestionLoading: () => Boolean,
+  isSuggestionRegenerateLoading: false,
+  setIsSuggestionRegenerateLoading: () => Boolean
 }
 
 const AccountSettingContext = createContext(defaultProvider)
@@ -56,6 +58,7 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [isGenerateWithoutQuestionLoading, setIsGenerateWithoutQuestionLoading] = useState<boolean>(false)
   const [userQuestionAboutRecomendation, setUserQuestionAboutRecomendation] = useState<string>('')
   const [isRecomendationRegenerateLoading, setIsRecomendationRegenerateLoading] = useState<boolean>(false)
+  const [isSuggestionRegenerateLoading, setIsSuggestionRegenerateLoading] = useState<boolean>(false)
   const [isGenerateWithQuestionLoading, setIsGenerateWithQuestionLoading] = useState<boolean>(false)
 
   const handleMessagesFromExtension = useCallback(
@@ -68,11 +71,13 @@ const AccountSettingProvider = ({ children }: Props) => {
         case 'onSuggestionClicked:Response':
           const { description } = payload
           setSuggestion(description)
+          setIsSuggestionRegenerateLoading(false)
           setShowSuggestionPaginationPanel(true)
           setSuggestionClicked(false)
           break
         case 'onSuggestionClickedGPT:Response':
           setSuggestionClicked(false)
+          setIsSuggestionRegenerateLoading(false)
           setSuggestion(payload.choices[0].message.content)
           setShowSuggestionPaginationPanel(true)
           break
@@ -104,6 +109,7 @@ const AccountSettingProvider = ({ children }: Props) => {
           break
         case 'onSuggestionClicked:Error':
           setShowSuggestionPaginationPanel(false)
+          setIsSuggestionRegenerateLoading(false)
           setSuggestionClicked(false)
           break
         case 'onDiscardSuggestionClicked:Success': {
@@ -173,7 +179,9 @@ const AccountSettingProvider = ({ children }: Props) => {
     isRecomendationRegenerateLoading,
     setIsRecomendationRegenerateLoading,
     isGenerateWithQuestionLoading,
-    setIsGenerateWithQuestionLoading
+    setIsGenerateWithQuestionLoading,
+    isSuggestionRegenerateLoading,
+    setIsSuggestionRegenerateLoading
   }
 
   return <AccountSettingContext.Provider value={values}>{children}</AccountSettingContext.Provider>
