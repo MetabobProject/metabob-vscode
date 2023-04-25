@@ -41,7 +41,7 @@ export const QuestionPanel = () => {
           <input
             className='appearance-none bg-transparent border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none'
             type='text'
-            placeholder='your question about the problem ?'
+            placeholder=''
             aria-label='your question about the problem ?'
             onChange={handleQuestionChange}
             value={userQuestion}
