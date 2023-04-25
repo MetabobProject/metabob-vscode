@@ -74,9 +74,13 @@ const AccountSettingProvider = ({ children }: Props) => {
           const { recommendation } = payload
           const adjustedRecomendation: string = recommendation
           adjustedRecomendation.replace("'''", '')
-          setIsGenerateWithoutQuestionLoading(false)
-          setGenerate(`~~~python\n${recommendation}~~~`)
-          setIsgenerateClicked(true)
+          if (adjustedRecomendation !== '') {
+            setIsGenerateWithoutQuestionLoading(false)
+            setGenerate(`~~~python\n${recommendation}~~~`)
+            setIsgenerateClicked(true)
+          } else {
+            setIsGenerateWithoutQuestionLoading(false)
+          }
           break
         case 'onGenerateClicked:Error':
           setGenerate('')

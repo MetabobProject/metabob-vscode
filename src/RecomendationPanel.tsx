@@ -12,10 +12,10 @@ export const RecomendationPanel = () => {
     generate
   } = useUser()
   const [userQuestionAboutRecomendation, setUserQuestionAboutRecomendation] = useState<string>('')
-  console.log('isGenerateWithoutQuestionLoading', isGenerateWithoutQuestionLoading)
   const handleGenerateClickWithoutQuestion = useCallback(
     (e: any) => {
       e.preventDefault()
+      setIsGenerateWithoutQuestionLoading(true)
       vscode.postMessage({
         type: 'onGenerateClicked',
         data: {
@@ -37,7 +37,6 @@ export const RecomendationPanel = () => {
   const handleGenerateRecomendationWithQuestion = useCallback(
     (e: any) => {
       e.preventDefault()
-      setIsGenerateWithoutQuestionLoading(true)
       vscode.postMessage({
         type: 'onGenerateClicked',
         data: {
