@@ -42,7 +42,7 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [generate, setGenerate] = useState('')
   const [discardSuggestionClicked, setDiscardSuggestionClicked] = useState(false)
   const [endorseSuggestionClicked, setEndorseSuggestionClicked] = useState(false)
-  const [isgenerateClicked] = useState(false)
+  const [isgenerateClicked, setIsgenerateClicked] = useState(false)
   const [userQuestionAboutSuggestion, setUserQuestionAboutSuggestion] = useState<string>('')
   const [isSuggestionClicked, setSuggestionClicked] = useState(false)
 
@@ -68,8 +68,10 @@ const AccountSettingProvider = ({ children }: Props) => {
           setGenerate(payload.choices[0].message.content)
           break
         case 'onGenerateClicked:Response':
+          setIsgenerateClicked(true)
           break
         case 'onGenerateClicked:Error':
+          setIsgenerateClicked(false)
           break
         case 'onSuggestionClicked:Error':
           setShowSuggestionPaginationPanel(false)
