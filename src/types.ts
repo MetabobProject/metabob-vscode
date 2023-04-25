@@ -21,6 +21,8 @@ export interface AccountSettingTypes {
   setUserQuestionAboutRecomendation: Dispatch<SetStateAction<string>>
   isRecomendationRegenerateLoading: boolean
   setIsRecomendationRegenerateLoading: Dispatch<SetStateAction<boolean>>
+  isGenerateWithQuestionLoading: boolean
+  setIsGenerateWithQuestionLoading: Dispatch<SetStateAction<boolean>>
 }
 
 export interface MessageType {

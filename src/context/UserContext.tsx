@@ -31,7 +31,9 @@ const defaultProvider: AccountSettingTypes = {
   userQuestionAboutRecomendation: '',
   setUserQuestionAboutRecomendation: () => '',
   isRecomendationRegenerateLoading: false,
-  setIsRecomendationRegenerateLoading: () => Boolean
+  setIsRecomendationRegenerateLoading: () => Boolean,
+  isGenerateWithQuestionLoading: false,
+  setIsGenerateWithQuestionLoading: () => Boolean
 }
 
 const AccountSettingContext = createContext(defaultProvider)
@@ -54,6 +56,7 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [isGenerateWithoutQuestionLoading, setIsGenerateWithoutQuestionLoading] = useState<boolean>(false)
   const [userQuestionAboutRecomendation, setUserQuestionAboutRecomendation] = useState<string>('')
   const [isRecomendationRegenerateLoading, setIsRecomendationRegenerateLoading] = useState<boolean>(false)
+  const [isGenerateWithQuestionLoading, setIsGenerateWithQuestionLoading] = useState<boolean>(false)
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
@@ -83,10 +86,12 @@ const AccountSettingProvider = ({ children }: Props) => {
           if (adjustedRecomendation !== '') {
             setIsGenerateWithoutQuestionLoading(false)
             setIsRecomendationRegenerateLoading(false)
+            setIsGenerateWithQuestionLoading(false)
             setGenerate(`~~~python\n${recommendation}~~~`)
             setIsgenerateClicked(true)
           } else {
             setIsGenerateWithoutQuestionLoading(false)
+            setIsGenerateWithQuestionLoading(false)
             setIsRecomendationRegenerateLoading(false)
           }
           break
@@ -94,6 +99,7 @@ const AccountSettingProvider = ({ children }: Props) => {
           setGenerate('')
           setIsGenerateWithoutQuestionLoading(false)
           setIsgenerateClicked(false)
+          setIsGenerateWithQuestionLoading(false)
           setIsRecomendationRegenerateLoading(false)
           break
         case 'onSuggestionClicked:Error':
@@ -165,7 +171,9 @@ const AccountSettingProvider = ({ children }: Props) => {
     userQuestionAboutRecomendation,
     setUserQuestionAboutRecomendation,
     isRecomendationRegenerateLoading,
-    setIsRecomendationRegenerateLoading
+    setIsRecomendationRegenerateLoading,
+    isGenerateWithQuestionLoading,
+    setIsGenerateWithQuestionLoading
   }
 
   return <AccountSettingContext.Provider value={values}>{children}</AccountSettingContext.Provider>
