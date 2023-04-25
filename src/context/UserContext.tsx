@@ -72,7 +72,7 @@ const AccountSettingProvider = ({ children }: Props) => {
         case 'onGenerateClicked:Error':
           break
         case 'onSuggestionClicked:Error':
-          setShowSuggestionPaginationPanel(true)
+          setShowSuggestionPaginationPanel(false)
           setSuggestionClicked(false)
           break
         case 'onDiscardSuggestionClicked:Success': {

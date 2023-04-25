@@ -9,13 +9,13 @@ export const QuestionPanel = () => {
     isSuggestionClicked,
     setSuggestionClicked
   } = useUser()
-  const [userQuestion, setUserQuestion] = useState('')
+  const [userQuestion, setUserQuestion] = useState<string>('')
 
   const handleQuestionChange = useCallback(
     (e: any) => {
       setUserQuestion(e.target.value)
     },
-    [setUserQuestionAboutSuggestion]
+    [setUserQuestion]
   )
 
   const handleSuggestionClick = useCallback(
