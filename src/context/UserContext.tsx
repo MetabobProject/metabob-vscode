@@ -33,10 +33,10 @@ const AccountSettingProvider = ({ children }: Props) => {
           setSuggestion({ ...payload })
           break
         case 'onSuggestionClickedGPT:Response':
-          const gptResponse = payload.choices[0].message.content
-          setSuggestion(gptResponse)
+          setSuggestion(payload.choices[0].message.content)
           break
         case 'onGenerateClickedGPT:Response':
+          setGenerate(payload.choices[0].message.content)
           break
         case 'onGenerateClicked:Response':
           break
