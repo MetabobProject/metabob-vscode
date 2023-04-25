@@ -69,7 +69,7 @@ export const ProblemFeedback = () => {
             ) : (
               <></>
             )}
-            {discardSuggestionClicked ? <>Discarding...</> : <>Discard</>}
+            {discardSuggestionClicked ? <>discarding...</> : <>discard</>}
           </button>
           <button
             onClick={handleEndorseClick}
@@ -98,7 +98,7 @@ export const ProblemFeedback = () => {
             ) : (
               <></>
             )}
-            {endorseSuggestionClicked ? <>Endorsing...</> : <>Endorse</>}
+            {endorseSuggestionClicked ? <>endoring...</> : <>endorse</>}
           </button>
         </div>
       </div>
