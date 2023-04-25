@@ -155,7 +155,8 @@
     "package": "vsce package --no-yarn",
     "vscode:prepublish": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json",
     "start": "react-scripts start",
-    "build": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json"
+    "build": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json",
+    "watch:webview": "node ./scripts/build-non-split.js && tsc -watch -p tsconfig.extension.json"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",

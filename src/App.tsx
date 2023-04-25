@@ -6,16 +6,19 @@ import { SuggestionPaginatePanel } from './SuggestionPaginatePanel'
 import { ProblemFeedback } from './ProblemFeedback'
 import { QuestionPanel } from './QuestionPanel'
 import { RecomendationPanel } from './RecomendationPanel'
+import { Layout } from './Layout'
 
 const App = () => {
   return (
     <>
       <AccountSettingProvider>
-        <Header />
-        <SuggestionPaginatePanel />
-        <ProblemFeedback />
-        <QuestionPanel />
-        <RecomendationPanel />
+        <Layout>
+          <Header />
+          <SuggestionPaginatePanel />
+          <ProblemFeedback />
+          <QuestionPanel />
+          <RecomendationPanel />
+        </Layout>
       </AccountSettingProvider>
     </>
   )
