@@ -1,3 +1,3 @@
-const QuestionPanel = () => {
+export const QuestionPanel = () => {
   return <></>
 }

@@ -25,6 +25,7 @@ const AccountSettingProvider = ({ children }: Props) => {
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data
+      console.log(payload)
       switch (event.data.type) {
         case 'initData':
           setInitialState({ ...payload })
@@ -57,6 +58,20 @@ const AccountSettingProvider = ({ children }: Props) => {
     [setInitialState, setSuggestion]
   )
 
+  // get initial state
+  useEffect(() => {
+    vscode.postMessage({ type: 'getInitData' })
+
+    const interval = setInterval(() => {
+      vscode.postMessage({ type: 'getInitData' })
+    }, 1000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [])
+
+  // handle Incoming Messages
   useEffect(() => {
     window.addEventListener('message', (event: MessageEvent<MessageType>) => {
       handleMessagesFromExtension(event)

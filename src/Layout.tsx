@@ -1,3 +1,3 @@
-const Layout = () => {
+export const Layout = () => {
   return <></>
 }

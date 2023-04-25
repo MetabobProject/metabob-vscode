@@ -1,3 +1,3 @@
-const RecomendationPanel = () => {
+export const RecomendationPanel = () => {
   return <></>
 }

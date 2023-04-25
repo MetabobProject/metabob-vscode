@@ -1,3 +1,3 @@
-const ProblemFeedback = () => {
+export const ProblemFeedback = () => {
   return <></>
 }
