@@ -68,9 +68,11 @@ const AccountSettingProvider = ({ children }: Props) => {
           setGenerate(payload.choices[0].message.content)
           break
         case 'onGenerateClicked:Response':
+          setGenerate(payload)
           setIsgenerateClicked(true)
           break
         case 'onGenerateClicked:Error':
+          setGenerate('')
           setIsgenerateClicked(false)
           break
         case 'onSuggestionClicked:Error':
