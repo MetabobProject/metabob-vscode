@@ -2,6 +2,7 @@ import { useUser } from './hooks/useUser'
 
 export const RecomendationPanel = () => {
   const { isgenerateClicked } = useUser()
+
   return (
     <>
       <>
