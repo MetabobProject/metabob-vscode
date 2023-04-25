@@ -1,7 +1,18 @@
+import { useCallback } from 'react'
 import { useUser } from './hooks/useUser'
 
 export const SuggestionPaginatePanel = () => {
-  const { showSuggestionPaginatePanel } = useUser()
+  const { showSuggestionPaginatePanel, suggestion, initialState, userQuestionAboutSuggestion } = useUser()
+
+  const handleSuggestionRegenerate = useCallback(() => {
+    vscode.postMessage({
+      type: 'onSuggestionClicked',
+      data: {
+        input: userQuestionAboutSuggestion,
+        initData: { ...initialState }
+      }
+    })
+  }, [suggestion, initialState])
 
   if (showSuggestionPaginatePanel) {
     return (
@@ -23,7 +34,10 @@ export const SuggestionPaginatePanel = () => {
                 ></path>
               </svg>
             </button>
-            <button className='inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'>
+            <button
+              onClick={handleSuggestionRegenerate}
+              className='inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+            >
               regenerate
             </button>
             <button className='inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 border-0 border-l border-gray-700 rounded-r hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'>

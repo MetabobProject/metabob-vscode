@@ -27,7 +27,11 @@ const defaultProvider: AccountSettingTypes = {
   isSuggestionClicked: false,
   setSuggestionClicked: () => Boolean,
   isGenerateWithoutQuestionLoading: false,
-  setIsGenerateWithoutQuestionLoading: () => Boolean
+  setIsGenerateWithoutQuestionLoading: () => Boolean,
+  userQuestionAboutRecomendation: '',
+  setUserQuestionAboutRecomendation: () => '',
+  isRecomendationRegenerateLoading: false,
+  setIsRecomendationRegenerateLoading: () => Boolean
 }
 
 const AccountSettingContext = createContext(defaultProvider)
@@ -48,6 +52,8 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [userQuestionAboutSuggestion, setUserQuestionAboutSuggestion] = useState<string>('')
   const [isSuggestionClicked, setSuggestionClicked] = useState(false)
   const [isGenerateWithoutQuestionLoading, setIsGenerateWithoutQuestionLoading] = useState<boolean>(false)
+  const [userQuestionAboutRecomendation, setUserQuestionAboutRecomendation] = useState<string>('')
+  const [isRecomendationRegenerateLoading, setIsRecomendationRegenerateLoading] = useState<boolean>(false)
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
@@ -76,16 +82,19 @@ const AccountSettingProvider = ({ children }: Props) => {
           adjustedRecomendation.replace("'''", '')
           if (adjustedRecomendation !== '') {
             setIsGenerateWithoutQuestionLoading(false)
+            setIsRecomendationRegenerateLoading(false)
             setGenerate(`~~~python\n${recommendation}~~~`)
             setIsgenerateClicked(true)
           } else {
             setIsGenerateWithoutQuestionLoading(false)
+            setIsRecomendationRegenerateLoading(false)
           }
           break
         case 'onGenerateClicked:Error':
           setGenerate('')
           setIsGenerateWithoutQuestionLoading(false)
           setIsgenerateClicked(false)
+          setIsRecomendationRegenerateLoading(false)
           break
         case 'onSuggestionClicked:Error':
           setShowSuggestionPaginationPanel(false)
@@ -152,7 +161,11 @@ const AccountSettingProvider = ({ children }: Props) => {
     isSuggestionClicked,
     setSuggestionClicked,
     isGenerateWithoutQuestionLoading,
-    setIsGenerateWithoutQuestionLoading
+    setIsGenerateWithoutQuestionLoading,
+    userQuestionAboutRecomendation,
+    setUserQuestionAboutRecomendation,
+    isRecomendationRegenerateLoading,
+    setIsRecomendationRegenerateLoading
   }
 
   return <AccountSettingContext.Provider value={values}>{children}</AccountSettingContext.Provider>
