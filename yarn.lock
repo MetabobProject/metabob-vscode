@@ -8991,6 +8991,11 @@ react-syntax-highlighter@^15.5.0:
     prismjs "^1.27.0"
     refractor "^3.6.0"
 
+react-use-pagination@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/react-use-pagination/-/react-use-pagination-2.0.1.tgz#debc6322cd3f14a4cdf082d913f7736d5cbed170"
+  integrity sha512-bo7vI2oZ/+PJJozN7DLWPkewrULLoHb8a6WO3dGudJfEKnj8BVZVbJPkvn5jtydhJ5xi0t0W7xI06XlWUe8Jbw==
+
 react@^16.3.2:
   version "16.14.0"
   resolved "https://registry.yarnpkg.com/react/-/react-16.14.0.tgz#94d776ddd0aaa37da3eda8fc5b6b18a4c9a3114d"

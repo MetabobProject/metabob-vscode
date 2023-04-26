@@ -2,13 +2,7 @@ import { useCallback, useState } from 'react'
 import { useUser } from './hooks/useUser'
 
 export const QuestionPanel = () => {
-  const {
-    initialState,
-    userQuestionAboutSuggestion,
-    setUserQuestionAboutSuggestion,
-    isSuggestionClicked,
-    setSuggestionClicked
-  } = useUser()
+  const { initialState, setUserQuestionAboutSuggestion, isSuggestionClicked, setSuggestionClicked } = useUser()
   const [userQuestion, setUserQuestion] = useState<string>('')
 
   const handleQuestionChange = useCallback(
@@ -31,7 +25,7 @@ export const QuestionPanel = () => {
         }
       })
     },
-    [userQuestionAboutSuggestion, initialState, userQuestion]
+    [setUserQuestionAboutSuggestion, initialState, userQuestion]
   )
 
   return (

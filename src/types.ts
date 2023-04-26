@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction } from 'react'
 export interface AccountSettingTypes {
   initialState: any
   suggestion: string
+  setSuggestion: Dispatch<SetStateAction<string>>
   generate: string
   showSuggestionPaginatePanel: boolean
   showGeneratePaginatePanel: boolean
@@ -25,6 +26,8 @@ export interface AccountSettingTypes {
   setIsGenerateWithQuestionLoading: Dispatch<SetStateAction<boolean>>
   isSuggestionRegenerateLoading: boolean
   setIsSuggestionRegenerateLoading: Dispatch<SetStateAction<boolean>>
+  suggestionPaginationRegenerate: Array<any>
+  setSuggestionPaginationRegenerate: Dispatch<SetStateAction<Array<any>>>
 }
 
 export interface MessageType {
