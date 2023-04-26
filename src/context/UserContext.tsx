@@ -10,6 +10,7 @@ const defaultProvider: AccountSettingTypes = {
   suggestion: '',
   setSuggestion: () => '',
   generate: '',
+  setGenerate: () => '',
   showSuggestionPaginatePanel: false,
   showGeneratePaginatePanel: false,
   discardSuggestionClicked: false,
@@ -38,7 +39,9 @@ const defaultProvider: AccountSettingTypes = {
   isSuggestionRegenerateLoading: false,
   setIsSuggestionRegenerateLoading: () => Boolean,
   suggestionPaginationRegenerate: [],
-  setSuggestionPaginationRegenerate: () => []
+  setSuggestionPaginationRegenerate: () => [],
+  generatePaginationRegenerate: [],
+  setGeneratePaginationRegenerate: () => []
 }
 
 const AccountSettingContext = createContext(defaultProvider)
@@ -64,6 +67,7 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [isSuggestionRegenerateLoading, setIsSuggestionRegenerateLoading] = useState<boolean>(false)
   const [isGenerateWithQuestionLoading, setIsGenerateWithQuestionLoading] = useState<boolean>(false)
   const [suggestionPaginationRegenerate, setSuggestionPaginationRegenerate] = useState<Array<any>>([])
+  const [generatePaginationRegenerate, setGeneratePaginationRegenerate] = useState<Array<string>>([])
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
@@ -127,6 +131,9 @@ const AccountSettingProvider = ({ children }: Props) => {
             setIsRecomendationRegenerateLoading(false)
             setIsGenerateWithQuestionLoading(false)
             setGenerate(recommendation)
+            setGeneratePaginationRegenerate(previous => {
+              return [...previous, `${recommendation}`]
+            })
             setIsgenerateClicked(true)
           } else {
             setIsGenerateWithoutQuestionLoading(false)
@@ -211,6 +218,7 @@ const AccountSettingProvider = ({ children }: Props) => {
     suggestion,
     setSuggestion,
     generate,
+    setGenerate,
     showSuggestionPaginatePanel,
     showGeneratePaginatePanel,
     discardSuggestionClicked,
@@ -233,7 +241,9 @@ const AccountSettingProvider = ({ children }: Props) => {
     isSuggestionRegenerateLoading,
     setIsSuggestionRegenerateLoading,
     suggestionPaginationRegenerate,
-    setSuggestionPaginationRegenerate
+    setSuggestionPaginationRegenerate,
+    generatePaginationRegenerate,
+    setGeneratePaginationRegenerate
   }
 
   return <AccountSettingContext.Provider value={values}>{children}</AccountSettingContext.Provider>

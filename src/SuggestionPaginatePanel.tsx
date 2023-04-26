@@ -31,19 +31,27 @@ export const SuggestionPaginatePanel = () => {
     })
   }, [suggestion, initialState])
 
-  const handleBackPaginateChange = useCallback(() => {
-    setPreviousPage()
-    const item = suggestionPaginationRegenerate[currentPage - 1]
-    setSuggestion(item?.description || '')
-    setUserQuestionAboutSuggestion(item?.question || '')
-  }, [currentPage, setSuggestion, setUserQuestionAboutSuggestion, setPreviousPage])
+  const handleBackPaginateChange = useCallback(
+    (e: any) => {
+      e.preventDefault()
+      setPreviousPage()
+      const item = suggestionPaginationRegenerate[currentPage - 1]
+      setSuggestion(item?.description || '')
+      setUserQuestionAboutSuggestion(item?.question || '')
+    },
+    [currentPage, setSuggestion, setUserQuestionAboutSuggestion, setPreviousPage]
+  )
 
-  const handleNextPaginateChange = useCallback(() => {
-    setNextPage()
-    const item = suggestionPaginationRegenerate[currentPage + 1]
-    setSuggestion(item?.description || '')
-    setUserQuestionAboutSuggestion(item?.question || '')
-  }, [currentPage, setSuggestion, setUserQuestionAboutSuggestion, setNextPage])
+  const handleNextPaginateChange = useCallback(
+    (e: any) => {
+      e.preventDefault()
+      setNextPage()
+      const item = suggestionPaginationRegenerate[currentPage + 1]
+      setSuggestion(item?.description || '')
+      setUserQuestionAboutSuggestion(item?.question || '')
+    },
+    [currentPage, setSuggestion, setUserQuestionAboutSuggestion, setNextPage]
+  )
 
   if (showSuggestionPaginatePanel) {
     return (

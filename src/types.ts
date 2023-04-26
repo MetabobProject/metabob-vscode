@@ -5,6 +5,7 @@ export interface AccountSettingTypes {
   suggestion: string
   setSuggestion: Dispatch<SetStateAction<string>>
   generate: string
+  setGenerate: Dispatch<SetStateAction<string>>
   showSuggestionPaginatePanel: boolean
   showGeneratePaginatePanel: boolean
   discardSuggestionClicked: boolean
@@ -28,6 +29,8 @@ export interface AccountSettingTypes {
   setIsSuggestionRegenerateLoading: Dispatch<SetStateAction<boolean>>
   suggestionPaginationRegenerate: Array<any>
   setSuggestionPaginationRegenerate: Dispatch<SetStateAction<Array<any>>>
+  generatePaginationRegenerate: Array<string>
+  setGeneratePaginationRegenerate: Dispatch<SetStateAction<Array<any>>>
 }
 
 export interface MessageType {

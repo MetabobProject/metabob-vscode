@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useUser } from './hooks/useUser'
+import { usePagination } from 'react-use-pagination'
 
 export const GeneratePaginationPanel = () => {
   const {
@@ -8,8 +9,16 @@ export const GeneratePaginationPanel = () => {
     userQuestionAboutRecomendation,
     isRecomendationRegenerateLoading,
     setIsRecomendationRegenerateLoading,
-    generate
+    generate,
+    generatePaginationRegenerate,
+    setGenerate
   } = useUser()
+
+  const { currentPage, setNextPage, setPreviousPage, nextEnabled, previousEnabled } = usePagination({
+    totalItems: generatePaginationRegenerate.length,
+    initialPage: 0,
+    initialPageSize: 1
+  })
 
   const handleRecomendationRegenerate = useCallback(() => {
     setIsRecomendationRegenerateLoading(true)
@@ -32,12 +41,39 @@ export const GeneratePaginationPanel = () => {
     })
   }, [generate, initialState])
 
+  const handleBackPaginateChange = useCallback(
+    (e: any) => {
+      e.preventDefault()
+      const gen = generatePaginationRegenerate[currentPage + -1]
+      setGenerate(gen)
+      setPreviousPage()
+    },
+    [currentPage, setPreviousPage]
+  )
+
+  const handleNextPaginateChange = useCallback(
+    (e: any) => {
+      e.preventDefault()
+      const gen = generatePaginationRegenerate[currentPage + 1]
+      setGenerate(gen)
+      setNextPage()
+    },
+    [currentPage, setNextPage]
+  )
+
   if (isgenerateClicked) {
     return (
       <>
         <div className='flex flex-row items-center'>
           <div className='inline-flex mt-2 xs:mt-0'>
-            <button className='inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'>
+            <button
+              onClick={handleBackPaginateChange}
+              className={
+                !previousEnabled
+                  ? `opacity-25 cursor-not-allowed inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white`
+                  : `inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white`
+              }
+            >
               <svg
                 aria-hidden='true'
                 className='w-5 h-5 mr-2'
@@ -80,7 +116,15 @@ export const GeneratePaginationPanel = () => {
                 <>regenerate</>
               )}
             </button>
-            <button className='inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 border-0 border-l border-gray-700 rounded-r hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'>
+            <button
+              disabled={!nextEnabled}
+              onClick={handleNextPaginateChange}
+              className={
+                !nextEnabled
+                  ? `opacity-25 cursor-not-allowed inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white`
+                  : `inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white`
+              }
+            >
               <svg
                 aria-hidden='true'
                 className='w-5 h-5 ml-2'
