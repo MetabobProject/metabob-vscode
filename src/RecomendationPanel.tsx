@@ -103,7 +103,7 @@ export const RecomendationPanel = () => {
                 <input
                   className='appearance-none bg-transparent border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none'
                   type='text'
-                  placeholder=''
+                  placeholder='Enter text here'
                   aria-label='your question about recomendation?'
                   onChange={handleQuestionChange}
                   value={userQuestionAboutRecomendation}
