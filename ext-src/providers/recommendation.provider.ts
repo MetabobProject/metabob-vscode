@@ -43,6 +43,11 @@ export class RecommendationWebView implements WebviewViewProvider {
     return state?.value
   }
 
+  updateState(payload: any) {
+    const state = new currentQuestionState(this.extensionContext).update(() => payload)
+    return state
+  }
+
   refresh(): void {
     this.onDidChangeTreeData.fire(null)
     if (this._view) {
@@ -294,6 +299,11 @@ export class RecommendationWebView implements WebviewViewProvider {
               type: 'initData',
               data: { ...state }
             })
+            break
+          }
+          case 'initData:FixRecieved': {
+            const initData = data?.initData
+            this.updateState({ ...initData, isFix: false })
             break
           }
           case 'onGenerateClicked': {

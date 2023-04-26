@@ -10,9 +10,11 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceRoot}"
 			],
-			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outDir": "${workspaceRoot}/ext-src"
+			"outFiles": [
+				"${workspaceFolder}/build/**/*.js",
+				"!**/node_modules/**"
+			]
 		}
 	]
 }

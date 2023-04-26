@@ -36,7 +36,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?
               isDiscarded: true
             }
             const valueKeys = Object.keys(value)
-            const results = []
+            const results: any[] = []
 
             for (const k in valueKeys) {
               const p = value[valueKeys[k]]
