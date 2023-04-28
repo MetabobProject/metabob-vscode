@@ -17,18 +17,6 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
       editor.document.lineAt(vulnerability.endLine - 1).text.length
     )
 
-    const hoverDiscardMessageURI = encodeURI(
-      JSON.stringify({
-        id: vulnerability.id,
-        path: vulnerability.path
-      })
-    )
-    const endorseSuggestionURI = encodeURI(
-      JSON.stringify({
-        id: vulnerability.id
-      })
-    )
-
     const viewDescriptionURI = encodeURI(
       JSON.stringify({
         path: vulnerability.path,
@@ -39,10 +27,9 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
     )
 
     const hoverDiscardMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI})**`
-    const hoverEndorseMessage = `**[Details](command:metabob.showDetailSuggestion?${viewDescriptionURI})**`
-    const hoverViewDescriptionMessage = `**[Ask Question](command:metabob.focusRecomened?${viewDescriptionURI})**`
+    const hoverViewDescriptionMessage = `**[More Details](command:metabob.focusRecomened?${viewDescriptionURI})**`
     const hoverMessage = new vscode.MarkdownString(
-      `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverDiscardMessage} |\r${hoverEndorseMessage} |\r${hoverViewDescriptionMessage}`
+      `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverDiscardMessage} |\r${hoverViewDescriptionMessage}`
     )
     hoverMessage.isTrusted = true
 
