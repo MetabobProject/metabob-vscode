@@ -87,6 +87,7 @@ const AccountSettingProvider = ({ children }: Props) => {
             setShowSuggestionPaginationPanel(false)
             setUserQuestionAboutRecomendation('')
             setUserQuestionAboutSuggestion('')
+            setIsgenerateClicked(false)
           }
 
           if (payload.isFix === true) {
