@@ -12,7 +12,8 @@ export function activateFocusRecomendCommand(context: vscode.ExtensionContext, _
       path: args.path,
       id: args.id,
       vuln: args.vuln,
-      isFix: false
+      isFix: false,
+      isReset: true
     })
     vscode.commands.executeCommand('recommendation-panel-webview.focus')
   }

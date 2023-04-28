@@ -74,6 +74,21 @@ const AccountSettingProvider = ({ children }: Props) => {
       const payload = event.data.data
       switch (event.data.type) {
         case 'initData':
+          if (payload.isReset === true) {
+            vscode.postMessage({
+              type: 'initData:ResetRecieved',
+              data: {
+                input: userQuestionAboutRecomendation,
+                initData: { ...payload, isReset: false }
+              }
+            })
+            setGenerate('')
+            setSuggestion('')
+            setShowSuggestionPaginationPanel(false)
+            setUserQuestionAboutRecomendation('')
+            setUserQuestionAboutSuggestion('')
+          }
+
           if (payload.isFix === true) {
             vscode.postMessage({
               type: 'initData:FixRecieved',

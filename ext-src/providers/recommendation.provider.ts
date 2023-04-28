@@ -260,7 +260,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
     const startLine = initData.vuln?.startLine
     const endLine = initData.vuln?.endLine
-    const comment = `${input.replace('```', '').replace('\n', '\\n')}`
+    const comment = `${input.replace('```', '')}`
 
     if (startLine && endLine && initData.vuln) {
       const data = initData.vuln
@@ -304,6 +304,11 @@ export class RecommendationWebView implements WebviewViewProvider {
           case 'initData:FixRecieved': {
             const initData = data?.initData
             this.updateState({ ...initData, isFix: false })
+            break
+          }
+          case 'initData:ResetRecieved': {
+            const initData = data?.initData
+            this.updateState({ ...initData, isReset: false })
             break
           }
           case 'onGenerateClicked': {

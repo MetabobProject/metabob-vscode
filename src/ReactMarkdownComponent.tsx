@@ -11,18 +11,18 @@ export interface ReactMarkdownProps {
 // tslint:disable-block
 export const ReactMarkdownComponent = ({ text }: ReactMarkdownProps) => {
   const markedDownText = `~~~python\n${text}~~~`
-  
+
   return (
     <>
       <div className='w-100'>
         <ReactMarkdown
           children={markedDownText}
           remarkPlugins={[remarkGfm]}
-          className="prose"
+          className='prose'
           components={{
             code({ inline, className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || '')
-              
+
               return !inline && match ? (
                 <SyntaxHighlighter
                   {...props}
