@@ -1,0 +1,49 @@
+name: Pull Request Template
+description: Template for creating a new pull request
+title: "[PR]: "
+labels: [pull_request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for submitting a pull request to the Metabob project! Please fill out the following information to help us review and merge your changes.
+
+  - type: textarea
+    id: pr-description
+    attributes:
+      label: Pull Request Description
+      description: Provide a clear and concise description of the changes in this pull request.
+      placeholder: Enter your pull request description here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related Issues
+      description: List any related issues or feature requests that this pull request addresses.
+      placeholder: Enter related issues here.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please ensure that you have completed the following before submitting your pull request.
+      options:
+        - label: I have read the [Contributing Guidelines](CONTRIBUTING.md).
+        - label: My changes adhere to the project's code guidelines and structure.
+        - label: I have updated the documentation, if necessary.
+        - label: I have added tests to cover my changes, if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-notes
+    attributes:
+      label: Additional Notes
+      description: Provide any additional information or context related to your pull request.
+      placeholder: Enter any additional notes here.
+    validations:
+      required: false

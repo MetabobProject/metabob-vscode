@@ -1,0 +1,24 @@
+name: Feature Request
+description: Suggest an improvement
+title: "[Feat]: "
+labels: ["Feat", "Pending"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the feature and the expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reasoning-and-benefits
+    attributes:
+      label: Reasoning
+      description: Describe why this feature is needed and the problem it solves
+    validations:
+      required: true
+  - type: textarea
+    id: supplementary-information
+    attributes:
+      label: Additional Information
+      description: Include any relevant information here
