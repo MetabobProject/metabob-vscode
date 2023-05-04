@@ -1,0 +1,22 @@
+name: Bug Report
+description: Report a Bug
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the intended behavior and the actual behavior, 
+    validations:
+      required: true
+  - type: textarea
+    id: supplementary-logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output.
+      render: shell
