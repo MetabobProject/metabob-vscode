@@ -8,7 +8,7 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
   const sessionState = new SessionState(context)
   const apiKey = getAPIConfig()
   const payload: CreateSessionRequest = {
-    apiKey: apiKey || '123-123-123-123-123'
+    apiKey: apiKey || ''
   }
   const sessionToken = sessionState.get()
   if (sessionToken) {
