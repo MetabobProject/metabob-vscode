@@ -4,6 +4,7 @@ import { SessionState } from '../store/session.state'
 import { handleDocumentAnalyze } from '../helpers/HandleDocumentAnalyze'
 import { AnalyzeState } from '../store/analyze.state'
 import { CONSTANTS } from '../constants'
+import { SubmitRepresentationResponse } from '../types'
 
 export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
   const command = CONSTANTS.analyzeDocumentCommand
@@ -21,28 +22,30 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
       const sessionState = new SessionState(context).get()
       const analyzeState = new AnalyzeState(context)
       let isInQueue = false
+      let inflightJobId: string | undefined;
 
       if (sessionState) {
-        Util.withProgress<string>(
+        Util.withProgress<SubmitRepresentationResponse>(
           handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
           CONSTANTS.analyzeCommandProgressMessage
         ).then(response => {
-          if (response === 'in-queue') {
+          if (response.status === 'pending' || response.status === 'running') {
             isInQueue = true
+            inflightJobId = response.jobId;
           }
         })
 
         if (isInQueue) {
-          Util.withProgress<string>(
-            handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
+          Util.withProgress<SubmitRepresentationResponse>(
+            handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState, inflightJobId),
             CONSTANTS.analyzeCommandQueueMessage
           ).then(response => {
-            if (response === 'in-queue') {
-              isInQueue = true
-            } else if (response === 'success') {
+            if (response.status === 'failed') {
+              isInQueue = false
+            } else if (response.status === 'complete') {
               isInQueue = false
             } else {
-              isInQueue = false
+              isInQueue = true
             }
           })
         }
