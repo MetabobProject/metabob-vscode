@@ -43,7 +43,7 @@ Out of the box, Metabob uses a tuned version of Meta AI's OPT model to generate 
 5. On the pop-up box, click **_"Fix"_** to open Metabob's extension panel to view more details about the problem and automatically generate a code recommendation for a fix **OR** click **_"More Details"_** to open the extension panel to just view more details about the problem  
 ![problem-pop-up-commands](docs/img/docs-popup-commands.png)
 ​
-6. You can **_"discard"_** the problem if you think it is invalid or unuseful. You can **_"endorse"_** the problem if you think it is valid or useful  
+6. You can **_"discard"_** the problem if you think it is invalid or useless. You can **_"endorse"_** the problem if you think it is valid or useful  
 ![discard-or-endorse](docs/img/docs-discard-endorse.png)
 ​
 7. Ask questions about the problem description or pass in more context by using the text field below the problem description and clicking **_"ask"_** after  

@@ -55,7 +55,7 @@ export const RecomendationPanel = () => {
     <>
       <div className="className='w-full'">
         <div className='flex flex-wrap my-3 flex-row mx-auto justify-between'>
-          <span className='font-bold text-clifford text-1xl transition duration-300 antialiased'>Recomendation</span>
+          <span className='font-bold text-clifford text-1xl transition duration-300 antialiased'>Recommendation</span>
           {!isgenerateClicked ? (
             <>
               <span className='order-last'>
@@ -104,7 +104,7 @@ export const RecomendationPanel = () => {
                   className='appearance-none bg-transparent border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none'
                   type='text'
                   placeholder='Enter text here'
-                  aria-label='your question about recomendation?'
+                  aria-label='your question about recommendation?'
                   onChange={handleQuestionChange}
                   value={userQuestionAboutRecomendation}
                 />
