@@ -3,10 +3,10 @@ export const CONSTANTS = {
   sessionKey: '@metabob/sessionToken',
   apiKey: '@metabob/apiKey',
   analyze: '@metabob/analyze',
-  recomendations: '@metabob/recomendations',
+  recommendations: '@metabob/recommendations',
   currentQuestion: '@metabob/currentquestion',
 
-  // Command Registeration String
+  // Command Registration String
   analyzeDocumentCommand: 'metabob.analyzeDocument',
   discardSuggestionCommand: 'metabob.discardSuggestion',
   endorseSuggestionCommand: 'metabob.endorseSuggestion',

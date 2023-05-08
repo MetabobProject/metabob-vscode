@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { CONSTANTS } from '../constants'
 import { ExtensionState, ExtensionStateValue } from './base.state'
 
-// API Keys Global state, that is updated whenever the user changes config of the Extesnion.
+// API Keys Global state, that is updated whenever the user changes config of the Extension.
 export class ApiKeyState extends ExtensionState<string> {
   constructor(context: vscode.ExtensionContext) {
     super(context, CONSTANTS.apiKey)

@@ -11,14 +11,14 @@ export type IRecomendationState = [
     endLine?: number
     category?: string
     summary?: string
-    recomendations?: string
+    recommendations?: string
   }
 ]
 
-// This is used when user performs recomendation from the Metabob, this state store the current value.
+// This is used when user performs recommendation from the Metabob, this state store the current value.
 export class RecomendationState extends ExtensionState<IRecomendationState> {
   constructor(context: vscode.ExtensionContext) {
-    super(context, CONSTANTS.recomendations)
+    super(context, CONSTANTS.recommendations)
   }
 
   get(): ExtensionStateValue<IRecomendationState> | undefined {

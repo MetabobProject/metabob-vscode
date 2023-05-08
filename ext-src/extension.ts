@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
   const analyzeDocumentOnSave = analyzeDocumentOnSaveConfig()
 
   // Create User Session, If already created get the refresh token
-  // otherwise, ping server every 60 second to not destory the token
+  // otherwise, ping server every 60 second to not destroy the token
   // if the user has not done any activity
   createOrUpdateUserSession(context)
 
@@ -42,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Used to notify the model about positive feedback
   activateEndorseCommand(context, debug)
 
-  // Depreceated
+  // Deprecated
   activateFocusRecomendCommand(context, debug)
 
   // When the user click the detail button on the problem
@@ -118,7 +118,7 @@ export function activate(context: vscode.ExtensionContext) {
     })
   )
 
-  // Recomendation Panel Webview Provider that is the normal Metabob workflow
+  // Recommendation Panel Webview Provider that is the normal Metabob workflow
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       'recommendation-panel-webview',
