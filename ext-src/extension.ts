@@ -42,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Used to notify the model about positive feedback
   activateEndorseCommand(context, debug)
 
-  // Depreceated
+  // Deprecated
   activateFocusRecomendCommand(context, debug)
 
   // When the user click the detail button on the problem
