@@ -13,7 +13,7 @@ Out of the box, Metabob uses a tuned version of Meta AI's OPT model to generate 
 * :eyes: View problem descriptions to understand the detected problems
 * :question: Ask questions about the problem descriptions and pass in more context about your code to generate more accurate problem descriptions
 * :hammer_and_wrench: Generate code recommendations to fix the detected problems
-* :question: Ask questions about the code recommendations and/or pass in more context about your code ro generate more context-sensitive code recommendations if needed
+* :question: Ask questions about the code recommendations and/or pass in more context about your code to generate more context-sensitive code recommendations if needed
 ​​
 # Settings​
 
