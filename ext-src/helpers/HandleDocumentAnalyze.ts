@@ -36,11 +36,16 @@ export const handleDocumentAnalyze = async (
   )
 
   const verifiedResponse = verifyResponseOfSubmit(response)
-  if (!verifiedResponse || verifiedResponse.status === 'failed') {
+  if (!verifiedResponse) {
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage)
+
+    return failedResponseReturn
+  } else if (verifiedResponse.status === 'failed') {
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage)
 
     return failedResponseReturn
   }
+
   if (verifiedResponse && (verifiedResponse.status === 'pending' || verifiedResponse?.status === 'running')) {
     return verifiedResponse; 
   } else if (verifiedResponse && verifiedResponse.status === 'complete') {
