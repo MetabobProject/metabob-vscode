@@ -24,7 +24,7 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
   }
 
   if (response.isErr()) {
-    if (response.error.response.data.session) {
+    if (response.error.response?.data.session ?? undefined) {
       sessionState.set(response.error.response.data.session)
     } else {
       return

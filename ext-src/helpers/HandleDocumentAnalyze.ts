@@ -15,11 +15,7 @@ export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResp
   }
 
   if (response.isOk()) {
-    if (response.value?.status === 'complete') {
-      return response.value
-    } else if (response.value?.status === 'pending' || response.value?.status === 'running') {
-      return 'in-queue'
-    }
+    return response.value;
   }
 
   return
@@ -28,10 +24,11 @@ export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResp
 export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string,
-  analyzeState: AnalyzeState
+  analyzeState: AnalyzeState,
+  jobId: string | undefined = undefined
 ) => {
-  let responseReturn = ''
-  const response = await submitService.submitTextFile(
+  const failedResponseReturn: SubmitRepresentationResponse =  {jobId: '', status: 'failed'};
+  const response = jobId ? await submitService.getJobStatus(jobId) : await submitService.submitTextFile(
     metaDataDocument.relativePath,
     metaDataDocument.fileContent,
     metaDataDocument.filePath,
@@ -40,13 +37,18 @@ export const handleDocumentAnalyze = async (
 
   const verifiedResponse = verifyResponseOfSubmit(response)
   if (!verifiedResponse) {
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage)
+
+    return failedResponseReturn
+  } else if (verifiedResponse.status === 'failed') {
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage)
 
-    responseReturn = ''
+    return failedResponseReturn
   }
-  if (verifiedResponse === 'in-queue') {
-    return 'in-queue'
-  } else if (verifiedResponse) {
+
+  if (verifiedResponse && (verifiedResponse.status === 'pending' || verifiedResponse?.status === 'running')) {
+    return verifiedResponse; 
+  } else if (verifiedResponse && verifiedResponse.status === 'complete') {
     if (verifiedResponse.results) {
       const editor = vscode.window.activeTextEditor
       const jobId = verifiedResponse.jobId
@@ -64,10 +66,11 @@ export const handleDocumentAnalyze = async (
         const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
         editor.setDecorations(decorationFromResponse.decorationType, [])
         editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)
-        return 'success'
+
+        return verifiedResponse
       }
     }
   }
 
-  return responseReturn
+  return failedResponseReturn
 }
