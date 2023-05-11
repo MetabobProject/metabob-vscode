@@ -2,7 +2,7 @@
     "name": "metabob",
     "displayName": "Metabob",
     "description": "AI static code analysis to ensure high code quality and software security",
-    "version": "1.0.3",
+    "version": "1.0.5",
     "icon": "media/extension-icon.png",
     "repository": {
         "url": "https://github.com/MetabobProject/metabob-vscode",

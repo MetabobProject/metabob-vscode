@@ -6,7 +6,7 @@ import { Util } from '../utils'
 import { handleDocumentAnalyze } from './HandleDocumentAnalyze'
 import { CONSTANTS } from '../constants'
 
-export function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave, context: vscode.ExtensionContext) {
+export async function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave, context: vscode.ExtensionContext) {
   const editor = vscode.window.activeTextEditor
   if (!editor) {
     return
@@ -18,18 +18,22 @@ export function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave, cont
   let isInQueue = false
 
   if (sessionState) {
-    Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
+    const jobId = await Util.withProgress<SubmitRepresentationResponse>(
+      handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState, undefined, true),
       CONSTANTS.analyzeCommandErrorMessage
     ).then(response => {
       if (response.status === 'pending' || response.status === 'running') {
         isInQueue = true
-      }
-    })
 
+        return response.jobId
+      }
+
+      return
+    })
+  
     if (isInQueue) {
       Util.withProgress<SubmitRepresentationResponse>(
-        handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
+        handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState, jobId, true),
         CONSTANTS.analyzeCommandQueueMessage
       ).then(response => {
         if (response.status === 'complete' || response.status === 'failed') {

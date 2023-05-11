@@ -7,12 +7,12 @@ export function activateEndorseCommand(context: vscode.ExtensionContext, _debug?
   const command = CONSTANTS.endorseSuggestionCommand
 
   const commandHandler = async (args: { id: string }) => {
-    const session = new SessionState(context).get()?.value
+    const session = new SessionState(context).get()
     if (session) {
       feedbackService
         .endorseSuggestion({
           problemId: args.id,
-          sessionToken: session
+          sessionToken: session.value
         })
         .then(() => {
           _debug?.appendLine(`Metabob: Endorsed Problem With ${args.id}`)

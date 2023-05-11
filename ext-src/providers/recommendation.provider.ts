@@ -20,6 +20,7 @@ import { SessionState } from '../store/session.state'
 import { Util } from '../utils'
 import { backendService, getChatGPTToken } from '../config'
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai'
+import { CONSTANTS } from '../constants'
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null
@@ -171,8 +172,9 @@ export class RecommendationWebView implements WebviewViewProvider {
               type: 'onGenerateClicked:Error',
               data: {}
             })
-            window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
+            window.showErrorMessage(CONSTANTS.generateConnectionError)
           }
+
           return
         }
         if (backendServiceConfig === 'openai/chatgpt') {
@@ -184,6 +186,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                 type: 'onGenerateClicked:Error',
                 data: {}
               })
+              
               return
             }
             const configuration = new Configuration({
