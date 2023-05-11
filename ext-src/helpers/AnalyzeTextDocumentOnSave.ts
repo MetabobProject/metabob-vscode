@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { AnalyzeState } from '../store/analyze.state'
 import { SessionState } from '../store/session.state'
-import { IAnalyzeTextDocumentOnSave } from '../types'
+import { IAnalyzeTextDocumentOnSave, SubmitRepresentationResponse } from '../types'
 import { Util } from '../utils'
 import { handleDocumentAnalyze } from './HandleDocumentAnalyze'
 import { CONSTANTS } from '../constants'
@@ -18,26 +18,24 @@ export function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave, cont
   let isInQueue = false
 
   if (sessionState) {
-    Util.withProgress<string>(
+    Util.withProgress<SubmitRepresentationResponse>(
       handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
       CONSTANTS.analyzeCommandErrorMessage
     ).then(response => {
-      if (response === 'in-queue') {
+      if (response.status === 'pending' || response.status === 'running') {
         isInQueue = true
       }
     })
 
     if (isInQueue) {
-      Util.withProgress<string>(
+      Util.withProgress<SubmitRepresentationResponse>(
         handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState),
         CONSTANTS.analyzeCommandQueueMessage
       ).then(response => {
-        if (response === 'in-queue') {
-          isInQueue = true
-        } else if (response === 'success') {
+        if (response.status === 'complete' || response.status === 'failed') {
           isInQueue = false
         } else {
-          isInQueue = false
+          isInQueue = true
         }
       })
     }

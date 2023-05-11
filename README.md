@@ -2,18 +2,18 @@
 ​
 # Metabob​
 
-This extension allows you to analyze Python code using a graph-attention-based neural network to detect and classify problematic code, and generate descriptions and code recommendations for the detected problems using an LLM of your choice. 
-​
-Supercharge your coding with AI-powered code reviews! Automatically detect complex logical and contextual problems such as unhandled edgecases, memory leaks, and hundreds of other categories using Metabob’s proprietary neural network. Additionally, you can generate code recommendations for fixes and refactorings as well as ask questions about detections using an integrated LLM of your choice! 
-​
-Out of the box, Metabob uses a tuned version of Meta AI's OPT model to generate problem descriptions and code recommendations to fixes and refactorings. If you’d like to change the integrated LLM, just go to the settings and input an api key to switch to using your preferred LLM. 
+This extension allows you to analyze Python code using a graph-attention-based neural network to detect and classify problematic code, and generate descriptions and code recommendations for the detected problems using an LLM of your choice.​ Supercharge your coding with AI-powered code reviews! 
+
+Metabob analyzes all files of the project at once and automatically detects complex logical and contextual problems such as unhandled edge cases, memory leaks, and hundreds of other categories using Metabob’s proprietary neural network. Additionally, you can generate code recommendations for fixes and refactorings as well as ask questions about detections using an integrated LLM of your choice!​ 
+
+Out of the box, Metabob uses a fine-tuned LLM model to generate problem descriptions and code recommendations for fixes and refactorings. If you’d like to change the integrated LLM, just go to the settings and input an api key to switch to using your preferred LLM.​
 ​
 # Features
-* :mag: Automatically detect and classify problems. 
-* :eyes: View problem descriptions to understand the detected problems
-* :question: Ask questions about the problem descriptions and pass in more context about your code to generate more accurate problem descriptions
-* :hammer_and_wrench: Generate code recommendations to fix the detected problems
-* :question: Ask questions about the code recommendations and/or pass in more context about your code to generate more context-sensitive code recommendations if needed
+* Automatically detect and classify problems. 
+* View problem descriptions to understand the detected problems
+* Ask questions about the problem descriptions and pass in more context about your code to generate more accurate problem descriptions
+* Generate code recommendations to fix the detected problems
+* Ask questions about the code recommendations and/or pass in more context about your code to generate more context-sensitive code recommendations if needed
 ​​
 # Settings​
 
