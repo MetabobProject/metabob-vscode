@@ -51,6 +51,9 @@ export interface IAnalyzeTextDocumentOnSave {
 export interface CreateSessionRequest {
   apiKey: string
   sessionToken?: string
+  meta?: {
+    supplementaryId?: string
+  }
 }
 
 export interface CreateSessionResponse {
