@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { getAPIConfig } from '../config'
+import { getAPIConfig, getRequestParamId } from '../config'
 import { sessionService } from '../services/session/session.service'
 import { SessionState } from '../store/session.state'
 import { CreateSessionRequest } from '../types'
@@ -7,8 +7,12 @@ import { CreateSessionRequest } from '../types'
 export async function createOrUpdateUserSession(context: vscode.ExtensionContext) {
   const sessionState = new SessionState(context)
   const apiKey = getAPIConfig()
+  const requestParamId = getRequestParamId()
   const payload: CreateSessionRequest = {
-    apiKey: apiKey || ''
+    apiKey: apiKey || '',
+    meta: {
+      supplementaryId: requestParamId
+    }
   }
   const sessionToken = sessionState.get()
   if (sessionToken) {

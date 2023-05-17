@@ -1,8 +1,8 @@
 {
     "name": "metabob",
-    "displayName": "Metabob",
-    "description": "AI static code analysis to ensure high code quality and software security",
-    "version": "1.0.3",
+    "displayName": "Metabob: AI for debugging & refactoring",
+    "description": "Generative AI to automate debugging and refactoring Python code",
+    "version": "1.0.9",
     "icon": "media/extension-icon.png",
     "repository": {
         "url": "https://github.com/MetabobProject/metabob-vscode",
@@ -17,15 +17,23 @@
         "Programming Languages",
         "Snippets",
         "Debuggers",
+        "Data Science",
+        "Machine Learning",
         "Other"
     ],
     "keywords": [
+        "debugger",
+        "debugging",
+        "gpt",
+        "openai",
+        "generative ai",
+        "code generation",
+        "generator",
+        "copilot",
         "linter",
         "lint",
         "code",
-        "google",
-        "api",
-        "aip",
+        "refactor",
         "metabob"
     ],
     "activationEvents": [

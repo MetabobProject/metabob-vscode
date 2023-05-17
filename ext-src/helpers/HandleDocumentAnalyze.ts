@@ -24,7 +24,8 @@ export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string,
   analyzeState: AnalyzeState,
-  jobId: string | undefined = undefined
+  jobId: string | undefined = undefined,
+  suppressRateLimitErrors = false,
 ) => {
   const failedResponseReturn: SubmitRepresentationResponse =  {jobId: '', status: 'failed'};
   const response = jobId ? await submitService.getJobStatus(jobId) : await submitService.submitTextFile(
@@ -36,7 +37,9 @@ export const handleDocumentAnalyze = async (
 
   const verifiedResponse = verifyResponseOfSubmit(response)
   if (!verifiedResponse) {
-    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage)
+    if (!suppressRateLimitErrors) {
+      vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage)
+    }
 
     return failedResponseReturn
   } else if (verifiedResponse.status === 'failed') {

@@ -1,12 +1,10 @@
-​![metabob-logo](docs/img/docs-metabob-logo.png)
-​
-# Metabob​
+# Metabob: Generative AI for debugging & refactoring Python code
 
-This extension allows you to analyze Python code using a graph-attention-based neural network to detect and classify problematic code, and generate descriptions and code recommendations for the detected problems using an LLM of your choice.​ Supercharge your coding with AI-powered code reviews! 
+This extension allows you to analyze, debug, and refactor Python code. Metabob uses a graph-attention-based neural network to detect and classify problematic code and generates descriptions and code recommendations for the detected problems using an LLM of your choice.​ Supercharge your debugging with AI-powered code reviews!  
 
-Metabob analyzes all files of the project at once and automatically detects complex logical and contextual problems such as unhandled edge cases, memory leaks, and hundreds of other categories using Metabob’s proprietary neural network. Additionally, you can generate code recommendations for fixes and refactorings as well as ask questions about detections using an integrated LLM of your choice!​ 
+Metabob analyzes all files of the project at once and automatically detects complex logical and contextual problems such as unhandled edge cases, memory leaks, and hundreds of other categories using its proprietary neural network. Additionally, you can generate code recommendations for fixes and refactorings as well as ask questions about detections using an integrated LLM of your choice, such as OpenAI’s GPT models.  
 
-Out of the box, Metabob uses a fine-tuned LLM model to generate problem descriptions and code recommendations for fixes and refactorings. If you’d like to change the integrated LLM, just go to the settings and input an api key to switch to using your preferred LLM.​
+Out of the box, Metabob uses a fine-tuned LLM model to generate problem descriptions and code recommendations for fixes and refactorings. If you’d like to change the integrated LLM, just go to settings and input an api key to switch to your preferred model.​​
 ​
 # Features
 * Automatically detect and classify problems. 

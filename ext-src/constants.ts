@@ -24,5 +24,6 @@ export const CONSTANTS = {
 
   // Error Constants
   editorNotSelectorError: 'Metabob: kindly select an editor to perform this command',
-  editorSelectedIsInvalid: 'Metabob: selected document is invalid'
+  editorSelectedIsInvalid: 'Metabob: selected document is invalid',
+  generateConnectionError: 'Metabob: Looks like the server is overloaded, please try again later'
 }

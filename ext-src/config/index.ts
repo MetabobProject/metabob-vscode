@@ -29,3 +29,11 @@ export const backendService = () => {
 
   return config
 }
+
+export const getRequestParamId = () => {
+  if (vscode.env.isTelemetryEnabled) {
+    return vscode.env.machineId
+  }
+
+  return
+}
