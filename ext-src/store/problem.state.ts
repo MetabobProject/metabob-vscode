@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { CONSTANTS } from '../constants'
 import { ExtensionState, ExtensionStateValue } from './base.state'
 
-export type ICurrentQuestionState = {
+export type IProblemState = {
   [problemId: string]: {
     path?: string
     id?: string
@@ -14,22 +14,22 @@ export type ICurrentQuestionState = {
   }
 }
 
-export class problemsState extends ExtensionState<ICurrentQuestionState> {
+export class problemsState extends ExtensionState<IProblemState> {
   constructor(context: vscode.ExtensionContext) {
     super(context, CONSTANTS.currentQuestion)
   }
 
-  get(): ExtensionStateValue<ICurrentQuestionState> | undefined {
-    return this.context.globalState.get<ExtensionStateValue<ICurrentQuestionState>>(this.key)
+  get(): ExtensionStateValue<IProblemState> | undefined {
+    return this.context.globalState.get<ExtensionStateValue<IProblemState>>(this.key)
   }
 
-  set(value: ICurrentQuestionState): Thenable<void> {
+  set(value: IProblemState): Thenable<void> {
     const stateValue = { key: this.key, value }
 
     return this.context.globalState.update(this.key, stateValue)
   }
 
-  update(callback: (value: ICurrentQuestionState) => ICurrentQuestionState): Thenable<void | undefined> {
+  update(callback: (value: IProblemState) => IProblemState): Thenable<void | undefined> {
     const value = this.get()
     const updatedValue = callback(value?.value || {})
 

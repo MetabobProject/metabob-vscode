@@ -51,7 +51,7 @@ type Props = {
 }
 
 const AccountSettingProvider = ({ children }: Props) => {
-  const [initialState, setInitialState] = useState('')
+  const [initialState, setInitialState] = useState<any>({})
   const [showSuggestionPaginatePanel, setShowSuggestionPaginationPanel] = useState<boolean>(false)
   const [showGeneratePaginatePanel] = useState<boolean>(false)
   const [suggestion, setSuggestion] = useState('')
@@ -73,6 +73,15 @@ const AccountSettingProvider = ({ children }: Props) => {
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data
       switch (event.data.type) {
+        case 'getProblemPersist:Recieved': {
+          if (payload.id === initialState.id) {
+            setSuggestion(payload.suggestion)
+            setGenerate(payload.generate)
+            setGeneratePaginationRegenerate(payload.generatePaginationRegenerate)
+            setSuggestionPaginationRegenerate(payload.suggestionPaginationRegenerate)
+          }
+          break
+        }
         case 'initData':
           if (payload.isReset === true) {
             vscode.postMessage({
@@ -109,6 +118,22 @@ const AccountSettingProvider = ({ children }: Props) => {
             setIsRecomendationRegenerateLoading(true)
             setIsGenerateWithQuestionLoading(true)
           }
+          vscode.postMessage({
+            type: 'onProblemPersist:Sent',
+            data: {
+              input: {
+                [initialState.id]: {
+                  id: initialState.id,
+                  path: initialState.path,
+                  suggestion,
+                  recomendation: generate,
+                  question: userQuestionAboutSuggestion,
+                  suggestionPaginationRegenerate,
+                  generatePaginationRegenerate
+                }
+              }
+            }
+          })
           setInitialState({ ...payload })
           break
         case 'onSuggestionClicked:Response':
@@ -190,6 +215,7 @@ const AccountSettingProvider = ({ children }: Props) => {
     [
       setInitialState,
       setSuggestion,
+      suggestion,
       setIsSuggestionRegenerateLoading,
       setEndorseSuggestionClicked,
       setDiscardSuggestionClicked,
@@ -197,11 +223,14 @@ const AccountSettingProvider = ({ children }: Props) => {
       setSuggestionClicked,
       setShowSuggestionPaginationPanel,
       setGenerate,
+      generate,
+      userQuestionAboutSuggestion,
       setIsGenerateWithoutQuestionLoading,
       setIsgenerateClicked,
       setIsGenerateWithQuestionLoading,
       setIsRecomendationRegenerateLoading,
-      setGenerate
+      setGenerate,
+      suggestionPaginationRegenerate
     ]
   )
 

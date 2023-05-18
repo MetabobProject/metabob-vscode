@@ -21,6 +21,7 @@ import { Util } from '../utils'
 import { backendService, getChatGPTToken } from '../config'
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai'
 import { CONSTANTS } from '../constants'
+import { IProblemState, problemsState } from '../store/problem.state'
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null
@@ -46,6 +47,12 @@ export class RecommendationWebView implements WebviewViewProvider {
 
   updateState(payload: any) {
     const state = new currentQuestionState(this.extensionContext).update(() => payload)
+    return state
+  }
+  updateProblemState(payload: IProblemState) {
+    const state = new problemsState(this.extensionContext).update(value => {
+      return { ...value, ...payload }
+    })
     return state
   }
 
@@ -186,7 +193,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                 type: 'onGenerateClicked:Error',
                 data: {}
               })
-              
+
               return
             }
             const configuration = new Configuration({
@@ -283,6 +290,19 @@ export class RecommendationWebView implements WebviewViewProvider {
       this._view.webview.onDidReceiveMessage((message: any) => {
         const data = message.data
         switch (message.type) {
+          case 'onProblemPersist:Sent': {
+            const input = data?.input
+            if (input === null) {
+              window.showErrorMessage('Metabob: Init Data is null')
+              return
+            }
+            const state = this.updateProblemState(input)
+            this._view?.webview.postMessage({
+              type: 'getProblemPersist:Recieved',
+              data: { ...state }
+            })
+            break
+          }
           case 'onSuggestionClicked': {
             const input = data?.input
             const initData = data?.initData
