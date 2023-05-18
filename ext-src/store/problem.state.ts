@@ -16,7 +16,7 @@ export type IProblemState = {
 
 export class problemsState extends ExtensionState<IProblemState> {
   constructor(context: vscode.ExtensionContext) {
-    super(context, CONSTANTS.currentQuestion)
+    super(context, CONSTANTS.problemPersist)
   }
 
   get(): ExtensionStateValue<IProblemState> | undefined {

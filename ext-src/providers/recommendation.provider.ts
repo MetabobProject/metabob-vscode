@@ -56,6 +56,11 @@ export class RecommendationWebView implements WebviewViewProvider {
     return state
   }
 
+  getProblemState() {
+    const state = new problemsState(this.extensionContext).get()?.value
+    return state
+  }
+
   refresh(): void {
     this.onDidChangeTreeData.fire(null)
     if (this._view) {
@@ -290,13 +295,18 @@ export class RecommendationWebView implements WebviewViewProvider {
       this._view.webview.onDidReceiveMessage((message: any) => {
         const data = message.data
         switch (message.type) {
-          case 'onProblemPersist:Sent': {
+          case 'onProblemPersist:Store': {
             const input = data?.input
+
             if (input === null) {
               window.showErrorMessage('Metabob: Init Data is null')
               return
             }
-            const state = this.updateProblemState(input)
+            this.updateProblemState(input)
+            break
+          }
+          case 'onProblemPersist:Get': {
+            const state = this.getProblemState()
             this._view?.webview.postMessage({
               type: 'getProblemPersist:Recieved',
               data: { ...state }

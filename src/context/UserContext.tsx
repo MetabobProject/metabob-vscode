@@ -69,37 +69,31 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [suggestionPaginationRegenerate, setSuggestionPaginationRegenerate] = useState<Array<any>>([])
   const [generatePaginationRegenerate, setGeneratePaginationRegenerate] = useState<Array<string>>([])
 
+  useEffect(() => {
+    if (initialState.id === undefined) return
+    vscode.postMessage({
+      type: 'onProblemPersist:Store',
+      data: {
+        input: {
+          [initialState.id]: {
+            id: initialState.id,
+            path: initialState.path,
+            suggestion,
+            recomendation: generate,
+            question: userQuestionAboutSuggestion,
+            suggestionPaginationRegenerate,
+            generatePaginationRegenerate
+          }
+        }
+      }
+    })
+  }, [suggestion, generate, userQuestionAboutSuggestion, generatePaginationRegenerate, suggestionPaginationRegenerate])
+
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data
       switch (event.data.type) {
-        case 'getProblemPersist:Recieved': {
-          if (payload.id === initialState.id) {
-            if (payload.suggestion !== undefined) {
-              setSuggestion(payload.suggestion)
-            }
-            if (payload.generate !== undefined) {
-              setGenerate(payload.generate)
-            }
-            if (payload.question !== undefined) {
-              setUserQuestionAboutSuggestion(payload.question)
-            }
-            if (
-              payload.generatePaginationRegenerate !== undefined &&
-              payload.generatePaginationRegenerate?.length > 0
-            ) {
-              setGeneratePaginationRegenerate(payload.generatePaginationRegenerate)
-            }
-            if (
-              payload.suggestionPaginationRegenerate !== undefined &&
-              payload.suggestionPaginationRegenerate?.length > 0
-            ) {
-              setSuggestionPaginationRegenerate(payload.suggestionPaginationRegenerate)
-            }
-          }
-          break
-        }
-        case 'initData':
+        case 'initData': {
           if (payload.isReset === true) {
             vscode.postMessage({
               type: 'initData:ResetRecieved',
@@ -135,24 +129,31 @@ const AccountSettingProvider = ({ children }: Props) => {
             setIsRecomendationRegenerateLoading(true)
             setIsGenerateWithQuestionLoading(true)
           }
-          vscode.postMessage({
-            type: 'onProblemPersist:Sent',
-            data: {
-              input: {
-                [initialState.id]: {
-                  id: initialState.id,
-                  path: initialState.path,
-                  suggestion,
-                  recomendation: generate,
-                  question: userQuestionAboutSuggestion,
-                  suggestionPaginationRegenerate,
-                  generatePaginationRegenerate
-                }
-              }
-            }
-          })
           setInitialState({ ...payload })
           break
+        }
+        case 'getProblemPersist:Recieved': {
+          if (initialState.id === undefined) return
+          const item = payload[initialState.id]
+          if (item !== undefined) {
+            if (item.suggestion !== undefined) {
+              setSuggestion(item.suggestion)
+            }
+            if (item.generate !== undefined) {
+              setGenerate(item.generate)
+            }
+            if (item.question !== undefined) {
+              setUserQuestionAboutSuggestion(item.question)
+            }
+            if (item.generatePaginationRegenerate !== undefined && item.generatePaginationRegenerate?.length > 0) {
+              setGeneratePaginationRegenerate(item.generatePaginationRegenerate)
+            }
+            if (item.suggestionPaginationRegenerate !== undefined && item.suggestionPaginationRegenerate?.length > 0) {
+              setSuggestionPaginationRegenerate(item.suggestionPaginationRegenerate)
+            }
+          }
+          break
+        }
         case 'onSuggestionClicked:Response':
           const { description } = payload
           setSuggestion(description)
@@ -231,30 +232,25 @@ const AccountSettingProvider = ({ children }: Props) => {
     },
     [
       setInitialState,
+      initialState,
       setSuggestion,
-      suggestion,
       setIsSuggestionRegenerateLoading,
       setEndorseSuggestionClicked,
       setDiscardSuggestionClicked,
-      userQuestionAboutSuggestion,
       setSuggestionClicked,
       setShowSuggestionPaginationPanel,
       setGenerate,
-      generate,
-      userQuestionAboutSuggestion,
       setIsGenerateWithoutQuestionLoading,
       setIsgenerateClicked,
       setIsGenerateWithQuestionLoading,
       setIsRecomendationRegenerateLoading,
-      setGenerate,
-      suggestionPaginationRegenerate
+      setGenerate
     ]
   )
 
   // get initial state
   useEffect(() => {
     vscode.postMessage({ type: 'getInitData' })
-
     const interval = setInterval(() => {
       vscode.postMessage({ type: 'getInitData' })
     }, 1000)
@@ -263,6 +259,17 @@ const AccountSettingProvider = ({ children }: Props) => {
       clearInterval(interval)
     }
   }, [])
+
+  // useEffect(() => {
+  //   vscode.postMessage({ type: 'onProblemPersist:Get' })
+  //   const interval = setInterval(() => {
+  //     vscode.postMessage({ type: 'onProblemPersist:Get' })
+  //   }, 4000)
+
+  //   return () => {
+  //     clearInterval(interval)
+  //   }
+  // }, [])
 
   // handle Incoming Messages
   useEffect(() => {
