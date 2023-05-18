@@ -21,15 +21,6 @@ export function activate(context: vscode.ExtensionContext) {
   // if the user has not done any activity
   createOrUpdateUserSession(context)
 
-  // TODO: Redo this implementation. at the moment Bug seems to be on the extension host end.
-  // https://github.com/microsoft/vscode/issues/109014#issuecomment-712913566
-
-  // if (!sessionInterval) {
-  //   sessionInterval = setInterval(() => {
-  //     createOrUpdateUserSession(context, debug)
-  //   }, 60_000)
-  // }
-
   // Analyze command that hit /analyze endpoint with current file content
   // then decorate current file with error
   activateAnalyzeCommand(context, debug)
@@ -127,10 +118,4 @@ export function activate(context: vscode.ExtensionContext) {
   )
 }
 
-// Since, We don't want to get Refresh Tokens after User has closed the extension
-// So we will clear Session Interval upon deactivate
-export function deactivate() {
-  // if (sessionInterval) {
-  //   clearInterval(sessionInterval)
-  // }
-}
+export function deactivate() {}
