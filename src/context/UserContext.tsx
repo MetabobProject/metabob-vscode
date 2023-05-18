@@ -75,10 +75,27 @@ const AccountSettingProvider = ({ children }: Props) => {
       switch (event.data.type) {
         case 'getProblemPersist:Recieved': {
           if (payload.id === initialState.id) {
-            setSuggestion(payload.suggestion)
-            setGenerate(payload.generate)
-            setGeneratePaginationRegenerate(payload.generatePaginationRegenerate)
-            setSuggestionPaginationRegenerate(payload.suggestionPaginationRegenerate)
+            if (payload.suggestion !== undefined) {
+              setSuggestion(payload.suggestion)
+            }
+            if (payload.generate !== undefined) {
+              setGenerate(payload.generate)
+            }
+            if (payload.question !== undefined) {
+              setUserQuestionAboutSuggestion(payload.question)
+            }
+            if (
+              payload.generatePaginationRegenerate !== undefined &&
+              payload.generatePaginationRegenerate?.length > 0
+            ) {
+              setGeneratePaginationRegenerate(payload.generatePaginationRegenerate)
+            }
+            if (
+              payload.suggestionPaginationRegenerate !== undefined &&
+              payload.suggestionPaginationRegenerate?.length > 0
+            ) {
+              setSuggestionPaginationRegenerate(payload.suggestionPaginationRegenerate)
+            }
           }
           break
         }
