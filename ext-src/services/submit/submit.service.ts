@@ -8,12 +8,15 @@ class SubmitService extends ApiServiceBase {
    * @param fileContent Buffer Contents of the txt file
    * @param filePath Path of the file
    */
-  async submitTextFile(relativePath: string, fileContent: any, _filePath: string, sessionToken: string) {
+  async submitTextFile(relativePath: string, fileContent: any, _filePath: string, sessionToken: string, manual = false) {
     const formData = new FormData()
     formData.append('type', 'text/plain')
     formData.append('filename', relativePath)
     formData.append('upload', Buffer.from(fileContent, 'utf-8'), relativePath)
     const response = await this.post<SubmitRepresentationResponse>('/submit', formData, {
+      params: {
+        'req_type': manual ? 'manual' : 'automatic'
+      },
       headers: {
         ...formData.getHeaders(),
         Authorization: `Bearer ${sessionToken}`

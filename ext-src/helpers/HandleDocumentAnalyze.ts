@@ -32,7 +32,8 @@ export const handleDocumentAnalyze = async (
     metaDataDocument.relativePath,
     metaDataDocument.fileContent,
     metaDataDocument.filePath,
-    sessionToken
+    sessionToken,
+    !suppressRateLimitErrors
   )
 
   const verifiedResponse = verifyResponseOfSubmit(response)
