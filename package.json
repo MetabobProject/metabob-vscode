@@ -1,8 +1,8 @@
 {
     "name": "metabob",
-    "displayName": "Metabob: AI for debugging & refactoring",
+    "displayName": "Metabob: Debug and Refactor with AI",
     "description": "Generative AI to automate debugging and refactoring Python code",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "icon": "media/extension-icon.png",
     "repository": {
         "url": "https://github.com/MetabobProject/metabob-vscode",
