@@ -38,4 +38,8 @@ export class AnalyzeState extends ExtensionState<IAnalyzeState> {
 
     return this.set(updatedValue)
   }
+
+  clear(): void {
+    this.context.globalState.update(this.key, undefined);
+  }
 }

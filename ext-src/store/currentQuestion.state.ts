@@ -35,4 +35,8 @@ export class currentQuestionState extends ExtensionState<ICurrentQuestionState> 
 
     return this.set(updatedValue)
   }
+
+  clear(): void {
+    this.set({})
+  }
 }

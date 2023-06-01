@@ -82,8 +82,8 @@
                 "category": "Metabob"
             },
             {
-                "command": "metabob.focusRecomened",
-                "title": "Focus Recomendation Panel",
+                "command": "metabob.focusRecommend",
+                "title": "Focus Recommendation Panel",
                 "category": "Metabob"
             }
         ],
@@ -97,7 +97,7 @@
                     "when": "false"
                 },
                 {
-                    "command": "metabob.focusRecomened",
+                    "command": "metabob.focusRecommend",
                     "when": "false"
                 },
                 {

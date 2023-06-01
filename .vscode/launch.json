@@ -7,6 +7,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
+			"preLaunchTask": "build-watch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceRoot}"
 			],

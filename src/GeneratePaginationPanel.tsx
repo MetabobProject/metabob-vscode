@@ -6,9 +6,9 @@ export const GeneratePaginationPanel = () => {
   const {
     isgenerateClicked,
     initialState,
-    userQuestionAboutRecomendation,
-    isRecomendationRegenerateLoading,
-    setIsRecomendationRegenerateLoading,
+    userQuestionAboutRecommendation,
+    isRecommendationRegenerateLoading,
+    setIsRecommendationRegenerateLoading,
     generate,
     generatePaginationRegenerate,
     setGenerate
@@ -20,20 +20,20 @@ export const GeneratePaginationPanel = () => {
     initialPageSize: 1
   })
 
-  const handleRecomendationRegenerate = useCallback(() => {
-    setIsRecomendationRegenerateLoading(true)
+  const handleRecommendationRegenerate = useCallback(() => {
+    setIsRecommendationRegenerateLoading(true)
     vscode.postMessage({
       type: 'onGenerateClicked',
       data: {
-        input: userQuestionAboutRecomendation,
+        input: userQuestionAboutRecommendation,
         initData: initialState
       }
     })
-  }, [setIsRecomendationRegenerateLoading, userQuestionAboutRecomendation, initialState])
+  }, [setIsRecommendationRegenerateLoading, userQuestionAboutRecommendation, initialState])
 
-  const handleApplyRecomendation = useCallback(() => {
+  const handleApplyRecommendation = useCallback(() => {
     vscode.postMessage({
-      type: 'applyRecomendation',
+      type: 'applyRecommendation',
       data: {
         input: generate,
         initData: initialState
@@ -89,10 +89,10 @@ export const GeneratePaginationPanel = () => {
               </svg>
             </button>
             <button
-              onClick={handleRecomendationRegenerate}
+              onClick={handleRecommendationRegenerate}
               className='inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
             >
-              {isRecomendationRegenerateLoading ? (
+              {isRecommendationRegenerateLoading ? (
                 <>
                   <svg
                     aria-hidden='true'
@@ -140,7 +140,7 @@ export const GeneratePaginationPanel = () => {
               </svg>
             </button>
             <button
-              onClick={handleApplyRecomendation}
+              onClick={handleApplyRecommendation}
               className='inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
             >
               apply

@@ -13,7 +13,7 @@ export interface IExplainProblemPayload {
   context?: string
 }
 
-export interface IRecomendSuggestionPayload {
+export interface IRecommendSuggestionPayload {
   problemId: string
 
   /** Optional, If included this will added as additional instructions for the recommendation engine. i.e. "Fix this problem using the auto_format function defined in the utils module" */
@@ -39,7 +39,7 @@ interface IExplainProblemResponse {
   description: string
 }
 
-interface ISuggestRecomendationResponse {
+interface ISuggestRecommendationResponse {
   recommendation: string
 }
 
@@ -63,9 +63,9 @@ export class ExplainService extends ApiServiceBase {
     return response
   }
 
-  async recomendSuggestion(payload: IRecomendSuggestionPayload, sessionToken: string, isChatConfigEnabled?: boolean) {
+  async RecommendSuggestion(payload: IRecommendSuggestionPayload, sessionToken: string, isChatConfigEnabled?: boolean) {
     const endpoint = isChatConfigEnabled ? '/recommend?prompt_only=true' : '/recommend'
-    const response = await this.post<ISuggestRecomendationResponse>(
+    const response = await this.post<ISuggestRecommendationResponse>(
       endpoint,
       {
         ...payload

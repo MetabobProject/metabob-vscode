@@ -32,20 +32,26 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.extensionPath = extensionPath
     this.extensionURI = extensionURI
     this.extensionContext = context
+    this.extensionContext.globalState.update(CONSTANTS.webview, this)
   }
 
   private onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<
     any | undefined | null | void
   >()
 
-  getCurrentState() {
+  getCurrentState(): ICurrentQuestionState | undefined {
     const state = new currentQuestionState(this.extensionContext).get()
 
     return state?.value
   }
 
-  updateState(payload: any) {
+  clear(): void {
+    new currentQuestionState(this.extensionContext).clear()
+  }
+
+  updateState(payload: ICurrentQuestionState ): void | Thenable<void> {
     const state = new currentQuestionState(this.extensionContext).update(() => payload)
+  
     return state
   }
 
@@ -65,10 +71,12 @@ export class RecommendationWebView implements WebviewViewProvider {
     this._view = webviewView
     this.activateMessageListener()
   }
-  handleSuggestionClick(input: string, initData: ICurrentQuestionState) {
+
+  handleSuggestionClick(input: string, initData: ICurrentQuestionState): void {
     const backendServiceConfig = backendService()
     if (!backendService) return
-    let sessionKey = new SessionState(this.extensionContext).get()?.value
+    const sessionKey = new SessionState(this.extensionContext).get()?.value
+
     explainService
       .explainProblem(
         {
@@ -89,6 +97,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                 type: 'onSuggestionClicked:Error',
                 data: {}
               })
+
               return
             }
             const configuration = new Configuration({
@@ -100,6 +109,7 @@ export class RecommendationWebView implements WebviewViewProvider {
               messages: [
                 {
                   role: 'system',
+
                   // @ts-ignore
                   content: response.value.prompt
                 },
@@ -149,12 +159,12 @@ export class RecommendationWebView implements WebviewViewProvider {
       })
   }
 
-  handleRecomendationClick(input: string, initData: ICurrentQuestionState) {
+  handleRecommendationClick(input: string, initData: ICurrentQuestionState): void {
     const backendServiceConfig = backendService()
     if (!backendService) return
     const sessionKey = new SessionState(this.extensionContext).get()
     explainService
-      .recomendSuggestion(
+      .RecommendSuggestion(
         {
           problemId: initData?.id as string,
           prompt: input,
@@ -198,6 +208,7 @@ export class RecommendationWebView implements WebviewViewProvider {
               messages: [
                 {
                   role: 'system',
+                  
                   // @ts-ignore
                   content: response.value.prompt
                 },
@@ -240,7 +251,7 @@ export class RecommendationWebView implements WebviewViewProvider {
       })
   }
 
-  handleApplySuggestion(input: string, initData: ICurrentQuestionState) {
+  handleApplySuggestion(input: string, initData: ICurrentQuestionState): void {
     const editor = window.activeTextEditor
     if (!editor) {
       return
@@ -256,7 +267,16 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
   }
 
-  handleApplyRecomendation(input: string, initData: ICurrentQuestionState) {
+  postInitData(initData: ICurrentQuestionState | undefined): void {
+    this._view?.webview.postMessage({
+      type: 'initData',
+      data: { ...initData }
+    }).then(undefined, (err) => {
+      window.showErrorMessage(err)
+    })
+  }
+
+  handleApplyRecommendation(input: string, initData: ICurrentQuestionState): void {
     const editor = window.activeTextEditor
     if (!editor) {
       return
@@ -298,10 +318,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           }
           case 'getInitData': {
             const state = this.getCurrentState()
-            this._view?.webview.postMessage({
-              type: 'initData',
-              data: { ...state }
-            })
+            this.postInitData(state)
             break
           }
           case 'initData:FixRecieved': {
@@ -322,7 +339,7 @@ export class RecommendationWebView implements WebviewViewProvider {
 
               return
             }
-            this.handleRecomendationClick(input, initData)
+            this.handleRecommendationClick(input, initData)
 
             window.showInformationMessage(message.data)
 
@@ -340,7 +357,7 @@ export class RecommendationWebView implements WebviewViewProvider {
 
             break
           }
-          case 'applyRecomendation': {
+          case 'applyRecommendation': {
             const input = data?.input
             const initData = data?.initData
             if (initData === null) {
@@ -348,7 +365,7 @@ export class RecommendationWebView implements WebviewViewProvider {
 
               return
             }
-            this.handleApplyRecomendation(input, initData)
+            this.handleApplyRecommendation(input, initData)
             break
           }
           case 'onEndorseSuggestionClicked': {
@@ -416,6 +433,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: Webview) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const manifest = require(path.join(this.extensionPath, 'build', 'asset-manifest.json'))
     const mainScript = manifest['files']['main.js']
     const mainStyle = manifest['files']['main.css']

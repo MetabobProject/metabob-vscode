@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { CONSTANTS } from '../constants'
 import { ExtensionState, ExtensionStateValue } from './base.state'
 
-export type IRecomendationState = [
+export type IRecommendationState = [
   {
     content?: string
     path?: string
@@ -16,22 +16,22 @@ export type IRecomendationState = [
 ]
 
 // This is used when user performs recommendation from the Metabob, this state store the current value.
-export class RecomendationState extends ExtensionState<IRecomendationState> {
+export class RecommendationState extends ExtensionState<IRecommendationState> {
   constructor(context: vscode.ExtensionContext) {
     super(context, CONSTANTS.recommendations)
   }
 
-  get(): ExtensionStateValue<IRecomendationState> | undefined {
-    return this.context.globalState.get<ExtensionStateValue<IRecomendationState>>(this.key)
+  get(): ExtensionStateValue<IRecommendationState> | undefined {
+    return this.context.globalState.get<ExtensionStateValue<IRecommendationState>>(this.key)
   }
 
-  set(value: IRecomendationState): Thenable<void> {
+  set(value: IRecommendationState): Thenable<void> {
     const stateValue = { key: this.key, value }
 
     return this.context.globalState.update(this.key, stateValue)
   }
 
-  update(callback: (value: IRecomendationState) => IRecomendationState): Thenable<void | undefined> {
+  update(callback: (value: IRecommendationState) => IRecommendationState): Thenable<void | undefined> {
     const value = this.get()
     const updatedValue = callback(value?.value || [{}])
 
