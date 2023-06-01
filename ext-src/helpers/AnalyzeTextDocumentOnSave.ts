@@ -20,7 +20,7 @@ export async function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave
   if (sessionState) {
     const jobId = await Util.withProgress<SubmitRepresentationResponse>(
       handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState, undefined, true),
-      CONSTANTS.analyzeCommandErrorMessage
+      CONSTANTS.analyzeCommandProgressMessage
     ).then(response => {
       if (response.status === 'pending' || response.status === 'running') {
         isInQueue = true
