@@ -4,7 +4,7 @@ import { IDocumentMetaData } from '../types'
 import { Result } from 'rusty-result-ts'
 import { SubmitRepresentationResponse } from '../types'
 import { ApiErrorBase } from '../services/base.error'
-import { AnalyzeState } from '../store/analyze.state'
+import { AnalyzeState, IAnalyzeState } from '../store/analyze.state'
 import { Util } from '../utils'
 import { CONSTANTS } from '../constants'
 
@@ -55,14 +55,18 @@ export const handleDocumentAnalyze = async (
       const editor = vscode.window.activeTextEditor
       const jobId = verifiedResponse.jobId
 
+      // collect all the problems and add them to the state as separate keys
+      const results: IAnalyzeState = {}
+
       verifiedResponse.results.forEach(problem => {
-        analyzeState.set({
-          [`${problem.path}@@${problem.id}`]: {
-            ...problem,
-            isDiscarded: false
-          }
-        })
+        const key = `${problem.path}@@${problem.id}`
+        results[key] = {
+          ...problem,
+          isDiscarded: false
+        }
       })
+
+      analyzeState.set(results)
 
       if (editor && editor.document.fileName === metaDataDocument.filePath) {
         const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
