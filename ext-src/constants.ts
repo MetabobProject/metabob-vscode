@@ -5,6 +5,7 @@ export const CONSTANTS = {
   analyze: '@metabob/analyze',
   recommendations: '@metabob/recommendations',
   currentQuestion: '@metabob/currentquestion',
+  webview: '@metabob/webview',
 
   // Command Registration String
   analyzeDocumentCommand: 'metabob.analyzeDocument',

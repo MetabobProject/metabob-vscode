@@ -11,6 +11,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
 
   const commandHandler = async () => {
     const editor = vscode.window.activeTextEditor
+
     if (!editor) {
       vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError)
 
@@ -23,6 +24,8 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
       const analyzeState = new AnalyzeState(context)
       let isInQueue = false
       let inflightJobId: string | undefined;
+
+      _debug?.appendLine(`Metabob: Starting Analysis for ${documentMetaData.filePath}`)
 
       if (sessionState) {
         Util.withProgress<SubmitRepresentationResponse>(
@@ -50,7 +53,6 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
           })
         }
 
-        _debug?.appendLine(`Metabob: Analyzed file ${documentMetaData.filePath}`)
       }
     } else {
       vscode.window.showErrorMessage(CONSTANTS.editorSelectedIsInvalid)

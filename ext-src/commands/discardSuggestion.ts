@@ -5,12 +5,18 @@ import { feedbackService } from '../services/feedback/feedback.service'
 import { AnalyzeState, IAnalyzeState } from '../store/analyze.state'
 import { SessionState } from '../store/session.state'
 import { Util } from '../utils'
+import { currentQuestionState } from '../store/currentQuestion.state'
+import { RecommendationWebView } from '../providers/recommendation.provider'
+import { Problem } from '../types'
 
 export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
   const command = CONSTANTS.discardSuggestionCommand
 
   const commandHandler = async (args: { id: string; path: string }) => {
     const session = new SessionState(context).get()?.value
+    const state = new currentQuestionState(context)
+    const webview = context.globalState.get<RecommendationWebView>(CONSTANTS.webview)
+
     if (!session) return
 
     feedbackService
@@ -27,41 +33,37 @@ export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?
         }
 
         const analyzeState = new AnalyzeState(context)
+        const problems = (analyzeState.get()?.value ?? {}) as IAnalyzeState
         const key = `${args.path}@@${args.id}`
 
         if (Util.isValidDocument(editor.document)) {
-          analyzeState.update((value: IAnalyzeState) => {
-            value[key] = {
-              ...value[key],
-              isDiscarded: true
-            }
-            const valueKeys = Object.keys(value)
-            const results: any[] = []
+          problems[key] = {
+            ...problems[key],
+            isDiscarded: true
+          }
+  
+          analyzeState.set(problems)
 
-            for (const k in valueKeys) {
-              const p = value[valueKeys[k]]
-              if (valueKeys[k] === key) {
-                continue
-              } else {
-                results.push(p)
-              }
-            }
-            const editor = vscode.window.activeTextEditor
-            if (editor) {
-              const decorations = GenerateDecorations(results, editor)
-              editor.setDecorations(decorations.decorationType, [])
-              editor.setDecorations(decorations.decorationType, decorations.decorations)
-            }
+          // Map all non discarded problems to the results array
+          const results = Object.keys(analyzeState.get()?.value ?? {})
+            .filter(key => !analyzeState.get()?.value[key].isDiscarded)
+            .map(key => analyzeState.get()?.value[key] ?? {} as Problem)
+          
 
-            return value
-          })
+          const editor = vscode.window.activeTextEditor
+          if (editor) {
+            const decorations = GenerateDecorations(results, editor)
+            editor.setDecorations(decorations.decorationType, [])
+            editor.setDecorations(decorations.decorationType, decorations.decorations)
+          }
+          state.clear()
+          webview?.postInitData(state.get()?.value)
         } else {
-          _debug?.append(CONSTANTS.editorSelectedIsInvalid)
-          vscode.window.showErrorMessage(CONSTANTS.editorSelectedIsInvalid)
+          _debug?.appendLine(CONSTANTS.editorSelectedIsInvalid)
         }
       })
-      .catch(() => {
-        vscode.window.showErrorMessage(CONSTANTS.editorSelectedIsInvalid)
+      .catch(err => {
+        _debug?.appendLine(err.message)
       })
   }
 

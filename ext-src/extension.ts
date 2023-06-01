@@ -7,14 +7,20 @@ import { createOrUpdateUserSession } from './helpers/CreateOrUpdateUserSession'
 import { AnalyzeDocumentOnSave } from './helpers/AnalyzeTextDocumentOnSave'
 import { activateDiscardCommand } from './commands/discardSuggestion'
 import { activateEndorseCommand } from './commands/endorseSuggestion'
-import { activateFocusRecomendCommand } from './commands/focusRecomendation'
+import { activateFocusRecommendCommand } from './commands/focusRecommendation'
 import { activateDetailSuggestionCommand } from './commands/detailDocument'
 import { activateFixSuggestionCommand } from './commands/fixDocument'
+import { initState } from './helpers/InitState'
 
 // let sessionInterval: NodeJS.Timer | null = null
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
   const debug = vscode.window.createOutputChannel('Metabob-Debug')
   const analyzeDocumentOnSave = analyzeDocumentOnSaveConfig()
+
+  debug.show(true)
+  debug.appendLine(`Activating Metabob`)
+
+  initState(context)
 
   // Create User Session, If already created get the refresh token
   // otherwise, ping server every 60 second to not destroy the token
@@ -43,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
   activateEndorseCommand(context, debug)
 
   // Deprecated
-  activateFocusRecomendCommand(context, debug)
+  activateFocusRecommendCommand(context, debug)
 
   // When the user click the detail button on the problem
   activateDetailSuggestionCommand(context, debug)
@@ -129,7 +135,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 // Since, We don't want to get Refresh Tokens after User has closed the extension
 // So we will clear Session Interval upon deactivate
-export function deactivate() {
+export function deactivate(): void {
   // if (sessionInterval) {
   //   clearInterval(sessionInterval)
   // }

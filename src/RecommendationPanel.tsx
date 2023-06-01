@@ -3,7 +3,7 @@ import { useUser } from './hooks/useUser'
 import { ReactMarkdownComponent } from './ReactMarkdownComponent'
 import { GeneratePaginationPanel } from './GeneratePaginationPanel'
 
-export const RecomendationPanel = () => {
+export const RecommendationPanel = () => {
   const {
     initialState,
     isgenerateClicked,
@@ -13,7 +13,7 @@ export const RecomendationPanel = () => {
     isGenerateWithQuestionLoading,
     setIsGenerateWithQuestionLoading
   } = useUser()
-  const [userQuestionAboutRecomendation, setUserQuestionAboutRecomendation] = useState<string>('')
+  const [userQuestionAboutRecommendation, setUserQuestionAboutRecommendation] = useState<string>('')
   const handleGenerateClickWithoutQuestion = useCallback(
     (e: any) => {
       e.preventDefault()
@@ -31,24 +31,25 @@ export const RecomendationPanel = () => {
 
   const handleQuestionChange = useCallback(
     (e: any) => {
-      setUserQuestionAboutRecomendation(e.target.value)
+      e.preventDefault()
+      setUserQuestionAboutRecommendation(e.target.value)
     },
-    [setUserQuestionAboutRecomendation]
+    [setUserQuestionAboutRecommendation]
   )
 
-  const handleGenerateRecomendationWithQuestion = useCallback(
+  const handleGenerateRecommendationWithQuestion = useCallback(
     (e: any) => {
       e.preventDefault()
       setIsGenerateWithQuestionLoading(true)
       vscode.postMessage({
         type: 'onGenerateClicked',
         data: {
-          input: userQuestionAboutRecomendation,
+          input: userQuestionAboutRecommendation,
           initData: initialState
         }
       })
     },
-    [initialState, userQuestionAboutRecomendation]
+    [initialState, userQuestionAboutRecommendation]
   )
 
   return (
@@ -106,10 +107,11 @@ export const RecomendationPanel = () => {
                   placeholder='Enter text here'
                   aria-label='your question about recommendation?'
                   onChange={handleQuestionChange}
-                  value={userQuestionAboutRecomendation}
+                  onKeyDown={(e) => {e.key === 'Enter' && handleGenerateRecommendationWithQuestion(e)}}
+                  value={userQuestionAboutRecommendation}
                 />
                 <button
-                  onClick={handleGenerateRecomendationWithQuestion}
+                  onClick={handleGenerateRecommendationWithQuestion}
                   className='flex-shrink-0 items-center px-2 py-1 text-sm font-medium text-white bg-gray-800 rounded-l hover:bg-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
                 >
                   {isGenerateWithQuestionLoading ? (

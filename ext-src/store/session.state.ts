@@ -25,4 +25,8 @@ export class SessionState extends ExtensionState<string> {
 
     return this.set(updatedValue)
   }
+
+  clear(): void {
+    this.context.globalState.update(this.key, undefined)
+  }
 }

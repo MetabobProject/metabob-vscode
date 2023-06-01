@@ -30,10 +30,10 @@ const defaultProvider: AccountSettingTypes = {
   setSuggestionClicked: () => Boolean,
   isGenerateWithoutQuestionLoading: false,
   setIsGenerateWithoutQuestionLoading: () => Boolean,
-  userQuestionAboutRecomendation: '',
-  setUserQuestionAboutRecomendation: () => '',
-  isRecomendationRegenerateLoading: false,
-  setIsRecomendationRegenerateLoading: () => Boolean,
+  userQuestionAboutRecommendation: '',
+  setUserQuestionAboutRecommendation: () => '',
+  isRecommendationRegenerateLoading: false,
+  setIsRecommendationRegenerateLoading: () => Boolean,
   isGenerateWithQuestionLoading: false,
   setIsGenerateWithQuestionLoading: () => Boolean,
   isSuggestionRegenerateLoading: false,
@@ -50,8 +50,8 @@ type Props = {
   children: ReactNode
 }
 
-const AccountSettingProvider = ({ children }: Props) => {
-  const [initialState, setInitialState] = useState('')
+const AccountSettingProvider = ({ children }: Props): JSX.Element => {
+  const [initialState, setInitialState] = useState({})
   const [showSuggestionPaginatePanel, setShowSuggestionPaginationPanel] = useState<boolean>(false)
   const [showGeneratePaginatePanel] = useState<boolean>(false)
   const [suggestion, setSuggestion] = useState('')
@@ -62,8 +62,8 @@ const AccountSettingProvider = ({ children }: Props) => {
   const [userQuestionAboutSuggestion, setUserQuestionAboutSuggestion] = useState<string>('')
   const [isSuggestionClicked, setSuggestionClicked] = useState(false)
   const [isGenerateWithoutQuestionLoading, setIsGenerateWithoutQuestionLoading] = useState<boolean>(false)
-  const [userQuestionAboutRecomendation, setUserQuestionAboutRecomendation] = useState<string>('')
-  const [isRecomendationRegenerateLoading, setIsRecomendationRegenerateLoading] = useState<boolean>(false)
+  const [userQuestionAboutRecommendation, setUserQuestionAboutRecommendation] = useState<string>('')
+  const [isRecommendationRegenerateLoading, setIsRecommendationRegenerateLoading] = useState<boolean>(false)
   const [isSuggestionRegenerateLoading, setIsSuggestionRegenerateLoading] = useState<boolean>(false)
   const [isGenerateWithQuestionLoading, setIsGenerateWithQuestionLoading] = useState<boolean>(false)
   const [suggestionPaginationRegenerate, setSuggestionPaginationRegenerate] = useState<Array<any>>([])
@@ -78,14 +78,14 @@ const AccountSettingProvider = ({ children }: Props) => {
             vscode.postMessage({
               type: 'initData:ResetRecieved',
               data: {
-                input: userQuestionAboutRecomendation,
+                input: userQuestionAboutRecommendation,
                 initData: { ...payload, isReset: false }
               }
             })
             setGenerate('')
             setSuggestion('')
             setShowSuggestionPaginationPanel(false)
-            setUserQuestionAboutRecomendation('')
+            setUserQuestionAboutRecommendation('')
             setUserQuestionAboutSuggestion('')
             setIsgenerateClicked(false)
           }
@@ -94,23 +94,24 @@ const AccountSettingProvider = ({ children }: Props) => {
             vscode.postMessage({
               type: 'initData:FixRecieved',
               data: {
-                input: userQuestionAboutRecomendation,
+                input: userQuestionAboutRecommendation,
                 initData: { ...payload, isFix: false }
               }
             })
             vscode.postMessage({
               type: 'onGenerateClicked',
               data: {
-                input: userQuestionAboutRecomendation,
+                input: userQuestionAboutRecommendation,
                 initData: { ...payload }
               }
             })
             setIsGenerateWithoutQuestionLoading(true)
-            setIsRecomendationRegenerateLoading(true)
+            setIsRecommendationRegenerateLoading(true)
             setIsGenerateWithQuestionLoading(true)
           }
           setInitialState({ ...payload })
           break
+
         case 'onSuggestionClicked:Response':
           const { description } = payload
           setSuggestion(description)
@@ -140,11 +141,11 @@ const AccountSettingProvider = ({ children }: Props) => {
           break
         case 'onGenerateClicked:Response':
           const { recommendation } = payload
-          const adjustedRecomendation: string = recommendation
-          adjustedRecomendation.replace("'''", '')
-          if (adjustedRecomendation !== '') {
+          const adjustedRecommendation: string = recommendation
+          adjustedRecommendation.replace("'''", '')
+          if (adjustedRecommendation !== '') {
             setIsGenerateWithoutQuestionLoading(false)
-            setIsRecomendationRegenerateLoading(false)
+            setIsRecommendationRegenerateLoading(false)
             setIsGenerateWithQuestionLoading(false)
             setGenerate(recommendation)
             setGeneratePaginationRegenerate(previous => {
@@ -154,7 +155,7 @@ const AccountSettingProvider = ({ children }: Props) => {
           } else {
             setIsGenerateWithoutQuestionLoading(false)
             setIsGenerateWithQuestionLoading(false)
-            setIsRecomendationRegenerateLoading(false)
+            setIsRecommendationRegenerateLoading(false)
           }
           break
         case 'onGenerateClicked:Error':
@@ -162,7 +163,7 @@ const AccountSettingProvider = ({ children }: Props) => {
           setIsGenerateWithoutQuestionLoading(false)
           setIsgenerateClicked(false)
           setIsGenerateWithQuestionLoading(false)
-          setIsRecomendationRegenerateLoading(false)
+          setIsRecommendationRegenerateLoading(false)
           break
         case 'onSuggestionClicked:Error':
           setShowSuggestionPaginationPanel(false)
@@ -200,7 +201,7 @@ const AccountSettingProvider = ({ children }: Props) => {
       setIsGenerateWithoutQuestionLoading,
       setIsgenerateClicked,
       setIsGenerateWithQuestionLoading,
-      setIsRecomendationRegenerateLoading,
+      setIsRecommendationRegenerateLoading,
       setGenerate
     ]
   )
@@ -208,14 +209,6 @@ const AccountSettingProvider = ({ children }: Props) => {
   // get initial state
   useEffect(() => {
     vscode.postMessage({ type: 'getInitData' })
-
-    const interval = setInterval(() => {
-      vscode.postMessage({ type: 'getInitData' })
-    }, 1000)
-
-    return () => {
-      clearInterval(interval)
-    }
   }, [])
 
   // handle Incoming Messages
@@ -248,10 +241,10 @@ const AccountSettingProvider = ({ children }: Props) => {
     setSuggestionClicked,
     isGenerateWithoutQuestionLoading,
     setIsGenerateWithoutQuestionLoading,
-    userQuestionAboutRecomendation,
-    setUserQuestionAboutRecomendation,
-    isRecomendationRegenerateLoading,
-    setIsRecomendationRegenerateLoading,
+    userQuestionAboutRecommendation,
+    setUserQuestionAboutRecommendation,
+    isRecommendationRegenerateLoading,
+    setIsRecommendationRegenerateLoading,
     isGenerateWithQuestionLoading,
     setIsGenerateWithQuestionLoading,
     isSuggestionRegenerateLoading,

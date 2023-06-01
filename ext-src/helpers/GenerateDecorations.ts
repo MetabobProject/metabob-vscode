@@ -26,10 +26,10 @@ export function GenerateDecorations(results: Problem[], editor: vscode.TextEdito
       })
     )
 
-    const hoverDiscardMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI})**`
-    const hoverViewDescriptionMessage = `**[More Details](command:metabob.focusRecomened?${viewDescriptionURI})**`
+    const hoverFixMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI})**`
+    const hoverViewDescriptionMessage = `**[More Details](command:metabob.focusRecommend?${viewDescriptionURI})**`
     const hoverMessage = new vscode.MarkdownString(
-      `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverDiscardMessage} |\r${hoverViewDescriptionMessage}`
+      `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverFixMessage} |\r${hoverViewDescriptionMessage}`
     )
     hoverMessage.isTrusted = true
 

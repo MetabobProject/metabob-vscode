@@ -19,7 +19,7 @@ export type IAnalyzeState = {
 // a store, so user will be able to see decorations upon changing files.
 export class AnalyzeState extends ExtensionState<IAnalyzeState> {
   constructor(context: vscode.ExtensionContext) {
-    super(context, CONSTANTS.apiKey)
+    super(context, CONSTANTS.analyze)
   }
 
   get(): ExtensionStateValue<IAnalyzeState> | undefined {
@@ -33,9 +33,13 @@ export class AnalyzeState extends ExtensionState<IAnalyzeState> {
   }
 
   update(callback: (value: IAnalyzeState) => IAnalyzeState): Thenable<void | undefined> {
-    const value = this.get()
-    const updatedValue = callback(value?.value || {})
-
+    const currentValue = this.get()?.value ?? {}
+    const updatedValue = callback(currentValue)
+    
     return this.set(updatedValue)
+  }
+
+  clear(): void {
+    this.context.globalState.update(this.key, undefined);
   }
 }
