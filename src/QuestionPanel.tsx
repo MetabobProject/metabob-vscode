@@ -7,6 +7,7 @@ export const QuestionPanel = () => {
 
   const handleQuestionChange = useCallback(
     (e: any) => {
+      e.preventDefault()
       setUserQuestion(e.target.value)
     },
     [setUserQuestion]
@@ -38,6 +39,7 @@ export const QuestionPanel = () => {
             placeholder='Enter text here'
             aria-label='your question about the problem ?'
             onChange={handleQuestionChange}
+            onKeyDown={(e) => {e.key === 'Enter' && handleSuggestionClick(e)}}
             value={userQuestion}
           />
           <button

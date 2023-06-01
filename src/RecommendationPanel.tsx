@@ -31,6 +31,7 @@ export const RecommendationPanel = () => {
 
   const handleQuestionChange = useCallback(
     (e: any) => {
+      e.preventDefault()
       setUserQuestionAboutRecommendation(e.target.value)
     },
     [setUserQuestionAboutRecommendation]
@@ -106,6 +107,7 @@ export const RecommendationPanel = () => {
                   placeholder='Enter text here'
                   aria-label='your question about recommendation?'
                   onChange={handleQuestionChange}
+                  onKeyDown={(e) => {e.key === 'Enter' && handleGenerateRecommendationWithQuestion(e)}}
                   value={userQuestionAboutRecommendation}
                 />
                 <button
