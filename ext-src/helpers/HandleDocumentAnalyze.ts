@@ -6,6 +6,8 @@ import { AnalyzeState, Analyze } from '../state'
 import Util from '../utils'
 import CONSTANTS from '../constants'
 
+const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' }
+
 export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResponse | null, ApiErrorBase>) => {
   if (response.isErr()) {
     return undefined
@@ -25,21 +27,20 @@ export const handleDocumentAnalyze = async (
   jobId?: string,
   suppressRateLimitErrors = false
 ) => {
-  const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' }
-
   const editor = vscode.window.activeTextEditor
-  if (!editor || editor.document.fileName === metaDataDocument.filePath) {
+  if (!editor || editor.document.fileName !== metaDataDocument.filePath) {
     return failedResponseReturn
   }
 
-  const response = jobId
-    ? await submitService.getJobStatus(jobId)
-    : await submitService.submitTextFile(
-        metaDataDocument.relativePath,
-        metaDataDocument.fileContent,
-        metaDataDocument.filePath,
-        sessionToken
-      )
+  const response =
+    jobId !== undefined
+      ? await submitService.getJobStatus(sessionToken, jobId)
+      : await submitService.submitTextFile(
+          metaDataDocument.relativePath,
+          metaDataDocument.fileContent,
+          metaDataDocument.filePath,
+          sessionToken
+        )
 
   const verifiedResponse = verifyResponseOfSubmit(response)
   if (!verifiedResponse || !verifiedResponse.results) {
@@ -54,7 +55,7 @@ export const handleDocumentAnalyze = async (
     return failedResponseReturn
   }
 
-  // If the response is pending or running, return it early
+  // If the response is pending or running, return verified response early
   if (verifiedResponse.status !== 'complete') {
     return verifiedResponse
   }
