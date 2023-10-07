@@ -1,11 +1,11 @@
 import * as vscode from 'vscode'
 import { getAPIConfig, getRequestParamId } from '../config'
-import { sessionService } from '../services/session/session.service'
-import { SessionState } from '../store/session.state'
+import { sessionService } from '../services'
+import { Session } from '../state'
 import { CreateSessionRequest } from '../types'
 
 export async function createOrUpdateUserSession(context: vscode.ExtensionContext): Promise<undefined> {
-  const sessionState = new SessionState(context)
+  const sessionState = new Session(context)
   const apiKey = getAPIConfig()
   const requestParamId = getRequestParamId()
   const payload: CreateSessionRequest = {
@@ -39,18 +39,14 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
 }
 
 export async function deleteUserSession(context: vscode.ExtensionContext): Promise<undefined> {
-  const sessionState = new SessionState(context)
-
-  const sessionToken = sessionState.get()
-
-  if (sessionToken?.value !== undefined) {
-    const response = await sessionService.deleteUserSession(sessionToken?.value)
-    if (response.isErr()) {
-      // TODO: Check cases
-    }
+  const sessionState = new Session(context)
+  const sessionToken = sessionState.get()?.value
+  if (!sessionToken) return undefined
+  const response = await sessionService.deleteUserSession(sessionToken)
+  if (response.isErr()) {
+    // TODO: Check cases
   }
   sessionState.clear()
 
   return
-
 }

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { CONSTANTS } from '../constants'
 import { Problem } from '../types'
-import { currentQuestionState } from '../store/currentQuestion.state'
+import { currentQuestionState } from '../state/CurrentQuestion'
 
 export function activateDetailSuggestionCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
   const command = CONSTANTS.showDetailSuggestionCommand

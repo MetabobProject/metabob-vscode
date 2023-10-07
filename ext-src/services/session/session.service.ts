@@ -1,3 +1,4 @@
+import { AxiosRequestConfig } from 'axios'
 import { CreateSessionRequest, CreateSessionResponse, getUserSessionResponse } from '../../types'
 import { ApiServiceBase } from '../base.service'
 
@@ -11,15 +12,9 @@ class SessionService extends ApiServiceBase {
    * or a new session token if it does not.
    * @param payload An Object with a API Key
    */
-  async createUserSession(payload: CreateSessionRequest) {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    }
-    if (payload.sessionToken) {
-      headers['Authorization'] = `Bearer ${payload.sessionToken}`
-    }
-    const response = await this.post<CreateSessionResponse>('/session', payload, headers)
-
+  async createUserSession(data: CreateSessionRequest) {
+    const config: AxiosRequestConfig = this.getConfig(data.sessionToken)
+    const response = await this.post<CreateSessionResponse>('/session', data, config)
     return response
   }
 
@@ -30,12 +25,8 @@ class SessionService extends ApiServiceBase {
    * @param sessionToken The Session Token of a user
    */
   async deleteUserSession(sessionToken: string) {
-    const response = await this.delete('/session', {
-      headers: {
-        Authorization: `Bearer ${sessionToken}`
-      }
-    })
-
+    const config: AxiosRequestConfig = this.getConfig(sessionToken)
+    const response = await this.delete('/session', config)
     return response
   }
 
@@ -46,12 +37,8 @@ class SessionService extends ApiServiceBase {
    * @param sessionToken The Session Token of a user
    */
   async getUserSession(sessionToken: string) {
-    const response = await this.get<getUserSessionResponse>('/session', {
-      headers: {
-        Authorization: `Bearer ${sessionToken}`
-      }
-    })
-
+    const config: AxiosRequestConfig = this.getConfig(sessionToken)
+    const response = await this.get<getUserSessionResponse>('/session', config)
     return response
   }
 }

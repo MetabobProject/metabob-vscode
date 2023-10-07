@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { currentQuestionState } from '../store/currentQuestion.state'
+import { currentQuestionState } from '../state/CurrentQuestion'
 import { Problem } from '../types'
 import { CONSTANTS } from '../constants'
 import { RecommendationWebView } from '../providers/recommendation.provider'

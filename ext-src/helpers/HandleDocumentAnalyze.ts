@@ -4,7 +4,7 @@ import { IDocumentMetaData } from '../types'
 import { Result } from 'rusty-result-ts'
 import { SubmitRepresentationResponse } from '../types'
 import { ApiErrorBase } from '../services/base.error'
-import { AnalyzeState, IAnalyzeState } from '../store/analyze.state'
+import { AnalyzeState, IAnalyzeState } from '../state/Analyze'
 import { Util } from '../utils'
 import { CONSTANTS } from '../constants'
 
@@ -14,7 +14,7 @@ export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResp
   }
 
   if (response.isOk()) {
-    return response.value;
+    return response.value
   }
 
   return
@@ -25,15 +25,17 @@ export const handleDocumentAnalyze = async (
   sessionToken: string,
   analyzeState: AnalyzeState,
   jobId: string | undefined = undefined,
-  suppressRateLimitErrors = false,
+  suppressRateLimitErrors = false
 ) => {
-  const failedResponseReturn: SubmitRepresentationResponse =  {jobId: '', status: 'failed'};
-  const response = jobId ? await submitService.getJobStatus(jobId) : await submitService.submitTextFile(
-    metaDataDocument.relativePath,
-    metaDataDocument.fileContent,
-    metaDataDocument.filePath,
-    sessionToken
-  )
+  const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' }
+  const response = jobId
+    ? await submitService.getJobStatus(jobId)
+    : await submitService.submitTextFile(
+        metaDataDocument.relativePath,
+        metaDataDocument.fileContent,
+        metaDataDocument.filePath,
+        sessionToken
+      )
 
   const verifiedResponse = verifyResponseOfSubmit(response)
   if (!verifiedResponse) {
@@ -49,7 +51,7 @@ export const handleDocumentAnalyze = async (
   }
 
   if (verifiedResponse && (verifiedResponse.status === 'pending' || verifiedResponse?.status === 'running')) {
-    return verifiedResponse; 
+    return verifiedResponse
   } else if (verifiedResponse && verifiedResponse.status === 'complete') {
     if (verifiedResponse.results) {
       const editor = vscode.window.activeTextEditor

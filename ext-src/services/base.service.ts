@@ -21,16 +21,20 @@ export class ApiServiceBase {
    * Returns a new instance of the base config for all requests this service makes.
    * @protected
    */
-  protected getConfig(): AxiosRequestConfig {
-    return {
+  protected getConfig(sessionToken?: string): AxiosRequestConfig {
+    const config: AxiosRequestConfig = {
       headers: {
-        // Put headers required with every request here
-        Accept: '*/*',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        Authorization: ''
+        'Access-Control-Allow-Origin': '*'
       }
     }
+
+    if (sessionToken && config.headers) {
+      config.headers.Authorization = `Bearer ${sessionToken}`
+    }
+
+    return config
   }
 
   /**
@@ -122,12 +126,9 @@ export class ApiServiceBase {
     if (subPath.length > 0 && subPath[0] !== '/') {
       subPath = `/${subPath}`
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
-    const config = merge(this.getConfig() || {}, configOverrides || {})
+    const config = merge(this.getConfig(), configOverrides || {})
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const responseData: T | null = ((await request(`${this.urlBase}${subPath}`, config))?.data as T) ?? null
-
       return ok(responseData)
     } catch (e: unknown) {
       return err(new ApiErrorBase(e))

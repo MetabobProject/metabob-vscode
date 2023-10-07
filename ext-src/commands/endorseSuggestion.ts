@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { CONSTANTS } from '../constants'
 import { feedbackService } from '../services/feedback/feedback.service'
-import { SessionState } from '../store/session.state'
+import { SessionState } from '../state/Session'
 
 export type EndorseCommandHandler = { id: string }
 

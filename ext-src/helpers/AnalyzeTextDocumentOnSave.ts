@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
-import { AnalyzeState } from '../store/analyze.state'
-import { SessionState } from '../store/session.state'
+import { AnalyzeState } from '../state/Analyze'
+import { SessionState } from '../state/Session'
 import { IAnalyzeTextDocumentOnSave, SubmitRepresentationResponse } from '../types'
 import { Util } from '../utils'
 import { handleDocumentAnalyze } from './HandleDocumentAnalyze'
@@ -30,7 +30,7 @@ export async function AnalyzeDocumentOnSave(_payload: IAnalyzeTextDocumentOnSave
 
       return
     })
-  
+
     if (isInQueue) {
       Util.withProgress<SubmitRepresentationResponse>(
         handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState, jobId, true),

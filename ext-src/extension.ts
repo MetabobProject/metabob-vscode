@@ -1,24 +1,25 @@
 import * as vscode from 'vscode'
 import { analyzeDocumentOnSaveConfig } from './config'
 import { RecommendationWebView } from './providers/recommendation.provider'
-import { activateAnalyzeCommand } from './commands/AnalyzeDocument'
-import { Util } from './utils'
-import { createOrUpdateUserSession } from './helpers/CreateOrUpdateUserSession'
-import { AnalyzeDocumentOnSave } from './helpers/AnalyzeTextDocumentOnSave'
-import { activateDiscardCommand } from './commands/discardSuggestion'
-import { activateEndorseCommand } from './commands/endorseSuggestion'
-import { activateFocusRecommendCommand } from './commands/focusRecommendation'
-import { activateDetailSuggestionCommand } from './commands/detailDocument'
-import { activateFixSuggestionCommand } from './commands/fixDocument'
-import { initState } from './helpers/InitState'
+import {
+  activateEndorseCommand,
+  activateFocusRecommendCommand,
+  activateDetailSuggestionCommand,
+  activateFixSuggestionCommand,
+  activateDiscardCommand,
+  activateAnalyzeCommand
+} from './commands'
+import { createOrUpdateUserSession, initState, AnalyzeDocumentOnSave } from './helpers'
+import Util from './utils'
+import debugChannel from './debug'
 
-// let sessionInterval: NodeJS.Timer | null = null
 export function activate(context: vscode.ExtensionContext): void {
-  const debug = vscode.window.createOutputChannel('Metabob-Debug')
+  if (!context.extension || !context.extensionUri) return
+
   const analyzeDocumentOnSave = analyzeDocumentOnSaveConfig()
 
-  debug.show(true)
-  debug.appendLine(`Activating Metabob`)
+  debugChannel.show(true)
+  debugChannel.appendLine(`Activating Metabob`)
 
   initState(context)
 
@@ -27,18 +28,9 @@ export function activate(context: vscode.ExtensionContext): void {
   // if the user has not done any activity
   createOrUpdateUserSession(context)
 
-  // TODO: Redo this implementation. at the moment Bug seems to be on the extension host end.
-  // https://github.com/microsoft/vscode/issues/109014#issuecomment-712913566
-
-  // if (!sessionInterval) {
-  //   sessionInterval = setInterval(() => {
-  //     createOrUpdateUserSession(context, debug)
-  //   }, 60_000)
-  // }
-
   // Analyze command that hit /analyze endpoint with current file content
   // then decorate current file with error
-  activateAnalyzeCommand(context, debug)
+  activateAnalyzeCommand(context)
 
   // If the user Discard a suggestion, it would be removed from decoration
   // and the global state as well
@@ -128,15 +120,11 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       'recommendation-panel-webview',
-      new RecommendationWebView(context?.extensionPath, context?.extensionUri, context)
+      new RecommendationWebView(context.extensionPath, context.extensionUri, context)
     )
   )
 }
 
-// Since, We don't want to get Refresh Tokens after User has closed the extension
-// So we will clear Session Interval upon deactivate
 export function deactivate(): void {
-  // if (sessionInterval) {
-  //   clearInterval(sessionInterval)
-  // }
+  debugChannel.dispose()
 }

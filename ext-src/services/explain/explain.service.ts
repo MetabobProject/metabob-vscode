@@ -1,6 +1,6 @@
 import { ApiServiceBase } from '../base.service'
 
-export interface IExplainProblemPayload {
+export interface ExplainProblemPayload {
   problemId: string
 
   /** This should describe the action that needs to be performed by the model. i.e. "Explain the effect on performance if this fix is applied" */
@@ -13,7 +13,7 @@ export interface IExplainProblemPayload {
   context?: string
 }
 
-export interface IRecommendSuggestionPayload {
+export interface SuggestRecomendationPayload {
   problemId: string
 
   /** Optional, If included this will added as additional instructions for the recommendation engine. i.e. "Fix this problem using the auto_format function defined in the utils module" */
@@ -35,49 +35,26 @@ export interface IRecommendSuggestionPayload {
   recommendation: string
 }
 
-interface IExplainProblemResponse {
+export interface ExplainProblemResponse {
   description: string
 }
 
-interface ISuggestRecommendationResponse {
+export interface SuggestRecomendationResponse {
   recommendation: string
 }
 
 export class ExplainService extends ApiServiceBase {
-  async explainProblem(payload: IExplainProblemPayload, sessionToken: string, isChatConfigEnabled?: boolean) {
-    const endpoint = isChatConfigEnabled ? '/explain?prompt_only=true' : '/explain'
-    const response = await this.post<IExplainProblemResponse>(
-      endpoint,
-      {
-        problemId: payload.problemId,
-        prompt: payload.prompt
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`
-        }
-      }
-    )
-
+  async explainProblem(data: ExplainProblemPayload, sessionToken: string, isChatConfigEnabled?: boolean) {
+    const endpoint = isChatConfigEnabled === true ? '/explain?prompt_only=true' : '/explain'
+    const config = this.getConfig(sessionToken)
+    const response = await this.post<ExplainProblemResponse>(endpoint, data, config)
     return response
   }
 
-  async RecommendSuggestion(payload: IRecommendSuggestionPayload, sessionToken: string, isChatConfigEnabled?: boolean) {
-    const endpoint = isChatConfigEnabled ? '/recommend?prompt_only=true' : '/recommend'
-    const response = await this.post<ISuggestRecommendationResponse>(
-      endpoint,
-      {
-        ...payload
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`
-        }
-      }
-    )
-
+  async RecommendSuggestion(data: SuggestRecomendationPayload, sessionToken: string, isChatConfigEnabled?: boolean) {
+    const endpoint = isChatConfigEnabled === true ? '/recommend?prompt_only=true' : '/recommend'
+    const config = this.getConfig(sessionToken)
+    const response = await this.post<SuggestRecomendationResponse>(endpoint, data, config)
     return response
   }
 }
