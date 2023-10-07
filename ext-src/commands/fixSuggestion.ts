@@ -16,7 +16,8 @@ export function activateFixSuggestionCommand(context: vscode.ExtensionContext) {
       path,
       id,
       vuln,
-      isFix: true
+      isFix: true,
+      isReset: false
     })
     vscode.commands.executeCommand('recommendation-panel-webview.focus')
   }

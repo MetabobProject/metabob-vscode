@@ -14,7 +14,8 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       path: args.path,
       id: args.id,
       vuln: args.vuln,
-      isFix: false
+      isFix: false,
+      isReset: false
     }
     await currentQuestionState.set(payload)
     vscode.commands.executeCommand('recommendation-panel-webview.focus')

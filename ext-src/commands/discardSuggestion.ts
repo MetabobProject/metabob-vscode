@@ -59,8 +59,8 @@ export function activateDiscardCommand(context: vscode.ExtensionContext) {
 
     try {
       await analyzeState.set(problems)
-    } catch (error) {
-      _debug?.appendLine(error)
+    } catch (error: any) {
+      _debug.appendLine(error)
       return
     }
 

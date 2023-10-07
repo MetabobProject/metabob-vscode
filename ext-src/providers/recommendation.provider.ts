@@ -148,7 +148,7 @@ export class RecommendationWebView implements WebviewViewProvider {
         type: 'onSuggestionClickedGPT:Response',
         data: { ...chatresponse.data }
       })
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(error)
     }
   }
@@ -231,7 +231,7 @@ export class RecommendationWebView implements WebviewViewProvider {
         type: 'onGenerateClickedGPT:Response',
         data: { ...chatresponse.data }
       })
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(error)
     }
   }
