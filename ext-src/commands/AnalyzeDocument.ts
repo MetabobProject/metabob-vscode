@@ -1,10 +1,10 @@
 import * as vscode from 'vscode'
+import { SubmitRepresentationResponse } from '../services'
 import { handleDocumentAnalyze } from '../helpers'
 import { Analyze, Session } from '../state'
 import debugChannel from '../debug'
 import CONSTANTS from '../constants'
 import Util from '../utils'
-import { SubmitRepresentationResponse } from '../types'
 
 export function activateAnalyzeCommand(context: vscode.ExtensionContext) {
   const command = CONSTANTS.analyzeDocumentCommand

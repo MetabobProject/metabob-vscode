@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { analyzeDocumentOnSaveConfig } from './config'
+import { AnalyzeDocumentOnSaveConfig } from './config'
 import { RecommendationWebView } from './providers/recommendation.provider'
 import {
   activateEndorseCommand,
@@ -14,14 +14,19 @@ import Util from './utils'
 import debugChannel from './debug'
 
 export function activate(context: vscode.ExtensionContext): void {
-  if (!context.extension || !context.extensionUri) return
-
-  const analyzeDocumentOnSave = analyzeDocumentOnSaveConfig()
-
   debugChannel.show(true)
-  debugChannel.appendLine(`Activating Metabob`)
+  debugChannel.appendLine('Activating Metabob Extension...')
 
   initState(context)
+
+  if (!context.extension || !context.extensionUri) {
+    debugChannel.appendLine(
+      'Error Activating Metabob Extension\nReason: context.extension or context.extensionUri is undefined'
+    )
+    return
+  }
+
+  const analyzeDocumentOnSaveConfig = AnalyzeDocumentOnSaveConfig()
 
   // Create User Session, If already created get the refresh token
   // otherwise, ping server every 60 second to not destroy the token
@@ -34,23 +39,23 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // If the user Discard a suggestion, it would be removed from decoration
   // and the global state as well
-  activateDiscardCommand(context, debug)
+  activateDiscardCommand(context)
 
   // If the user feels suggestion is good, he can endorse that suggestion
   // Used to notify the model about positive feedback
-  activateEndorseCommand(context, debug)
+  activateEndorseCommand(context)
 
   // Deprecated
-  activateFocusRecommendCommand(context, debug)
+  activateFocusRecommendCommand(context)
 
   // When the user click the detail button on the problem
-  activateDetailSuggestionCommand(context, debug)
+  activateDetailSuggestionCommand(context)
 
   // Whenever the user clicks the fix button
-  activateFixSuggestionCommand(context, debug)
+  activateFixSuggestionCommand(context)
 
   // Analyze on Save functionality is only ran if the user enabled it.
-  if (analyzeDocumentOnSave && analyzeDocumentOnSave === true) {
+  if (analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true) {
     context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument(document => {
         // Will check if the current document is valid code file.

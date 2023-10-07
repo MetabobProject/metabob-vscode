@@ -6,7 +6,7 @@ import { GenerateDecorations } from './helpers'
 import CONSTANTS from './constants'
 
 // Normal Utilities used shared across folders
-export default class Util {
+export default class Utils {
   static context: ExtensionContext
 
   static getSessionToken() {
@@ -60,7 +60,7 @@ export default class Util {
     const workspaceFolder = workspace.getWorkspaceFolder(document.uri)
     const relativePath = workspaceFolder ? path.relative(workspaceFolder.uri.fsPath, filePath) : ''
     const fileContent = document.getText()
-    const isTextDocument = Util.isTextDocument(document)
+    const isTextDocument = Utils.isTextDocument(document)
     const languageId = document.languageId
     const endLine = document.lineCount - 1
 

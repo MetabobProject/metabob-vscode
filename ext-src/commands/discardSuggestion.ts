@@ -1,22 +1,21 @@
 import * as vscode from 'vscode'
-import { CONSTANTS } from '../constants'
+import { CurrentQuestion, Analyze, Session } from '../state'
 import { GenerateDecorations } from '../helpers/GenerateDecorations'
-import { feedbackService } from '../services/feedback/feedback.service'
-import { AnalyzeState, IAnalyzeState } from '../state/Analyze'
-import { SessionState } from '../state/Session'
-import { Util } from '../utils'
-import { currentQuestionState } from '../state/CurrentQuestion'
+import { FeedbackSuggestionPayload, feedbackService } from '../services'
 import { RecommendationWebView } from '../providers/recommendation.provider'
+import CONSTANTS from '../constants'
+import Utils from '../utils'
+import _debug from '../debug'
 import { Problem } from '../types'
 
 export type DiscardCommandHandler = { id: string; path: string }
 
-export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
+export function activateDiscardCommand(context: vscode.ExtensionContext) {
   const command = CONSTANTS.discardSuggestionCommand
 
   const commandHandler = async (args: DiscardCommandHandler) => {
-    const { id, path } = args
-    const key = `${path}@@${id}`
+    const { id: problemId, path } = args
+    const key = `${path}@@${problemId}`
 
     const editor = vscode.window.activeTextEditor
     if (!editor) {
@@ -24,28 +23,31 @@ export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?
       return
     }
 
-    if (!Util.isValidDocument(editor.document)) {
+    if (!Utils.isValidDocument(editor.document)) {
       _debug?.appendLine(CONSTANTS.editorSelectedIsInvalid)
       return
     }
 
-    const session = new SessionState(context).get()?.value
+    const session = new Session(context).get()?.value
     if (!session) return
 
-    const analyzeState = new AnalyzeState(context)
-    const currentQuestion = new currentQuestionState(context)
+    const analyzeState = new Analyze(context)
+    const currentQuestion = new CurrentQuestion(context)
 
-    const problems = analyzeState.get()?.value as IAnalyzeState | undefined
+    const problems = analyzeState.get()?.value
     if (!problems) return
 
     const webview = context.globalState.get<RecommendationWebView>(CONSTANTS.webview)
     if (!webview || !webview.postInitData) return
 
+    const payload: FeedbackSuggestionPayload = {
+      problemId,
+      discarded: true,
+      endorsed: false
+    }
+
     try {
-      await feedbackService.discardSuggestion({
-        problemId: args.id,
-        sessionToken: session
-      })
+      await feedbackService.discardSuggestion(payload, session)
     } catch (err: any) {
       _debug?.appendLine(err.message)
     }

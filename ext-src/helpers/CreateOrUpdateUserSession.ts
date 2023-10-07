@@ -1,13 +1,12 @@
 import * as vscode from 'vscode'
-import { getAPIConfig, getRequestParamId } from '../config'
-import { sessionService } from '../services'
+import { GetAPIConfig, GetRequestParamId } from '../config'
+import { sessionService, CreateSessionRequest } from '../services'
 import { Session } from '../state'
-import { CreateSessionRequest } from '../types'
 
 export async function createOrUpdateUserSession(context: vscode.ExtensionContext): Promise<undefined> {
   const sessionState = new Session(context)
-  const apiKey = getAPIConfig()
-  const requestParamId = getRequestParamId()
+  const apiKey = GetAPIConfig()
+  const requestParamId = GetRequestParamId()
   const payload: CreateSessionRequest = {
     apiKey: apiKey || '',
     meta: {

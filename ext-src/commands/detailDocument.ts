@@ -1,15 +1,16 @@
 import * as vscode from 'vscode'
-import { CONSTANTS } from '../constants'
+import CONSTANTS from '../constants'
+import _debug from '../debug'
+import { CurrentQuestion } from '../state'
 import { Problem } from '../types'
-import { currentQuestionState } from '../state/CurrentQuestion'
 
-export function activateDetailSuggestionCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
+export function activateDetailSuggestionCommand(context: vscode.ExtensionContext) {
   const command = CONSTANTS.showDetailSuggestionCommand
 
   const commandHandler = async (args: { path: string; id: string; vuln: Problem; jobId: string }) => {
-    _debug?.append(`Detail initiated for ${args.path} with Problem ${args.id} `)
-    const state = new currentQuestionState(context)
-    state.set({
+    _debug.appendLine(`Detail initiated for ${args.path} with Problem ${args.id} `)
+    const currentQuestionState = new CurrentQuestion(context)
+    currentQuestionState.set({
       path: args.path,
       id: args.id,
       vuln: args.vuln,

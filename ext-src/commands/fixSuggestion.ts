@@ -1,17 +1,18 @@
 import * as vscode from 'vscode'
-import { CONSTANTS } from '../constants'
+import CONSTANTS from '../constants'
 import { Problem } from '../types'
-import { currentQuestionState } from '../state/CurrentQuestion'
+import { CurrentQuestion } from '../state'
+import _debug from '../debug'
 
 export type FixSuggestionCommandHandler = { path: string; id: string; vuln: Problem; jobId: string }
 
-export function activateFixSuggestionCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
+export function activateFixSuggestionCommand(context: vscode.ExtensionContext) {
   const command = CONSTANTS.fixSuggestionCommand
 
   const commandHandler = async (args: FixSuggestionCommandHandler) => {
     const { path, id, vuln } = args
-    const currentQuestion = new currentQuestionState(context)
-    currentQuestion.set({
+    const currentQuestionState = new CurrentQuestion(context)
+    currentQuestionState.set({
       path,
       id,
       vuln,

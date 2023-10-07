@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
-import { currentQuestionState } from '../state/CurrentQuestion'
+import { CurrentQuestion } from '../state'
 
 export function initState(context: vscode.ExtensionContext): void {
-  const state = new currentQuestionState(context)
-  state.clear()
+  const currentQuestionState = new CurrentQuestion(context)
+  currentQuestionState.clear()
 }

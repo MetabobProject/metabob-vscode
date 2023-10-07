@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
-import { CONSTANTS } from '../constants'
-import { feedbackService } from '../services/feedback/feedback.service'
-import { SessionState } from '../state/Session'
+import CONSTANTS from '../constants'
+import { feedbackService, FeedbackSuggestionPayload } from '../services'
+import { Session } from '../state'
 
 export type EndorseCommandHandler = { id: string }
 
@@ -10,14 +10,16 @@ export function activateEndorseCommand(context: vscode.ExtensionContext, _debug?
 
   const commandHandler = async (args: EndorseCommandHandler) => {
     const { id: problemId } = args
-    const sessionToken = new SessionState(context).get()?.value
+    const sessionToken = new Session(context).get()?.value
     if (!sessionToken) return
 
+    const payload: FeedbackSuggestionPayload = {
+      problemId,
+      discarded: false,
+      endorsed: true
+    }
     try {
-      await feedbackService.endorseSuggestion({
-        problemId,
-        sessionToken
-      })
+      await feedbackService.endorseSuggestion(payload, sessionToken)
     } catch {
       _debug?.appendLine(`Metabob: Error Endorsing Problem With ${args.id}`)
       vscode.window.showErrorMessage(CONSTANTS.endorseCommandErrorMessage)

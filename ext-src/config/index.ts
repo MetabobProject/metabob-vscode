@@ -1,36 +1,36 @@
 import * as vscode from 'vscode'
 
-export const getAPIConfig = () => {
+export const GetAPIConfig = () => {
   const config = vscode.workspace.getConfiguration('metabob').get<string>('apiKey')
 
   return config
 }
 
-export const getAPIBaseURLConfig = () => {
+export const GetAPIBaseURLConfig = () => {
   const config = vscode.workspace.getConfiguration('metabob').get<string>('baseURl')
 
   return config
 }
 
-export const analyzeDocumentOnSaveConfig = () => {
+export const AnalyzeDocumentOnSaveConfig = () => {
   const config = vscode.workspace.getConfiguration('metabob').get<boolean>('analyzeDocumentOnSave')
 
   return config
 }
 
-export const getChatGPTToken = () => {
+export const GetChatGPTToken = () => {
   const config = vscode.workspace.getConfiguration('metabob').get<string>('chatgptToken')
 
   return config
 }
 
-export const backendService = () => {
+export const BackendService = () => {
   const config = vscode.workspace.getConfiguration('metabob').get<string>('backendSelection')
 
   return config
 }
 
-export const getRequestParamId = (): string | undefined => {
+export const GetRequestParamId = (): string | undefined => {
   if (vscode.env.isTelemetryEnabled) {
     return vscode.env.machineId
   }
