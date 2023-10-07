@@ -28,31 +28,35 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const analyzeDocumentOnSaveConfig = AnalyzeDocumentOnSaveConfig()
 
-  // Create User Session, If already created get the refresh token
-  // otherwise, ping server every 60 second to not destroy the token
-  // if the user has not done any activity
-  createOrUpdateUserSession(context)
+  try {
+    // Create User Session, If already created get the refresh token
+    // otherwise, ping server every 60 second to not destroy the token
+    // if the user has not done any activity
+    createOrUpdateUserSession(context)
 
-  // Analyze command that hit /analyze endpoint with current file content
-  // then decorate current file with error
-  activateAnalyzeCommand(context)
+    // Analyze command that hit /analyze endpoint with current file content
+    // then decorate current file with error
+    activateAnalyzeCommand(context)
 
-  // If the user Discard a suggestion, it would be removed from decoration
-  // and the global state as well
-  activateDiscardCommand(context)
+    // If the user Discard a suggestion, it would be removed from decoration
+    // and the global state as well
+    activateDiscardCommand(context)
 
-  // If the user feels suggestion is good, he can endorse that suggestion
-  // Used to notify the model about positive feedback
-  activateEndorseCommand(context)
+    // If the user feels suggestion is good, he can endorse that suggestion
+    // Used to notify the model about positive feedback
+    activateEndorseCommand(context)
 
-  // Deprecated
-  activateFocusRecommendCommand(context)
+    // Deprecated
+    activateFocusRecommendCommand(context)
 
-  // When the user click the detail button on the problem
-  activateDetailSuggestionCommand(context)
+    // When the user click the detail button on the problem
+    activateDetailSuggestionCommand(context)
 
-  // Whenever the user clicks the fix button
-  activateFixSuggestionCommand(context)
+    // Whenever the user clicks the fix button
+    activateFixSuggestionCommand(context)
+  } catch (error: any) {
+    debugChannel.appendLine(`Metabob: ${error}`)
+  }
 
   // Analyze on Save functionality is only ran if the user enabled it.
   if (analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true) {

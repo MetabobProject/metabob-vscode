@@ -71,7 +71,7 @@ export const handleDocumentAnalyze = async (
     }
   })
 
-  await analyzeState.set(results)
+  analyzeState.set(results)
 
   const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
   editor.setDecorations(decorationFromResponse.decorationType, [])

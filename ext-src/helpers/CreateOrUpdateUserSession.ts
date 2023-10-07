@@ -13,9 +13,10 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
       supplementaryId: requestParamId
     }
   }
-  const sessionToken = sessionState.get()
+
+  const sessionToken = sessionState.get()?.value
   if (sessionToken) {
-    payload['sessionToken'] = sessionToken.value
+    payload['sessionToken'] = sessionToken
   }
 
   const response = await sessionService.createUserSession(payload)
