@@ -77,15 +77,11 @@ export class RecommendationWebView implements WebviewViewProvider {
 
   async handleSuggestionClick(input: string, initData: CurrentQuestionState): Promise<void> {
     if (this._view === null || this._view === undefined || !this._view?.webview) {
-      return
+      throw new Error('handleSuggestionClick: Webview is undefined')
     }
 
     if (!initData) {
-      this._view.webview.postMessage({
-        type: 'onSuggestionClicked:Error',
-        data: {}
-      })
-      return
+      throw new Error('handleSuggestionClick: Init Data is undefined')
     }
     const backendServiceConfig = BackendService()
     const chatGPTToken = GetChatGPTToken()
@@ -94,22 +90,13 @@ export class RecommendationWebView implements WebviewViewProvider {
     // If chatGpt is enabled and token is '' or undefined throw error early
     if (isChatConfigEnabled === true && (chatGPTToken === '' || !chatGPTToken)) {
       window.showErrorMessage('Metabob: ChatGPT API Key is required when openai/chatgpt backend is selected')
-      this._view?.webview.postMessage({
-        type: 'onSuggestionClicked:Error',
-        data: {}
-      })
-
-      return
+      throw new Error('handleSuggestionClick: ChatGPTToken is Required when gpt-config is enabled')
     }
 
     const sessionToken = new Session(this.extensionContext).get()?.value
     // If Session Token is undefined, throw error early
     if (!sessionToken) {
-      this._view.webview.postMessage({
-        type: 'onSuggestionClicked:Error',
-        data: {}
-      })
-      return
+      throw new Error('handleSuggestionClick: Session Token is Undefined')
     }
 
     const explainProblemPayload: ExplainProblemPayload = {
@@ -121,20 +108,12 @@ export class RecommendationWebView implements WebviewViewProvider {
     try {
       const response = await explainService.explainProblem(explainProblemPayload, sessionToken, isChatConfigEnabled)
       if (response.isErr()) {
-        this._view.webview.postMessage({
-          type: 'onSuggestionClicked:Error',
-          data: {}
-        })
         window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
-        return
+        throw new Error('Something went wrong with the request! Please try again.')
       }
 
       if (response.value === null) {
-        this._view.webview.postMessage({
-          type: 'onSuggestionClicked:Error',
-          data: {}
-        })
-        return
+        throw new Error('handleSuggestionClick: Response value is null')
       }
 
       if (!isChatConfigEnabled) {
@@ -170,15 +149,12 @@ export class RecommendationWebView implements WebviewViewProvider {
         data: { ...chatresponse.data }
       })
     } catch (error) {
-      this._view?.webview.postMessage({
-        type: 'onSuggestionClicked:Error',
-        data: {}
-      })
+      throw new Error(error)
     }
   }
 
   async handleRecommendationClick(input: string, initData: CurrentQuestionState): Promise<void> {
-    if (this._view === null || this._view === undefined || !this._view?.webview) {
+    if (this._view === null || this._view === undefined || !this._view.webview) {
       throw new Error('handleRecommendationClick: Webview is undefined')
     }
 
@@ -293,7 +269,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   handleApplyRecommendation(input: string, initData: CurrentQuestionState): void {
     const editor = window.activeTextEditor
     if (!editor || !initData) {
-      return
+      throw new Error('handleApplyRecommendation: Editor or Init Data is undefined')
     }
 
     const startLine = initData.vuln.startLine
@@ -326,11 +302,21 @@ export class RecommendationWebView implements WebviewViewProvider {
           const initData = data?.initData
           if (initData === null || !initData) {
             window.showErrorMessage('Metabob: Init Data is null')
-            return
+            this._view.webview.postMessage({
+              type: 'onSuggestionClicked:Error',
+              data: {}
+            })
+            break
           }
-
-          await this.handleSuggestionClick(input, initData)
-          window.showInformationMessage(message.data)
+          try {
+            await this.handleSuggestionClick(input, initData)
+            window.showInformationMessage(message.data)
+          } catch {
+            this._view.webview.postMessage({
+              type: 'onSuggestionClicked:Error',
+              data: {}
+            })
+          }
           break
         }
         case 'getInitData': {
@@ -351,9 +337,12 @@ export class RecommendationWebView implements WebviewViewProvider {
         case 'onGenerateClicked': {
           const input = data?.input
           const initData = data?.initData
-          if (initData === null) {
+          if (initData === null || !initData) {
             window.showErrorMessage('Metabob: Init Data is null')
-            break
+            this._view.webview.postMessage({
+              type: 'onGenerateClicked:Error',
+              data: {}
+            })
           }
 
           try {
@@ -394,17 +383,31 @@ export class RecommendationWebView implements WebviewViewProvider {
           const initData = data?.initData
           if (initData === null || !initData) {
             window.showErrorMessage('Metabob: Init Data is null')
-            return
+            this._view.webview.postMessage({
+              type: 'applyRecommendation:Error',
+              data: {}
+            })
+            break
           }
-
-          this.handleApplyRecommendation(input, initData)
+          try {
+            this.handleApplyRecommendation(input, initData)
+          } catch {
+            this._view.webview.postMessage({
+              type: 'applyRecommendation:Error',
+              data: {}
+            })
+          }
           break
         }
         case 'onEndorseSuggestionClicked': {
           const initData = data?.initData
           if (initData === null || !initData) {
             window.showErrorMessage('Metabob: Init Data is null')
-            return
+            this._view.webview.postMessage({
+              type: 'onEndorseSuggestionClicked:Error',
+              data: {}
+            })
+            break
           }
 
           const payload: EndorseCommandHandler = {
@@ -418,13 +421,11 @@ export class RecommendationWebView implements WebviewViewProvider {
               type: 'onEndorseSuggestionClicked:Success',
               data: {}
             })
-          } catch (error) {
-            if (this._view) {
-              this._view.webview.postMessage({
-                type: 'onEndorseSuggestionClicked:Error',
-                data: {}
-              })
-            }
+          } catch {
+            this._view.webview.postMessage({
+              type: 'onEndorseSuggestionClicked:Error',
+              data: {}
+            })
           }
           break
         }
@@ -432,7 +433,11 @@ export class RecommendationWebView implements WebviewViewProvider {
           const initData = data?.initData
           if (initData === null || !initData) {
             window.showErrorMessage('Metabob: Init Data is null')
-            return
+            this._view.webview.postMessage({
+              type: 'onDiscardSuggestionClicked:Error',
+              data: {}
+            })
+            break
           }
           const payload: DiscardCommandHandler = {
             id: initData.id,
