@@ -4,7 +4,7 @@ import { Problem } from '../types'
 import { CurrentQuestion } from '../state'
 import _debug from '../debug'
 
-export type FixSuggestionCommandHandler = { path: string; id: string; vuln: Problem; jobId: string }
+export type FixSuggestionCommandHandler = { path: string; id: string; vuln: Problem; jobId?: string }
 
 export function activateFixSuggestionCommand(context: vscode.ExtensionContext) {
   const command = CONSTANTS.fixSuggestionCommand

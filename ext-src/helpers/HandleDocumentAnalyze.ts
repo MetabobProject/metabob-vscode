@@ -1,33 +1,37 @@
 import * as vscode from 'vscode'
-import { submitService } from '../services/submit/submit.service'
-import { IDocumentMetaData } from '../types'
 import { Result } from 'rusty-result-ts'
-import { SubmitRepresentationResponse } from '../types'
-import { ApiErrorBase } from '../services/base.error'
-import { AnalyzeState, IAnalyzeState } from '../state/Analyze'
-import { Util } from '../utils'
-import { CONSTANTS } from '../constants'
+import { submitService, SubmitRepresentationResponse, ApiErrorBase } from '../services/'
+import { IDocumentMetaData } from '../types'
+import { AnalyzeState, Analyze } from '../state'
+import Util from '../utils'
+import CONSTANTS from '../constants'
 
 export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResponse | null, ApiErrorBase>) => {
   if (response.isErr()) {
-    return
+    return undefined
   }
 
   if (response.isOk()) {
-    return response.value
+    return response.value !== null ? response.value : undefined
   }
 
-  return
+  return undefined
 }
 
 export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string,
-  analyzeState: AnalyzeState,
-  jobId: string | undefined = undefined,
+  analyzeState: Analyze,
+  jobId?: string,
   suppressRateLimitErrors = false
 ) => {
   const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' }
+
+  const editor = vscode.window.activeTextEditor
+  if (!editor || editor.document.fileName === metaDataDocument.filePath) {
+    return failedResponseReturn
+  }
+
   const response = jobId
     ? await submitService.getJobStatus(jobId)
     : await submitService.submitTextFile(
@@ -38,7 +42,7 @@ export const handleDocumentAnalyze = async (
       )
 
   const verifiedResponse = verifyResponseOfSubmit(response)
-  if (!verifiedResponse) {
+  if (!verifiedResponse || !verifiedResponse.results) {
     if (!suppressRateLimitErrors) {
       vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage)
     }
@@ -50,35 +54,27 @@ export const handleDocumentAnalyze = async (
     return failedResponseReturn
   }
 
-  if (verifiedResponse && (verifiedResponse.status === 'pending' || verifiedResponse?.status === 'running')) {
+  // If the response is pending or running, return it early
+  if (verifiedResponse.status !== 'complete') {
     return verifiedResponse
-  } else if (verifiedResponse && verifiedResponse.status === 'complete') {
-    if (verifiedResponse.results) {
-      const editor = vscode.window.activeTextEditor
-      const jobId = verifiedResponse.jobId
-
-      // collect all the problems and add them to the state as separate keys
-      const results: IAnalyzeState = {}
-
-      verifiedResponse.results.forEach(problem => {
-        const key = `${problem.path}@@${problem.id}`
-        results[key] = {
-          ...problem,
-          isDiscarded: false
-        }
-      })
-
-      analyzeState.set(results)
-
-      if (editor && editor.document.fileName === metaDataDocument.filePath) {
-        const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
-        editor.setDecorations(decorationFromResponse.decorationType, [])
-        editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)
-
-        return verifiedResponse
-      }
-    }
   }
 
-  return failedResponseReturn
+  // collect all the problems and add them to the state as separate keys
+  const results: AnalyzeState = {}
+
+  verifiedResponse.results.forEach(problem => {
+    const key = `${problem.path}@@${problem.id}`
+    results[key] = {
+      ...problem,
+      isDiscarded: false
+    }
+  })
+
+  await analyzeState.set(results)
+
+  const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
+  editor.setDecorations(decorationFromResponse.decorationType, [])
+  editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)
+
+  return verifiedResponse
 }

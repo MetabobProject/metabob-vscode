@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { Problem } from '../types'
+import { FixSuggestionCommandHandler } from '../commands'
 
 const decorationType = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
@@ -8,23 +9,31 @@ const decorationType = vscode.window.createTextEditorDecorationType({
   overviewRulerColor: 'red'
 })
 
-export function GenerateDecorations(results: Problem[], editor: vscode.TextEditor, jobId?: string) {
+export function GenerateDecorations(
+  results: Problem[],
+  editor: vscode.TextEditor,
+  jobId?: string
+): {
+  decorationType: vscode.TextEditorDecorationType
+  decorations: vscode.DecorationOptions[]
+} {
   const decorations: vscode.DecorationOptions[] = results.map(vulnerability => {
+    const { startLine, endLine, path, id } = vulnerability
     const range = new vscode.Range(
-      vulnerability.startLine - 1,
+      startLine - 1,
       0,
-      vulnerability.endLine - 1,
+      endLine - 1,
       editor.document.lineAt(vulnerability.endLine - 1).text.length
     )
 
-    const viewDescriptionURI = encodeURIComponent(
-      JSON.stringify({
-        path: vulnerability.path,
-        id: vulnerability.id,
-        vuln: vulnerability,
-        jobId
-      })
-    )
+    const payload: FixSuggestionCommandHandler = {
+      path,
+      id,
+      jobId,
+      vuln: vulnerability
+    }
+
+    const viewDescriptionURI = encodeURIComponent(JSON.stringify(payload))
 
     const hoverFixMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI})**`
     const hoverViewDescriptionMessage = `**[More Details](command:metabob.focusRecommend?${viewDescriptionURI})**`
