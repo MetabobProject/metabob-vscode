@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { useUser } from './hooks/useUser'
-import { ReactMarkdownComponent } from './ReactMarkdownComponent'
+import { useUser } from '../hooks/useUser'
+import { ReactMarkdownComponent } from '../markdown/ReactMarkdownComponent'
 import { GeneratePaginationPanel } from './GeneratePaginationPanel'
 
 export const RecommendationPanel = () => {
@@ -107,7 +107,9 @@ export const RecommendationPanel = () => {
                   placeholder='Enter text here'
                   aria-label='your question about recommendation?'
                   onChange={handleQuestionChange}
-                  onKeyDown={(e) => {e.key === 'Enter' && handleGenerateRecommendationWithQuestion(e)}}
+                  onKeyDown={e => {
+                    e.key === 'Enter' && handleGenerateRecommendationWithQuestion(e)
+                  }}
                   value={userQuestionAboutRecommendation}
                 />
                 <button

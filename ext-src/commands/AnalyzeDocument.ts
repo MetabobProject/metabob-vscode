@@ -23,7 +23,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
       const sessionState = new SessionState(context).get()
       const analyzeState = new AnalyzeState(context)
       let isInQueue = false
-      let inflightJobId: string | undefined;
+      let inflightJobId: string | undefined
 
       _debug?.appendLine(`Metabob: Starting Analysis for ${documentMetaData.filePath}`)
 
@@ -34,7 +34,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
         ).then(response => {
           if (response.status === 'pending' || response.status === 'running') {
             isInQueue = true
-            inflightJobId = response.jobId;
+            inflightJobId = response.jobId
           }
         })
 
@@ -43,16 +43,18 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
             handleDocumentAnalyze(documentMetaData, sessionState.value, analyzeState, inflightJobId),
             CONSTANTS.analyzeCommandQueueMessage
           ).then(response => {
-            if (response.status === 'failed') {
-              isInQueue = false
-            } else if (response.status === 'complete') {
-              isInQueue = false
-            } else {
-              isInQueue = true
+            switch (response.status) {
+              case 'failed':
+              case 'complete':
+                isInQueue = false
+                break
+              case 'pending':
+              case 'running':
+                isInQueue = true
+                break
             }
           })
         }
-
       }
     } else {
       vscode.window.showErrorMessage(CONSTANTS.editorSelectedIsInvalid)

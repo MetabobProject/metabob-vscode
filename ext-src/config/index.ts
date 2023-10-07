@@ -30,10 +30,10 @@ export const backendService = () => {
   return config
 }
 
-export const getRequestParamId = () => {
+export const getRequestParamId = (): string | undefined => {
   if (vscode.env.isTelemetryEnabled) {
     return vscode.env.machineId
   }
 
-  return
+  return undefined
 }

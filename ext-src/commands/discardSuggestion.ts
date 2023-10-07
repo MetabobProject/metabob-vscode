@@ -9,62 +9,73 @@ import { currentQuestionState } from '../store/currentQuestion.state'
 import { RecommendationWebView } from '../providers/recommendation.provider'
 import { Problem } from '../types'
 
+export type DiscardCommandHandler = { id: string; path: string }
+
 export function activateDiscardCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
   const command = CONSTANTS.discardSuggestionCommand
 
-  const commandHandler = async (args: { id: string; path: string }) => {
-    const session = new SessionState(context).get()?.value
-    const state = new currentQuestionState(context)
-    const webview = context.globalState.get<RecommendationWebView>(CONSTANTS.webview)
+  const commandHandler = async (args: DiscardCommandHandler) => {
+    const { id, path } = args
+    const key = `${path}@@${id}`
 
+    const editor = vscode.window.activeTextEditor
+    if (!editor) {
+      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError)
+      return
+    }
+
+    if (!Util.isValidDocument(editor.document)) {
+      _debug?.appendLine(CONSTANTS.editorSelectedIsInvalid)
+      return
+    }
+
+    const session = new SessionState(context).get()?.value
     if (!session) return
 
-    feedbackService
-      .discardSuggestion({
+    const analyzeState = new AnalyzeState(context)
+    const currentQuestion = new currentQuestionState(context)
+
+    const problems = analyzeState.get()?.value as IAnalyzeState | undefined
+    if (!problems) return
+
+    const webview = context.globalState.get<RecommendationWebView>(CONSTANTS.webview)
+    if (!webview || !webview.postInitData) return
+
+    try {
+      await feedbackService.discardSuggestion({
         problemId: args.id,
         sessionToken: session
       })
-      .then(() => {
-        const editor = vscode.window.activeTextEditor
-        if (!editor) {
-          vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError)
+    } catch (err: any) {
+      _debug?.appendLine(err.message)
+    }
 
-          return
-        }
+    problems[key] = {
+      ...problems[key],
+      isDiscarded: true
+    }
 
-        const analyzeState = new AnalyzeState(context)
-        const problems = (analyzeState.get()?.value ?? {}) as IAnalyzeState
-        const key = `${args.path}@@${args.id}`
+    try {
+      await analyzeState.set(problems)
+    } catch (error) {
+      _debug?.appendLine(error)
+      return
+    }
 
-        if (Util.isValidDocument(editor.document)) {
-          problems[key] = {
-            ...problems[key],
-            isDiscarded: true
-          }
-  
-          analyzeState.set(problems)
+    // Map all non discarded problems to the results array
+    const results = Object.keys(analyzeState.get()?.value ?? {})
+      .filter(key => !analyzeState.get()?.value[key].isDiscarded)
+      .map(key => analyzeState.get()?.value[key] ?? ({} as Problem))
 
-          // Map all non discarded problems to the results array
-          const results = Object.keys(analyzeState.get()?.value ?? {})
-            .filter(key => !analyzeState.get()?.value[key].isDiscarded)
-            .map(key => analyzeState.get()?.value[key] ?? {} as Problem)
-          
+    const decorations = GenerateDecorations(results, editor)
+    editor.setDecorations(decorations.decorationType, [])
+    editor.setDecorations(decorations.decorationType, decorations.decorations)
+    currentQuestion.clear()
+    const currentQuestionMarshalled = currentQuestion.get()?.value
+    if (!currentQuestionMarshalled) return
 
-          const editor = vscode.window.activeTextEditor
-          if (editor) {
-            const decorations = GenerateDecorations(results, editor)
-            editor.setDecorations(decorations.decorationType, [])
-            editor.setDecorations(decorations.decorationType, decorations.decorations)
-          }
-          state.clear()
-          webview?.postInitData(state.get()?.value)
-        } else {
-          _debug?.appendLine(CONSTANTS.editorSelectedIsInvalid)
-        }
-      })
-      .catch(err => {
-        _debug?.appendLine(err.message)
-      })
+    webview.postInitData(currentQuestionMarshalled)
+    return
   }
 
   context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler))

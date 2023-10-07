@@ -4,22 +4,30 @@ import { Problem } from '../types'
 import { CONSTANTS } from '../constants'
 import { RecommendationWebView } from '../providers/recommendation.provider'
 
+type FocusCommandHandler = { path: string; id: string; vuln: Problem; jobId: string }
 export function activateFocusRecommendCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel): void {
   const command = 'metabob.focusRecommend'
 
-  const commandHandler = async (args: { path: string; id: string; vuln: Problem; jobId: string }) => {
-    _debug?.appendLine(`Current Detection Set for ${args.path} with Problem ${args.id} `)
-    const state = new currentQuestionState(context)
+  const commandHandler = async (args: FocusCommandHandler) => {
+    const { id, vuln, path } = args
+    _debug?.appendLine(`Current Detection Set for ${path} with Problem ${id} `)
+
+    const currentQuestionReference = new currentQuestionState(context)
+    const currentQuestion = currentQuestionReference.get()?.value
+    if (!currentQuestion) return
     const webview = context.globalState.get<RecommendationWebView>(CONSTANTS.webview)
-    state.set({
-      path: args.path,
-      id: args.id,
-      vuln: args.vuln,
+    if (!webview || !webview.postInitData) return
+
+    currentQuestionReference.set({
+      path,
+      id,
+      vuln,
       isFix: false,
       isReset: true
     })
+
     vscode.commands.executeCommand('recommendation-panel-webview.focus')
-    webview?.postInitData(state.get()?.value)
+    webview.postInitData(currentQuestion)
   }
 
   context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler))

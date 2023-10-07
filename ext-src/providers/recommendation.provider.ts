@@ -49,9 +49,9 @@ export class RecommendationWebView implements WebviewViewProvider {
     new currentQuestionState(this.extensionContext).clear()
   }
 
-  updateState(payload: ICurrentQuestionState ): void | Thenable<void> {
+  updateState(payload: ICurrentQuestionState): void | Thenable<void> {
     const state = new currentQuestionState(this.extensionContext).update(() => payload)
-  
+
     return state
   }
 
@@ -196,7 +196,7 @@ export class RecommendationWebView implements WebviewViewProvider {
                 type: 'onGenerateClicked:Error',
                 data: {}
               })
-              
+
               return
             }
             const configuration = new Configuration({
@@ -208,7 +208,7 @@ export class RecommendationWebView implements WebviewViewProvider {
               messages: [
                 {
                   role: 'system',
-                  
+
                   // @ts-ignore
                   content: response.value.prompt
                 },
@@ -268,12 +268,14 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   postInitData(initData: ICurrentQuestionState | undefined): void {
-    this._view?.webview.postMessage({
-      type: 'initData',
-      data: { ...initData }
-    }).then(undefined, (err) => {
-      window.showErrorMessage(err)
-    })
+    this._view?.webview
+      .postMessage({
+        type: 'initData',
+        data: { ...initData }
+      })
+      .then(undefined, err => {
+        window.showErrorMessage(err)
+      })
   }
 
   handleApplyRecommendation(input: string, initData: ICurrentQuestionState): void {
@@ -433,7 +435,6 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: Webview) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const manifest = require(path.join(this.extensionPath, 'build', 'asset-manifest.json'))
     const mainScript = manifest['files']['main.js']
     const mainStyle = manifest['files']['main.css']
