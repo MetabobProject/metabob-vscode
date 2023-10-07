@@ -37,10 +37,12 @@ export interface SuggestRecomendationPayload {
 
 export interface ExplainProblemResponse {
   description: string
+  prompt: string
 }
 
 export interface SuggestRecomendationResponse {
   recommendation: string
+  prompt: string
 }
 
 export class ExplainService extends ApiServiceBase {

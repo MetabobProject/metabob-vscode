@@ -13,14 +13,14 @@ import {
   Range,
   commands
 } from 'vscode'
-import { GenerateDecorations } from '../helpers/GenerateDecorations'
-import { explainService } from '../services/explain/explain.service'
-import { currentQuestionState, ICurrentQuestionState } from '../state/CurrentQuestion'
-import { SessionState } from '../state/Session'
-import { Util } from '../utils'
-import { backendService, getChatGPTToken } from '../config'
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai'
-import { CONSTANTS } from '../constants'
+import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services'
+import { CurrentQuestion, CurrentQuestionState, SessionState, Session } from '../state'
+import { BackendService, GetChatGPTToken } from '../config'
+import { GenerateDecorations } from '../helpers'
+import CONSTANTS from '../constants'
+import Util from '../utils'
+import { DiscardCommandHandler, EndorseCommandHandler } from '../commands'
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null
@@ -39,20 +39,23 @@ export class RecommendationWebView implements WebviewViewProvider {
     any | undefined | null | void
   >()
 
-  getCurrentState(): ICurrentQuestionState | undefined {
-    const state = new currentQuestionState(this.extensionContext).get()
+  getCurrentQuestionValue(): CurrentQuestionState | undefined {
+    const currentQuestion = new CurrentQuestion(this.extensionContext).get()?.value
 
-    return state?.value
+    if (!currentQuestion) return undefined
+    return currentQuestion
   }
 
   clear(): void {
-    new currentQuestionState(this.extensionContext).clear()
+    const currentQuestion = new CurrentQuestion(this.extensionContext)
+    currentQuestion.clear()
   }
 
-  updateState(payload: ICurrentQuestionState): void | Thenable<void> {
-    const state = new currentQuestionState(this.extensionContext).update(() => payload)
+  async updateCurrentQuestionState(payload: CurrentQuestionState): Promise<void> {
+    const currentQuestionState = new CurrentQuestion(this.extensionContext)
 
-    return state
+    await currentQuestionState.update(() => payload)
+    return
   }
 
   refresh(): void {
@@ -72,203 +75,212 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.activateMessageListener()
   }
 
-  handleSuggestionClick(input: string, initData: ICurrentQuestionState): void {
-    const backendServiceConfig = backendService()
-    if (!backendService) return
-    const sessionKey = new SessionState(this.extensionContext).get()?.value
+  async handleSuggestionClick(input: string, initData: CurrentQuestionState): Promise<void> {
+    if (this._view === null || this._view === undefined || !this._view?.webview) {
+      return
+    }
 
-    explainService
-      .explainProblem(
-        {
-          problemId: initData?.id as string,
-          prompt: input,
-          description: initData?.vuln?.description as string
-        },
-        sessionKey as string,
-        backendServiceConfig === 'openai/chatgpt'
-      )
-      .then(async response => {
-        if (backendServiceConfig === 'openai/chatgpt') {
-          if (response.isOk()) {
-            const token = getChatGPTToken()
-            if (token === '' || !token) {
-              window.showErrorMessage('Metabob: ChatGPT API Key is required when openai/chatgpt backend is selected')
-              this._view?.webview.postMessage({
-                type: 'onSuggestionClicked:Error',
-                data: {}
-              })
-
-              return
-            }
-            const configuration = new Configuration({
-              apiKey: token
-            })
-            const openai = new OpenAIApi(configuration)
-            const payload: CreateChatCompletionRequest = {
-              model: 'gpt-3.5-turbo',
-              messages: [
-                {
-                  role: 'system',
-
-                  // @ts-ignore
-                  content: response.value.prompt
-                },
-                {
-                  role: 'user',
-                  content: input
-                }
-              ]
-            }
-            try {
-              const chatresponse = await openai.createChatCompletion({ ...payload })
-              this._view?.webview.postMessage({
-                type: 'onSuggestionClickedGPT:Response',
-                data: { ...chatresponse.data }
-              })
-            } catch (error) {
-              this._view?.webview.postMessage({
-                type: 'onSuggestionClicked:Error',
-                data: {}
-              })
-            }
-          }
-        } else {
-          if (response.isOk()) {
-            const payload = response.value
-            this._view?.webview.postMessage({
-              type: 'onSuggestionClicked:Response',
-              data: payload
-            })
-          }
-        }
-        if (response.isErr()) {
-          if (this._view) {
-            this._view.webview.postMessage({
-              type: 'onSuggestionClicked:Error',
-              data: {}
-            })
-            window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
-          }
-        }
+    if (!initData) {
+      this._view.webview.postMessage({
+        type: 'onSuggestionClicked:Error',
+        data: {}
       })
-      .catch(() => {
-        this._view?.webview.postMessage({
+      return
+    }
+    const backendServiceConfig = BackendService()
+    const chatGPTToken = GetChatGPTToken()
+    const isChatConfigEnabled = backendServiceConfig === 'openai/chatgpt'
+
+    // If chatGpt is enabled and token is '' or undefined throw error early
+    if (isChatConfigEnabled === true && (chatGPTToken === '' || !chatGPTToken)) {
+      window.showErrorMessage('Metabob: ChatGPT API Key is required when openai/chatgpt backend is selected')
+      this._view?.webview.postMessage({
+        type: 'onSuggestionClicked:Error',
+        data: {}
+      })
+
+      return
+    }
+
+    const sessionToken = new Session(this.extensionContext).get()?.value
+    // If Session Token is undefined, throw error early
+    if (!sessionToken) {
+      this._view.webview.postMessage({
+        type: 'onSuggestionClicked:Error',
+        data: {}
+      })
+      return
+    }
+
+    const explainProblemPayload: ExplainProblemPayload = {
+      problemId: initData.id,
+      prompt: input,
+      description: initData.vuln.description
+    }
+
+    try {
+      const response = await explainService.explainProblem(explainProblemPayload, sessionToken, isChatConfigEnabled)
+      if (response.isErr()) {
+        this._view.webview.postMessage({
           type: 'onSuggestionClicked:Error',
           data: {}
         })
+        window.showErrorMessage(`Metabob: ${response.error.errorMessage} ${response.error.responseStatus}`)
+        return
+      }
+
+      if (response.value === null) {
+        this._view.webview.postMessage({
+          type: 'onSuggestionClicked:Error',
+          data: {}
+        })
+        return
+      }
+
+      if (!isChatConfigEnabled) {
+        const payload = response.value
+        this._view?.webview.postMessage({
+          type: 'onSuggestionClicked:Response',
+          data: payload
+        })
+        return
+      }
+
+      // ChatGPT is enabled and Response is good
+      const configuration = new Configuration({
+        apiKey: chatGPTToken
       })
+      const openai = new OpenAIApi(configuration)
+      const payload: CreateChatCompletionRequest = {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: response.value.prompt
+          },
+          {
+            role: 'user',
+            content: input
+          }
+        ]
+      }
+      const chatresponse = await openai.createChatCompletion({ ...payload })
+      this._view.webview.postMessage({
+        type: 'onSuggestionClickedGPT:Response',
+        data: { ...chatresponse.data }
+      })
+    } catch (error) {
+      this._view?.webview.postMessage({
+        type: 'onSuggestionClicked:Error',
+        data: {}
+      })
+    }
   }
 
-  handleRecommendationClick(input: string, initData: ICurrentQuestionState): void {
-    const backendServiceConfig = backendService()
-    if (!backendService) return
-    const sessionKey = new SessionState(this.extensionContext).get()
-    explainService
-      .RecommendSuggestion(
-        {
-          problemId: initData?.id as string,
-          prompt: input,
-          description: initData?.vuln?.description as string,
-          context: '',
-          recommendation: ''
-        },
-        sessionKey?.value as string,
-        backendServiceConfig === 'openai/chatgpt'
+  async handleRecommendationClick(input: string, initData: CurrentQuestionState): Promise<void> {
+    if (this._view === null || this._view === undefined || !this._view?.webview) {
+      throw new Error('handleRecommendationClick: Webview is undefined')
+    }
+
+    if (!initData) {
+      throw new Error('handleRecommendationClick: InitData is undefined or null')
+    }
+
+    const backendServiceConfig = BackendService()
+    const chatGPTToken = GetChatGPTToken()
+    const isChatConfigEnabled = backendServiceConfig === 'openai/chatgpt'
+
+    if (isChatConfigEnabled === true && (chatGPTToken === '' || !chatGPTToken)) {
+      window.showErrorMessage('Metabob: ChatGPT API Key is required when openai/chatgpt backend is selected')
+      throw new Error('Metabob: ChatGPT API Key is required when openai/chatgpt backend is selected')
+    }
+
+    const sessionToken = new Session(this.extensionContext).get()?.value
+    if (!sessionToken) {
+      throw new Error('handleRecommendationClick: Session Token is undefined')
+    }
+
+    const suggestRecomendationPayload: SuggestRecomendationPayload = {
+      problemId: initData.id,
+      prompt: input,
+      description: initData.vuln.description,
+      context: '',
+      recommendation: ''
+    }
+
+    try {
+      const response = await explainService.RecommendSuggestion(
+        suggestRecomendationPayload,
+        sessionToken,
+        isChatConfigEnabled
       )
-      .then(async response => {
-        if (response.isErr()) {
-          if (this._view) {
-            this._view?.webview.postMessage({
-              type: 'onGenerateClicked:Error',
-              data: {}
-            })
-            window.showErrorMessage(CONSTANTS.generateConnectionError)
-          }
 
-          return
-        }
-        if (backendServiceConfig === 'openai/chatgpt') {
-          if (response.isOk()) {
-            const token = getChatGPTToken()
-            if (token === '' || !token) {
-              window.showErrorMessage('Metabob: ChatGPT API Key is required when openai/chatgpt backend is selected')
-              this._view?.webview.postMessage({
-                type: 'onGenerateClicked:Error',
-                data: {}
-              })
+      if (response.isErr()) {
+        window.showErrorMessage(CONSTANTS.generateConnectionError)
+        throw new Error('Something went wrong! Please try again')
+      }
 
-              return
-            }
-            const configuration = new Configuration({
-              apiKey: token
-            })
-            const openai = new OpenAIApi(configuration)
-            const payload: CreateChatCompletionRequest = {
-              model: 'gpt-3.5-turbo',
-              messages: [
-                {
-                  role: 'system',
+      if (response.value === null) {
+        window.showErrorMessage(CONSTANTS.generateConnectionError)
+        throw new Error('handleRecommendationClick: Response value is null')
+      }
 
-                  // @ts-ignore
-                  content: response.value.prompt
-                },
-                {
-                  role: 'user',
-                  content: input
-                }
-              ]
-            }
-            try {
-              const chatresponse = await openai.createChatCompletion({ ...payload })
-              this._view?.webview.postMessage({
-                type: 'onGenerateClickedGPT:Response',
-                data: { ...chatresponse.data }
-              })
-            } catch (error) {
-              this._view?.webview.postMessage({
-                type: 'onGenerateClicked:Error',
-                data: {}
-              })
-            }
-          }
-        } else {
-          if (response.isOk()) {
-            const payload = response.value
-            this._view?.webview.postMessage({
-              type: 'onGenerateClicked:Response',
-              data: payload
-            })
-          }
-        }
+      if (!isChatConfigEnabled) {
+        this._view?.webview.postMessage({
+          type: 'onGenerateClicked:Response',
+          data: response.value
+        })
+        return
+      }
+
+      const configuration = new Configuration({
+        apiKey: chatGPTToken
       })
-      .catch(() => {
-        if (this._view) {
-          this._view?.webview.postMessage({
-            type: 'onGenerateClicked:Error',
-            data: {}
-          })
-        }
+      const openai = new OpenAIApi(configuration)
+      const payload: CreateChatCompletionRequest = {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: response.value.prompt
+          },
+          {
+            role: 'user',
+            content: input
+          }
+        ]
+      }
+      const chatresponse = await openai.createChatCompletion({ ...payload })
+      this._view?.webview.postMessage({
+        type: 'onGenerateClickedGPT:Response',
+        data: { ...chatresponse.data }
       })
+    } catch (error) {
+      throw new Error(error)
+    }
   }
 
-  handleApplySuggestion(input: string, initData: ICurrentQuestionState): void {
+  handleApplySuggestion(input: string, initData: CurrentQuestionState): void {
     const editor = window.activeTextEditor
-    if (!editor) {
+    if (!editor || !initData) {
+      throw new Error('handleApplySuggestion: Editor or InitData is Undefined')
+    }
+
+    const startLine = initData.vuln.startLine
+    const comment = `\t\t#${input}`
+    const position = new Position(startLine - 1, 0) // convert line number to position
+    editor.edit((editBuilder: TextEditorEdit) => {
+      editBuilder.insert(position, comment + '\n')
+    })
+  }
+
+  postInitData(initData: CurrentQuestionState): void {
+    if (this._view === null || this._view === undefined || this._view.webview === undefined) {
       return
     }
-    const startLine = initData.vuln?.startLine
-    const comment = `\t\t#${input}`
-    if (startLine) {
-      const position = new Position(startLine - 1, 0) // convert line number to position
+    if (!initData) return
 
-      editor.edit((editBuilder: TextEditorEdit) => {
-        editBuilder.insert(position, comment + '\n')
-      })
-    }
-  }
-
-  postInitData(initData: ICurrentQuestionState | undefined): void {
-    this._view?.webview
+    this._view.webview
       .postMessage({
         type: 'initData',
         data: { ...initData }
@@ -278,160 +290,172 @@ export class RecommendationWebView implements WebviewViewProvider {
       })
   }
 
-  handleApplyRecommendation(input: string, initData: ICurrentQuestionState): void {
+  handleApplyRecommendation(input: string, initData: CurrentQuestionState): void {
     const editor = window.activeTextEditor
-    if (!editor) {
+    if (!editor || !initData) {
       return
     }
-    const startLine = initData.vuln?.startLine
-    const endLine = initData.vuln?.endLine
+
+    const startLine = initData.vuln.startLine
+    const endLine = initData.vuln.endLine
     const comment = `${input.replace('```', '')}`
 
-    if (startLine && endLine && initData.vuln) {
-      const data = initData.vuln
-      const start = new Position(startLine - 1, 0) // convert line number to position
-      const end = new Position(endLine, 0) // convert line number to position
-      const range = new Range(start, end)
-      editor.edit((editBuilder: TextEditorEdit) => {
-        const decorations = GenerateDecorations([{ ...data }], editor)
-        editor.setDecorations(decorations.decorationType, [])
-        editBuilder.replace(range, comment + '\n')
-      })
-    }
+    const data = initData.vuln
+    const start = new Position(startLine - 1, 0) // convert line number to position
+    const end = new Position(endLine, 0) // convert line number to position
+    const range = new Range(start, end)
+    editor.edit((editBuilder: TextEditorEdit) => {
+      const decorations = GenerateDecorations([{ ...data }], editor)
+      editor.setDecorations(decorations.decorationType, [])
+      editBuilder.replace(range, comment + '\n')
+    })
   }
 
   private activateMessageListener() {
-    if (this._view) {
-      this._view.webview.onDidReceiveMessage((message: any) => {
-        const data = message.data
-        switch (message.type) {
-          case 'onSuggestionClicked': {
-            const input = data?.input
-            const initData = data?.initData
-            if (initData === null) {
-              window.showErrorMessage('Metabob: Init Data is null')
-
-              return
-            }
-            this.handleSuggestionClick(input, initData)
-
-            window.showInformationMessage(message.data)
-            break
-          }
-          case 'getInitData': {
-            const state = this.getCurrentState()
-            this.postInitData(state)
-            break
-          }
-          case 'initData:FixRecieved': {
-            const initData = data?.initData
-            this.updateState({ ...initData, isFix: false })
-            break
-          }
-          case 'initData:ResetRecieved': {
-            const initData = data?.initData
-            this.updateState({ ...initData, isReset: false })
-            break
-          }
-          case 'onGenerateClicked': {
-            const input = data?.input
-            const initData = data?.initData
-            if (initData === null) {
-              window.showErrorMessage('Metabob: Init Data is null')
-
-              return
-            }
-            this.handleRecommendationClick(input, initData)
-
-            window.showInformationMessage(message.data)
-
-            break
-          }
-          case 'applySuggestion': {
-            const input = data?.input
-            const initData = data?.initData
-            if (initData === null) {
-              window.showErrorMessage('Metabob: Init Data is null')
-
-              return
-            }
-            this.handleApplySuggestion(input, initData)
-
-            break
-          }
-          case 'applyRecommendation': {
-            const input = data?.input
-            const initData = data?.initData
-            if (initData === null) {
-              window.showErrorMessage('Metabob: Init Data is null')
-
-              return
-            }
-            this.handleApplyRecommendation(input, initData)
-            break
-          }
-          case 'onEndorseSuggestionClicked': {
-            const initData = data?.initData
-            if (initData === null) {
-              window.showErrorMessage('Metabob: Init Data is null')
-
-              return
-            }
-            try {
-              commands.executeCommand('metabob.endorseSuggestion', {
-                id: initData.id,
-                path: initData.path
-              })
-              if (this._view) {
-                this._view.webview.postMessage({
-                  type: 'onEndorseSuggestionClicked:Success',
-                  data: {}
-                })
-              }
-            } catch (error) {
-              if (this._view) {
-                this._view.webview.postMessage({
-                  type: 'onEndorseSuggestionClicked:Error',
-                  data: {}
-                })
-              }
-            }
-            break
-          }
-          case 'onDiscardSuggestionClicked': {
-            const initData = data?.initData
-            if (initData === null) {
-              window.showErrorMessage('Metabob: Init Data is null')
-
-              return
-            }
-            try {
-              commands.executeCommand('metabob.discardSuggestion', {
-                id: initData.id,
-                path: initData.path
-              })
-              if (this._view) {
-                this._view.webview.postMessage({
-                  type: 'onDiscardSuggestionClicked:Success',
-                  data: {}
-                })
-              }
-            } catch (error) {
-              if (this._view) {
-                this._view.webview.postMessage({
-                  type: 'onDiscardSuggestionClicked:Error',
-                  data: {}
-                })
-              }
-            }
-
-            break
-          }
-          default:
-            console.log(message)
-        }
-      })
+    if (this._view === null || this._view === undefined || this._view.webview === undefined) {
+      return
     }
+    this._view.webview.onDidReceiveMessage(async (message: any) => {
+      if (this._view === null || this._view === undefined || this._view.webview === undefined) {
+        return
+      }
+      const data = message.data
+      switch (message.type) {
+        case 'onSuggestionClicked': {
+          const input = data?.input
+          const initData = data?.initData
+          if (initData === null || !initData) {
+            window.showErrorMessage('Metabob: Init Data is null')
+            return
+          }
+
+          await this.handleSuggestionClick(input, initData)
+          window.showInformationMessage(message.data)
+          break
+        }
+        case 'getInitData': {
+          const state = this.getCurrentQuestionValue()
+          this.postInitData(state)
+          break
+        }
+        case 'initData:FixRecieved': {
+          const initData = data?.initData
+          await this.updateCurrentQuestionState({ ...initData, isFix: false })
+          break
+        }
+        case 'initData:ResetRecieved': {
+          const initData = data?.initData
+          await this.updateCurrentQuestionState({ ...initData, isReset: false })
+          break
+        }
+        case 'onGenerateClicked': {
+          const input = data?.input
+          const initData = data?.initData
+          if (initData === null) {
+            window.showErrorMessage('Metabob: Init Data is null')
+            break
+          }
+
+          try {
+            await this.handleRecommendationClick(input, initData)
+            window.showInformationMessage(message.data)
+          } catch {
+            this._view.webview.postMessage({
+              type: 'onGenerateClicked:Error',
+              data: {}
+            })
+          }
+          break
+        }
+        case 'applySuggestion': {
+          const input = data?.input
+          const initData = data?.initData
+          if (initData === null || !initData) {
+            window.showErrorMessage('Metabob: Init Data is null')
+            this._view.webview.postMessage({
+              type: 'applySuggestion:Error',
+              data: {}
+            })
+            break
+          }
+          try {
+            this.handleApplySuggestion(input, initData)
+          } catch (error) {
+            this._view.webview.postMessage({
+              type: 'applySuggestion:Error',
+              data: {}
+            })
+          }
+
+          break
+        }
+        case 'applyRecommendation': {
+          const input = data?.input
+          const initData = data?.initData
+          if (initData === null || !initData) {
+            window.showErrorMessage('Metabob: Init Data is null')
+            return
+          }
+
+          this.handleApplyRecommendation(input, initData)
+          break
+        }
+        case 'onEndorseSuggestionClicked': {
+          const initData = data?.initData
+          if (initData === null || !initData) {
+            window.showErrorMessage('Metabob: Init Data is null')
+            return
+          }
+
+          const payload: EndorseCommandHandler = {
+            id: initData.id,
+            path: initData.path
+          }
+
+          try {
+            commands.executeCommand('metabob.endorseSuggestion', payload)
+            this._view.webview.postMessage({
+              type: 'onEndorseSuggestionClicked:Success',
+              data: {}
+            })
+          } catch (error) {
+            if (this._view) {
+              this._view.webview.postMessage({
+                type: 'onEndorseSuggestionClicked:Error',
+                data: {}
+              })
+            }
+          }
+          break
+        }
+        case 'onDiscardSuggestionClicked': {
+          const initData = data?.initData
+          if (initData === null || !initData) {
+            window.showErrorMessage('Metabob: Init Data is null')
+            return
+          }
+          const payload: DiscardCommandHandler = {
+            id: initData.id,
+            path: initData.path
+          }
+          try {
+            commands.executeCommand('metabob.discardSuggestion', payload)
+            this._view.webview.postMessage({
+              type: 'onDiscardSuggestionClicked:Success',
+              data: {}
+            })
+          } catch {
+            this._view.webview.postMessage({
+              type: 'onDiscardSuggestionClicked:Error',
+              data: {}
+            })
+          }
+          break
+        }
+        default:
+          console.log(message)
+      }
+    })
   }
 
   private _getHtmlForWebview(webview: Webview) {

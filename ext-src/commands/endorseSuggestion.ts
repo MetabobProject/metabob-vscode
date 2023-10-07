@@ -3,7 +3,7 @@ import CONSTANTS from '../constants'
 import { feedbackService, FeedbackSuggestionPayload } from '../services'
 import { Session } from '../state'
 
-export type EndorseCommandHandler = { id: string }
+export type EndorseCommandHandler = { id: string; path: string }
 
 export function activateEndorseCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel) {
   const command = CONSTANTS.endorseSuggestionCommand

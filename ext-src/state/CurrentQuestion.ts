@@ -6,13 +6,15 @@ import { ExtensionState, ExtensionStateValue } from './Base'
 // Whenever the Metabob extension is opened by the user, we want to
 // add previous question performed by the user, so upon asking question,
 // we update this state and upon activate we perform get from this state
-export type CurrentQuestionState = {
-  path?: string
-  id?: string
-  vuln?: Problem
-  isFix?: boolean
-  isReset?: boolean
-}
+export type CurrentQuestionState =
+  | {
+      path: string
+      id: string
+      vuln: Problem
+      isFix: boolean
+      isReset: boolean
+    }
+  | undefined
 
 export class CurrentQuestion extends ExtensionState<CurrentQuestionState> {
   constructor(context: vscode.ExtensionContext) {
@@ -31,12 +33,12 @@ export class CurrentQuestion extends ExtensionState<CurrentQuestionState> {
 
   update(callback: (value: CurrentQuestionState) => CurrentQuestionState): Thenable<void | undefined> {
     const value = this.get()
-    const updatedValue = callback(value?.value || {})
+    const updatedValue = callback(value?.value || undefined)
 
     return this.set(updatedValue)
   }
 
   clear(): void {
-    this.set({})
+    this.set(undefined)
   }
 }
