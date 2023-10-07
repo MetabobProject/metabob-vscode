@@ -1,6 +1,27 @@
 import { AxiosRequestConfig } from 'axios'
-import { CreateSessionRequest, CreateSessionResponse, getUserSessionResponse } from '../../types'
 import { ApiServiceBase } from '../base.service'
+
+export interface CreateSessionRequest {
+  apiKey: string
+  sessionToken?: string
+  meta?: {
+    supplementaryId?: string
+  }
+}
+
+export interface CreateSessionResponse {
+  session: string
+}
+
+export interface GetUserSessionResponse {
+  data: any | null
+  status: number
+}
+
+export interface DeleteUserSessionResponse {
+  data: any | null
+  status: number
+}
 
 class SessionService extends ApiServiceBase {
   /**
@@ -26,7 +47,7 @@ class SessionService extends ApiServiceBase {
    */
   async deleteUserSession(sessionToken: string) {
     const config: AxiosRequestConfig = this.getConfig(sessionToken)
-    const response = await this.delete('/session', config)
+    const response = await this.delete<DeleteUserSessionResponse>('/session', config)
     return response
   }
 
@@ -38,7 +59,7 @@ class SessionService extends ApiServiceBase {
    */
   async getUserSession(sessionToken: string) {
     const config: AxiosRequestConfig = this.getConfig(sessionToken)
-    const response = await this.get<getUserSessionResponse>('/session', config)
+    const response = await this.get<GetUserSessionResponse>('/session', config)
     return response
   }
 }

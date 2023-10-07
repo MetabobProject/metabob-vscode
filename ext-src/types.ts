@@ -1,11 +1,5 @@
 import { TextDocument } from 'vscode'
 
-export interface SubmitRepresentationResponse {
-  jobId: string
-  status: 'complete' | 'pending' | 'running' | 'failed'
-  results?: Problem[]
-}
-
 export interface Problem {
   id: string
   path: string
@@ -15,8 +9,7 @@ export interface Problem {
   summary: string
   description: string
 }
-
-interface Identity {
+export interface Identity {
   [id: string]: {
     language: string
     filePath: string
@@ -26,43 +19,19 @@ interface Identity {
   }
 }
 
-interface Node {
+export interface Node {
   [id: string]: Array<{
     type: 'FILE'
     identity: string
   }>
 }
 
-interface Edge {
+export interface Edge {
   [id: string]: any[]
-}
-
-export interface SubmitCodeRepresentationPayload {
-  format: 'full' | 'partial'
-  identities: Identity
-  nodes: Node
-  edges: Edge
 }
 
 export interface IAnalyzeTextDocumentOnSave {
   document: TextDocument
-}
-
-export interface CreateSessionRequest {
-  apiKey: string
-  sessionToken?: string
-  meta?: {
-    supplementaryId?: string
-  }
-}
-
-export interface CreateSessionResponse {
-  session: string
-}
-
-export interface getUserSessionResponse {
-  data: null
-  status: 200
 }
 
 export interface IDocumentMetaData {

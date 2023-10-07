@@ -3,6 +3,7 @@ import { merge } from 'lodash'
 import { err, ok, Result } from 'rusty-result-ts'
 import { getAPIBaseURLConfig } from '../config'
 import { ApiErrorBase } from './base.error'
+import FormData from 'form-data'
 
 const apiBase = getAPIBaseURLConfig()
 
@@ -21,7 +22,7 @@ export class ApiServiceBase {
    * Returns a new instance of the base config for all requests this service makes.
    * @protected
    */
-  protected getConfig(sessionToken?: string): AxiosRequestConfig {
+  protected getConfig(sessionToken?: string, formDataHeaders?: FormData.Headers): AxiosRequestConfig {
     const config: AxiosRequestConfig = {
       headers: {
         Accept: 'application/json',
@@ -32,6 +33,13 @@ export class ApiServiceBase {
 
     if (sessionToken && config.headers) {
       config.headers.Authorization = `Bearer ${sessionToken}`
+    }
+
+    if (formDataHeaders && config.headers) {
+      config.headers = {
+        ...config.headers,
+        ...formDataHeaders
+      }
     }
 
     return config
