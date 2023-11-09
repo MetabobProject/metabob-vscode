@@ -1,49 +1,37 @@
-import { CreateSessionResponse } from '../../types'
+import { AxiosRequestConfig } from 'axios'
 import { ApiServiceBase } from '../base.service'
 
-export interface IFeedbackSuggestion {
+export interface FeedbackSuggestionPayload {
   problemId: string
-  sessionToken: string
+  discarded: boolean
+  endorsed: boolean
+}
+
+export interface FeedbackSuggestionResponse {}
+
+export function generateFeedbackSuggestionPayload(
+  data: Pick<FeedbackSuggestionPayload, 'problemId'>,
+  isDiscarded: boolean,
+  isEndorsed: boolean
+): FeedbackSuggestionPayload {
+  const { problemId } = data
+  return {
+    problemId,
+    discarded: isDiscarded,
+    endorsed: isEndorsed
+  }
 }
 
 class FeedbackService extends ApiServiceBase {
-  async discardSuggestion(payload: IFeedbackSuggestion) {
-
-    const response = await this.post<CreateSessionResponse>(
-      '/feedback/detection',
-      {
-        problemId: payload.problemId,
-        discarded: true,
-        endorsed: false
-      },
-      {
-        headers: {
-          "Authorization": `Bearer ${payload.sessionToken}`,
-          "Content-Type": "application/json"
-        }
-      }
-    )
-
+  async discardSuggestion(data: FeedbackSuggestionPayload, sessionToken: string) {
+    const config: AxiosRequestConfig = this.getConfig(sessionToken)
+    const response = await this.post<FeedbackSuggestionResponse>('/feedback/detection', data, config)
     return response
   }
 
-  async endorseSuggestion(payload: IFeedbackSuggestion) {
-
-    const response = await this.post<CreateSessionResponse>(
-      '/feedback/detection',
-      {
-        problemId: payload.problemId,
-        discarded: false,
-        endorsed: true
-      },
-      {
-        headers: {
-          "Authorization": `Bearer ${payload.sessionToken}`,
-          "Content-Type": "application/json"
-        }
-      }
-    )
-
+  async endorseSuggestion(data: FeedbackSuggestionPayload, sessionToken: string) {
+    const config: AxiosRequestConfig = this.getConfig(sessionToken)
+    const response = await this.post<FeedbackSuggestionResponse>('/feedback/detection', data, config)
     return response
   }
 }

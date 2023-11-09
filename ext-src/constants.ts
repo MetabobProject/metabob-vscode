@@ -1,4 +1,4 @@
-export const CONSTANTS = {
+const CONSTANTS = {
   // State Keys
   sessionKey: '@metabob/sessionToken',
   apiKey: '@metabob/apiKey',
@@ -28,3 +28,5 @@ export const CONSTANTS = {
   editorSelectedIsInvalid: 'Metabob: selected document is invalid',
   generateConnectionError: 'Metabob: Looks like the server is overloaded, please try again later'
 }
+
+export default CONSTANTS

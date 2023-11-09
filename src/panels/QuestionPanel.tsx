@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { useUser } from './hooks/useUser'
+import { useUser } from '../hooks/useUser'
 
 export const QuestionPanel = () => {
   const { initialState, setUserQuestionAboutSuggestion, isSuggestionClicked, setSuggestionClicked } = useUser()
@@ -39,7 +39,9 @@ export const QuestionPanel = () => {
             placeholder='Enter text here'
             aria-label='your question about the problem ?'
             onChange={handleQuestionChange}
-            onKeyDown={(e) => {e.key === 'Enter' && handleSuggestionClick(e)}}
+            onKeyDown={e => {
+              e.key === 'Enter' && handleSuggestionClick(e)
+            }}
             value={userQuestion}
           />
           <button

@@ -1,20 +1,20 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 import { IDocumentMetaData, Problem } from './types'
-import { CONSTANTS } from './constants'
-import { languages, TextDocument } from 'vscode'
-import { GenerateDecorations } from './helpers/GenerateDecorations'
+import { languages, TextDocument, workspace, window, ProgressLocation, ExtensionContext } from 'vscode'
+import { GenerateDecorations } from './helpers'
+import CONSTANTS from './constants'
 
 // Normal Utilities used shared across folders
-export class Util {
-  static context: vscode.ExtensionContext
+export default class Utils {
+  static context: ExtensionContext
 
   static getSessionToken() {
     return this.context.globalState.get<string>(CONSTANTS.sessionKey) || ''
   }
 
-  static updateSessionToken(sessionToken: string) {
-    return this.context.globalState.update(CONSTANTS.sessionKey, sessionToken)
+  static async updateSessionToken(sessionToken: string) {
+    return await this.context.globalState.update(CONSTANTS.sessionKey, sessionToken)
   }
 
   static isLoggedIn() {
@@ -46,7 +46,7 @@ export class Util {
   static sleep = (ms: number) => new Promise(res => setTimeout(res, ms))
 
   static getWorkspacePath() {
-    const folders = vscode.workspace.workspaceFolders
+    const folders = workspace.workspaceFolders
 
     return folders ? folders![0].uri.fsPath : undefined
   }
@@ -57,10 +57,10 @@ export class Util {
 
   static extractMetaDataFromDocument(document: vscode.TextDocument): IDocumentMetaData {
     const filePath = document.fileName
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri)
+    const workspaceFolder = workspace.getWorkspaceFolder(document.uri)
     const relativePath = workspaceFolder ? path.relative(workspaceFolder.uri.fsPath, filePath) : ''
     const fileContent = document.getText()
-    const isTextDocument = Util.isTextDocument(document)
+    const isTextDocument = Utils.isTextDocument(document)
     const languageId = document.languageId
     const endLine = document.lineCount - 1
 
@@ -74,9 +74,9 @@ export class Util {
     }
   }
   static async withProgress<T>(task: Promise<T>, title: string): Promise<T> {
-    return await vscode.window.withProgress(
+    return await window.withProgress(
       {
-        location: vscode.ProgressLocation.Window,
+        location: ProgressLocation.Window,
         title: title,
         cancellable: false
       },

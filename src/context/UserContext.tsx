@@ -1,48 +1,6 @@
-// ** React Imports
 import { createContext, useState, ReactNode, useCallback, useEffect } from 'react'
-
-// ** Services
-import { AccountSettingTypes, MessageType } from '../types'
-
-// ** Defaults
-const defaultProvider: AccountSettingTypes = {
-  initialState: {},
-  suggestion: '',
-  setSuggestion: () => '',
-  generate: '',
-  setGenerate: () => '',
-  showSuggestionPaginatePanel: false,
-  showGeneratePaginatePanel: false,
-  discardSuggestionClicked: false,
-  endorseSuggestionClicked: false,
-
-  // tslint:disable-next-line:no-empty-function
-  setDiscardSuggestionClicked: () => Boolean,
-
-  // tslint:disable-next-line:no-empty-function
-  setEndorseSuggestionClicked: () => Boolean,
-  isgenerateClicked: false,
-  userQuestionAboutSuggestion: '',
-
-  // tslint:disable-next-line:no-empty-function
-  setUserQuestionAboutSuggestion: () => '',
-  isSuggestionClicked: false,
-  setSuggestionClicked: () => Boolean,
-  isGenerateWithoutQuestionLoading: false,
-  setIsGenerateWithoutQuestionLoading: () => Boolean,
-  userQuestionAboutRecommendation: '',
-  setUserQuestionAboutRecommendation: () => '',
-  isRecommendationRegenerateLoading: false,
-  setIsRecommendationRegenerateLoading: () => Boolean,
-  isGenerateWithQuestionLoading: false,
-  setIsGenerateWithQuestionLoading: () => Boolean,
-  isSuggestionRegenerateLoading: false,
-  setIsSuggestionRegenerateLoading: () => Boolean,
-  suggestionPaginationRegenerate: [],
-  setSuggestionPaginationRegenerate: () => [],
-  generatePaginationRegenerate: [],
-  setGeneratePaginationRegenerate: () => []
-}
+import { EventDataType, MessageType } from '../types'
+import { defaultProvider } from './utils'
 
 const AccountSettingContext = createContext(defaultProvider)
 
@@ -73,7 +31,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data
       switch (event.data.type) {
-        case 'initData':
+        case EventDataType.INIT_DATA:
           if (payload.isReset === true) {
             vscode.postMessage({
               type: 'initData:ResetRecieved',
@@ -112,7 +70,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setInitialState({ ...payload })
           break
 
-        case 'onSuggestionClicked:Response':
+        case EventDataType.SUGGESTION_CLICKED_RESPONSE:
           const { description } = payload
           setSuggestion(description)
           if (userQuestionAboutSuggestion !== '') {
@@ -130,16 +88,21 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setShowSuggestionPaginationPanel(true)
           setSuggestionClicked(false)
           break
-        case 'onSuggestionClickedGPT:Response':
+        case EventDataType.SUGGESTION_CLICKED_GPT_RESPONSE:
           setSuggestionClicked(false)
           setIsSuggestionRegenerateLoading(false)
           setSuggestion(payload.choices[0].message.content)
           setShowSuggestionPaginationPanel(true)
           break
-        case 'onGenerateClickedGPT:Response':
+        case EventDataType.SUGGESTION_CLICKED_ERROR:
+          setShowSuggestionPaginationPanel(false)
+          setIsSuggestionRegenerateLoading(false)
+          setSuggestionClicked(false)
+          break
+        case EventDataType.GENERATE_CLICKED_GPT_RESPONSE:
           setGenerate(payload.choices[0].message.content)
           break
-        case 'onGenerateClicked:Response':
+        case EventDataType.GENERATE_CLICKED_RESPONSE:
           const { recommendation } = payload
           const adjustedRecommendation: string = recommendation
           adjustedRecommendation.replace("'''", '')
@@ -158,34 +121,32 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             setIsRecommendationRegenerateLoading(false)
           }
           break
-        case 'onGenerateClicked:Error':
+        case EventDataType.GENERATE_CLICKED_ERROR:
           setGenerate('')
           setIsGenerateWithoutQuestionLoading(false)
           setIsgenerateClicked(false)
           setIsGenerateWithQuestionLoading(false)
           setIsRecommendationRegenerateLoading(false)
           break
-        case 'onSuggestionClicked:Error':
-          setShowSuggestionPaginationPanel(false)
-          setIsSuggestionRegenerateLoading(false)
-          setSuggestionClicked(false)
-          break
-        case 'onDiscardSuggestionClicked:Success': {
+
+        case EventDataType.DISCARD_SUGGESTION_SUCCESS: {
           setDiscardSuggestionClicked(false)
           break
         }
-        case 'onDiscardSuggestionClicked:Error': {
+        case EventDataType.DISCARD_SUGGESTION_ERROR: {
           setDiscardSuggestionClicked(false)
           break
         }
-        case 'onEndorseSuggestionClicked:Success': {
+        case EventDataType.ENDORSE_SUGGESTION_SUCCESS: {
           setEndorseSuggestionClicked(false)
           break
         }
-        case 'onEndorseSuggestionClicked:Error': {
+        case EventDataType.ENDORSE_SUGGESTION_ERROR: {
           setEndorseSuggestionClicked(false)
           break
         }
+        default:
+          break
       }
     },
     [
@@ -208,7 +169,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
 
   // get initial state
   useEffect(() => {
-    vscode.postMessage({ type: 'getInitData' })
+    vscode.postMessage({ type: EventDataType.GET_INIT_DATA })
   }, [])
 
   // handle Incoming Messages

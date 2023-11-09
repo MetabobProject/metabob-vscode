@@ -1,64 +1,65 @@
 import * as vscode from 'vscode'
-import { analyzeDocumentOnSaveConfig } from './config'
+import { AnalyzeDocumentOnSaveConfig } from './config'
 import { RecommendationWebView } from './providers/recommendation.provider'
-import { activateAnalyzeCommand } from './commands/AnalyzeDocument'
-import { Util } from './utils'
-import { createOrUpdateUserSession } from './helpers/CreateOrUpdateUserSession'
-import { AnalyzeDocumentOnSave } from './helpers/AnalyzeTextDocumentOnSave'
-import { activateDiscardCommand } from './commands/discardSuggestion'
-import { activateEndorseCommand } from './commands/endorseSuggestion'
-import { activateFocusRecommendCommand } from './commands/focusRecommendation'
-import { activateDetailSuggestionCommand } from './commands/detailDocument'
-import { activateFixSuggestionCommand } from './commands/fixDocument'
-import { initState } from './helpers/InitState'
+import {
+  activateEndorseCommand,
+  activateFocusRecommendCommand,
+  activateDetailSuggestionCommand,
+  activateFixSuggestionCommand,
+  activateDiscardCommand,
+  activateAnalyzeCommand
+} from './commands'
+import { createOrUpdateUserSession, initState, AnalyzeDocumentOnSave } from './helpers'
+import Util from './utils'
+import debugChannel from './debug'
 
-// let sessionInterval: NodeJS.Timer | null = null
 export function activate(context: vscode.ExtensionContext): void {
-  const debug = vscode.window.createOutputChannel('Metabob-Debug')
-  const analyzeDocumentOnSave = analyzeDocumentOnSaveConfig()
-
-  debug.show(true)
-  debug.appendLine(`Activating Metabob`)
+  debugChannel.show(true)
+  debugChannel.appendLine('Activating Metabob Extension...')
 
   initState(context)
 
-  // Create User Session, If already created get the refresh token
-  // otherwise, ping server every 60 second to not destroy the token
-  // if the user has not done any activity
-  createOrUpdateUserSession(context)
+  if (!context.extension || !context.extensionUri) {
+    debugChannel.appendLine(
+      'Error Activating Metabob Extension\nReason: context.extension or context.extensionUri is undefined'
+    )
+    return
+  }
 
-  // TODO: Redo this implementation. at the moment Bug seems to be on the extension host end.
-  // https://github.com/microsoft/vscode/issues/109014#issuecomment-712913566
+  const analyzeDocumentOnSaveConfig = AnalyzeDocumentOnSaveConfig()
 
-  // if (!sessionInterval) {
-  //   sessionInterval = setInterval(() => {
-  //     createOrUpdateUserSession(context, debug)
-  //   }, 60_000)
-  // }
+  try {
+    // Create User Session, If already created get the refresh token
+    // otherwise, ping server every 60 second to not destroy the token
+    // if the user has not done any activity
+    createOrUpdateUserSession(context)
 
-  // Analyze command that hit /analyze endpoint with current file content
-  // then decorate current file with error
-  activateAnalyzeCommand(context, debug)
+    // Analyze command that hit /analyze endpoint with current file content
+    // then decorate current file with error
+    activateAnalyzeCommand(context)
 
-  // If the user Discard a suggestion, it would be removed from decoration
-  // and the global state as well
-  activateDiscardCommand(context, debug)
+    // If the user Discard a suggestion, it would be removed from decoration
+    // and the global state as well
+    activateDiscardCommand(context)
 
-  // If the user feels suggestion is good, he can endorse that suggestion
-  // Used to notify the model about positive feedback
-  activateEndorseCommand(context, debug)
+    // If the user feels suggestion is good, he can endorse that suggestion
+    // Used to notify the model about positive feedback
+    activateEndorseCommand(context)
 
-  // Deprecated
-  activateFocusRecommendCommand(context, debug)
+    // Deprecated
+    activateFocusRecommendCommand(context)
 
-  // When the user click the detail button on the problem
-  activateDetailSuggestionCommand(context, debug)
+    // When the user click the detail button on the problem
+    activateDetailSuggestionCommand(context)
 
-  // Whenever the user clicks the fix button
-  activateFixSuggestionCommand(context, debug)
+    // Whenever the user clicks the fix button
+    activateFixSuggestionCommand(context)
+  } catch (error: any) {
+    debugChannel.appendLine(`Metabob: ${error}`)
+  }
 
   // Analyze on Save functionality is only ran if the user enabled it.
-  if (analyzeDocumentOnSave && analyzeDocumentOnSave === true) {
+  if (analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true) {
     context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument(document => {
         // Will check if the current document is valid code file.
@@ -128,15 +129,11 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       'recommendation-panel-webview',
-      new RecommendationWebView(context?.extensionPath, context?.extensionUri, context)
+      new RecommendationWebView(context.extensionPath, context.extensionUri, context)
     )
   )
 }
 
-// Since, We don't want to get Refresh Tokens after User has closed the extension
-// So we will clear Session Interval upon deactivate
 export function deactivate(): void {
-  // if (sessionInterval) {
-  //   clearInterval(sessionInterval)
-  // }
+  debugChannel.dispose()
 }
