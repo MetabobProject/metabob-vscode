@@ -23,6 +23,7 @@ export function activate(context: vscode.ExtensionContext): void {
     debugChannel.appendLine(
       'Error Activating Metabob Extension\nReason: context.extension or context.extensionUri is undefined'
     )
+
     return
   }
 

@@ -11,16 +11,18 @@ import {
   TextEditorEdit,
   Position,
   Range,
-  commands
+  commands,
+  env
 } from 'vscode'
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai'
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services'
-import { CurrentQuestion, CurrentQuestionState, SessionState, Session } from '../state'
+import { CurrentQuestion, CurrentQuestionState, Session } from '../state'
 import { BackendService, GetChatGPTToken } from '../config'
 import { GenerateDecorations } from '../helpers'
+import { DiscardCommandHandler, EndorseCommandHandler } from '../commands'
 import CONSTANTS from '../constants'
 import Util from '../utils'
-import { DiscardCommandHandler, EndorseCommandHandler } from '../commands'
+import debugChannel from '../debug'
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null
@@ -51,13 +53,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     currentQuestion.clear()
   }
 
-  async updateCurrentQuestionState(payload: CurrentQuestionState): Promise<void> {
-    const currentQuestionState = new CurrentQuestion(this.extensionContext)
-
-    await currentQuestionState.update(() => payload)
-    return
-  }
-
   refresh(): void {
     this.onDidChangeTreeData.fire(null)
     if (this._view) {
@@ -73,6 +68,14 @@ export class RecommendationWebView implements WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
     this._view = webviewView
     this.activateMessageListener()
+  }
+
+  async updateCurrentQuestionState(payload: CurrentQuestionState): Promise<void> {
+    const currentQuestionState = new CurrentQuestion(this.extensionContext)
+
+    await currentQuestionState.update(() => payload)
+
+    return
   }
 
   async handleSuggestionClick(input: string, initData: CurrentQuestionState): Promise<void> {
@@ -94,6 +97,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
 
     const sessionToken = new Session(this.extensionContext).get()?.value
+
     // If Session Token is undefined, throw error early
     if (!sessionToken) {
       throw new Error('handleSuggestionClick: Session Token is Undefined')
@@ -122,6 +126,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           type: 'onSuggestionClicked:Response',
           data: payload
         })
+
         return
       }
 
@@ -206,6 +211,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           type: 'onGenerateClicked:Response',
           data: response.value
         })
+
         return
       }
 
@@ -254,12 +260,26 @@ export class RecommendationWebView implements WebviewViewProvider {
     if (this._view === null || this._view === undefined || this._view.webview === undefined) {
       return
     }
-    if (!initData) return
+
+    const initPayload: {
+      initData?: any
+      hasOpenTextDocuments?: boolean
+      hasWorkSpaceFolders?: boolean
+    } = {}
+
+    if (initData) {
+      initPayload.initData = initData
+    }
+
+    initPayload.hasOpenTextDocuments = Util.hasOpenTextDocuments()
+    initPayload.hasWorkSpaceFolders = Util.hasWorkspaceFolder()
+
+    debugChannel.appendLine(`init data: ${JSON.stringify({ ...initPayload })}`)
 
     this._view.webview
       .postMessage({
         type: 'initData',
-        data: { ...initData }
+        data: { ...initPayload }
       })
       .then(undefined, err => {
         window.showErrorMessage(err)
@@ -287,6 +307,12 @@ export class RecommendationWebView implements WebviewViewProvider {
     })
   }
 
+  async openExternalLink(url: string): Promise<void> {
+    await env.openExternal(Uri.parse(url))
+
+    return
+  }
+
   private activateMessageListener() {
     if (this._view === null || this._view === undefined || this._view.webview === undefined) {
       return
@@ -297,6 +323,13 @@ export class RecommendationWebView implements WebviewViewProvider {
       }
       const data = message.data
       switch (message.type) {
+        case 'open_external_link':
+          const { url } = data
+          if (!url) {
+            window.showErrorMessage('Metabob: URL to open is undefined')
+          }
+          this.openExternalLink(url)
+          break
         case 'onSuggestionClicked': {
           const input = data?.input
           const initData = data?.initData
@@ -464,6 +497,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: Webview) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const manifest = require(path.join(this.extensionPath, 'build', 'asset-manifest.json'))
     const mainScript = manifest['files']['main.js']
     const mainStyle = manifest['files']['main.css']

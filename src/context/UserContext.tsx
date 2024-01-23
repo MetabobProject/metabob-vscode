@@ -1,6 +1,8 @@
 import { createContext, useState, ReactNode, useCallback, useEffect } from 'react'
+import { useSetRecoilState } from 'recoil'
 import { EventDataType, MessageType } from '../types'
 import { defaultProvider } from './utils'
+import * as State from '../state'
 
 const AccountSettingContext = createContext(defaultProvider)
 
@@ -27,11 +29,24 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const [suggestionPaginationRegenerate, setSuggestionPaginationRegenerate] = useState<Array<any>>([])
   const [generatePaginationRegenerate, setGeneratePaginationRegenerate] = useState<Array<string>>([])
 
+  const setHasWorkSpaceFolders = useSetRecoilState(State.hasWorkSpaceFolders)
+  const setHasOpenTextDocuments = useSetRecoilState(State.hasOpenTextDocuments)
+
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data
       switch (event.data.type) {
         case EventDataType.INIT_DATA:
+          const { hasOpenTextDocuments, hasWorkSpaceFolders } = payload
+
+          if (hasOpenTextDocuments) {
+            setHasOpenTextDocuments(hasOpenTextDocuments)
+          }
+
+          if (hasWorkSpaceFolders) {
+            setHasWorkSpaceFolders(hasWorkSpaceFolders)
+          }
+
           if (payload.isReset === true) {
             vscode.postMessage({
               type: 'initData:ResetRecieved',
@@ -163,7 +178,9 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
       setIsgenerateClicked,
       setIsGenerateWithQuestionLoading,
       setIsRecommendationRegenerateLoading,
-      setGenerate
+      setGenerate,
+      setHasWorkSpaceFolders,
+      setHasOpenTextDocuments
     ]
   )
 
