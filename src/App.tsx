@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { RecoilRoot, useRecoilValue } from 'recoil'
 import { ExtensionSVG, Button, ButtonWidth } from './components'
+import { AccountSettingProvider } from './context/UserContext'
 
 // import { Header } from './Header'
-// import { AccountSettingProvider } from './context/UserContext'
 // import { SuggestionPaginatePanel } from './panels/SuggestionPaginatePanel'
 // import { ProblemFeedback } from './panels/ProblemFeedback'
 // import { QuestionPanel } from './panels/QuestionPanel'
@@ -97,9 +97,9 @@ const App = (): JSX.Element => {
   return (
     <>
       <RecoilRoot>
-        {/* <AccountSettingProvider> */}
-        <AppLayout />
-        {/* </AccountSettingProvider> */}
+        <AccountSettingProvider>
+          <AppLayout />
+        </AccountSettingProvider>
       </RecoilRoot>
     </>
   )
