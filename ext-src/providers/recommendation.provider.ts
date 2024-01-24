@@ -45,6 +45,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     const currentQuestion = new CurrentQuestion(this.extensionContext).get()?.value
 
     if (!currentQuestion) return undefined
+
     return currentQuestion
   }
 
@@ -323,6 +324,10 @@ export class RecommendationWebView implements WebviewViewProvider {
       }
       const data = message.data
       switch (message.type) {
+        case 'analysis_current_file':
+          this.clear()
+          commands.executeCommand('metabob.analyzeDocument')
+          break
         case 'open_external_link':
           const { url } = data
           if (!url) {

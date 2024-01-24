@@ -10,7 +10,7 @@ export const ExtensionSVG = ({
   height = '39',
   viewBox = '0 0 132 39',
   fill = 'none'
-}: ExtensionSVGProps) => {
+}: ExtensionSVGProps): JSX.Element => {
   return (
     <>
       <svg width={width} height={height} viewBox={viewBox} fill={fill} xmlns='http://www.w3.org/2000/svg'>

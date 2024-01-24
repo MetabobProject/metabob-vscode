@@ -22,7 +22,7 @@ export default class Utils {
   }
 
   static hasOpenTextDocuments(): boolean {
-    return vscode.workspace.textDocuments.length > 0
+    return !!vscode.window.activeTextEditor
   }
 
   static isLoggedIn(): boolean {
