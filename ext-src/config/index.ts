@@ -1,39 +1,39 @@
-import * as vscode from 'vscode'
+import * as vscode from 'vscode';
 
-export const GetAPIConfig = () => {
-  const config = vscode.workspace.getConfiguration('metabob').get<string>('apiKey')
+export const GetAPIConfig = (): string | undefined => {
+  const config = vscode.workspace.getConfiguration('metabob').get<string>('apiKey');
 
-  return config
-}
+  return config;
+};
 
-export const GetAPIBaseURLConfig = () => {
-  const config = vscode.workspace.getConfiguration('metabob').get<string>('baseURl')
+export const GetAPIBaseURLConfig = (): string | undefined => {
+  const config = vscode.workspace.getConfiguration('metabob').get<string>('baseURl');
 
-  return config
-}
+  return config;
+};
 
-export const AnalyzeDocumentOnSaveConfig = () => {
-  const config = vscode.workspace.getConfiguration('metabob').get<boolean>('analyzeDocumentOnSave')
+export const AnalyzeDocumentOnSaveConfig = (): boolean | undefined => {
+  const config = vscode.workspace.getConfiguration('metabob').get<boolean>('analyzeDocumentOnSave');
 
-  return config
-}
+  return config;
+};
 
-export const GetChatGPTToken = () => {
-  const config = vscode.workspace.getConfiguration('metabob').get<string>('chatgptToken')
+export const GetChatGPTToken = (): string | undefined => {
+  const config = vscode.workspace.getConfiguration('metabob').get<string>('chatgptToken');
 
-  return config
-}
+  return config;
+};
 
-export const BackendService = () => {
-  const config = vscode.workspace.getConfiguration('metabob').get<string>('backendSelection')
+export const BackendService = (): string | undefined => {
+  const config = vscode.workspace.getConfiguration('metabob').get<string>('backendSelection');
 
-  return config
-}
+  return config;
+};
 
 export const GetRequestParamId = (): string | undefined => {
   if (vscode.env.isTelemetryEnabled) {
-    return vscode.env.machineId
+    return vscode.env.machineId;
   }
 
-  return undefined
-}
+  return undefined;
+};
