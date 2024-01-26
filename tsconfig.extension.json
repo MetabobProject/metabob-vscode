@@ -17,10 +17,10 @@
     "types": []
   },
   "include": [
-    "ext-src",
-    "./src/global.d.ts"
+    "ext-src/**/*.ts",
   ],
   "exclude": [
+    "src",
     "node_modules",
     ".vscode-test",
     "app",

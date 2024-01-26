@@ -1,2 +1,1 @@
-export * from './ExtensionSVG'
-export * from './Button'
+export * from './ExtensionSVG';

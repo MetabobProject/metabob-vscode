@@ -1,108 +1,106 @@
-import * as React from 'react'
-import { RecoilRoot, useRecoilValue } from 'recoil'
-import { ExtensionSVG, Button, ButtonWidth } from './components'
-import { AccountSettingProvider } from './context/UserContext'
-
-// import { Header } from './Header'
-// import { SuggestionPaginatePanel } from './panels/SuggestionPaginatePanel'
-// import { ProblemFeedback } from './panels/ProblemFeedback'
-// import { QuestionPanel } from './panels/QuestionPanel'
-// import { RecommendationPanel } from './panels/RecommendationPanel'
-// import { useUser } from './hooks/useUser'
-
-import { Layout } from './layout/Layout'
-import * as State from './state'
+import * as React from 'react';
+import { RecoilRoot, useRecoilValue } from 'recoil';
+import Button from '@mui/material/Button';
+import { ThemeProvider } from '@mui/material/styles';
+import { ExtensionSVG } from './components';
+import { AccountSettingProvider } from './context/UserContext';
+import { Layout } from './layout/Layout';
+import { muiThemeDark } from './theme';
+import * as State from './state';
+import { Box, CssBaseline, useTheme } from '@mui/material';
 
 const AppLayout = (): JSX.Element => {
-  // const { initialState } = useUser()
-  // const isActiveDetected = initialState?.vuln !== undefined ? true : false
-
-  const hasWorkSpaceFolders = useRecoilValue(State.hasWorkSpaceFolders)
-  const hasOpenTextDocuments = useRecoilValue(State.hasOpenTextDocuments)
+  const theme = useTheme();
+  const hasWorkSpaceFolders = useRecoilValue(State.hasWorkSpaceFolders);
+  const hasOpenTextDocuments = useRecoilValue(State.hasOpenTextDocuments);
 
   const handleDocsClick: React.MouseEventHandler<HTMLButtonElement> = React.useCallback(async e => {
-    e.preventDefault()
+    e.preventDefault();
     vscode.postMessage({
       type: 'open_external_link',
       data: {
-        url: 'https://marketplace.visualstudio.com/items?itemName=Metabob.metabob'
-      }
-    })
-  }, [])
+        url: 'https://marketplace.visualstudio.com/items?itemName=Metabob.metabob',
+      },
+    });
+  }, []);
 
   const handleAnalyzeClick: React.MouseEventHandler<HTMLButtonElement> = React.useCallback(
     e => {
-      e.preventDefault()
+      e.preventDefault();
       if (hasWorkSpaceFolders && hasOpenTextDocuments) {
         vscode.postMessage({
-          type: 'analysis_current_file'
-        })
+          type: 'analysis_current_file',
+        });
       }
     },
-    [hasWorkSpaceFolders, hasOpenTextDocuments]
-  )
+    [hasWorkSpaceFolders, hasOpenTextDocuments],
+  );
 
-  // if (!isActiveDetected) {
   return (
     <>
       <Layout>
-        <div className='flex justify-end'>
-          <Button label='Docs' handleClick={handleDocsClick} isBoldText />
-        </div>
-        <div className='flex items-center justify-center'>
-          <div className='relative'>
-            <ExtensionSVG />
-            {(!hasWorkSpaceFolders || !hasOpenTextDocuments) && (
-              <>
-                <div className='flex justify-center px-4 py-2'>
-                  <Button
-                    label='Please open a project to analyze'
-                    handleClick={() => {
-                      return
-                    }}
-                    width={ButtonWidth.Medium}
-                    isBoldText
-                    disabled
-                  />
-                </div>
-              </>
-            )}
+        <Button
+          sx={{
+            alignSelf: 'flex-end',
+          }}
+          variant='contained'
+          color='primary'
+          onClick={handleDocsClick}
+        >
+          Docs
+        </Button>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ExtensionSVG />
+        </Box>
+        <Box
+          sx={{
+            marginTop: theme.spacing(2),
+          }}
+        >
+          {(!hasWorkSpaceFolders || !hasOpenTextDocuments) && (
+            <>
+              <div className='flex justify-center px-4 py-2'>
+                <Button variant='contained' disabled>
+                  Please open a project to analyze
+                </Button>
+              </div>
+            </>
+          )}
 
-            {hasWorkSpaceFolders && hasOpenTextDocuments && (
-              <>
-                <div className='flex justify-center px-4 py-2'>
-                  <Button label='Analyze' handleClick={handleAnalyzeClick} width={ButtonWidth.Medium} isBoldText />
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+          {hasWorkSpaceFolders && hasOpenTextDocuments && (
+            <>
+              <div className='flex justify-center px-4 py-2'>
+                <Button variant='contained' onClick={handleAnalyzeClick}>
+                  Analyze
+                </Button>
+              </div>
+            </>
+          )}
+        </Box>
       </Layout>
     </>
-  )
-}
-
-// return (
-//   <Layout>
-//     <Header />
-//     <SuggestionPaginatePanel />
-//     <ProblemFeedback />
-//     <QuestionPanel />
-//     <RecommendationPanel />
-//   </Layout>
-// )
-// }
+  );
+};
 
 const App = (): JSX.Element => {
   return (
     <>
-      <RecoilRoot>
-        <AccountSettingProvider>
-          <AppLayout />
-        </AccountSettingProvider>
-      </RecoilRoot>
+      <AccountSettingProvider>
+        <ThemeProvider theme={muiThemeDark}>
+          <RecoilRoot>
+            <AppLayout />
+          </RecoilRoot>
+          <CssBaseline />
+        </ThemeProvider>
+      </AccountSettingProvider>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
