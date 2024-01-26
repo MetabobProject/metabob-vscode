@@ -91,14 +91,14 @@ const AppLayout = (): JSX.Element => {
 const App = (): JSX.Element => {
   return (
     <>
-      <AccountSettingProvider>
-        <ThemeProvider theme={muiThemeDark}>
-          <RecoilRoot>
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <ThemeProvider theme={muiThemeDark}>
             <AppLayout />
-          </RecoilRoot>
-          <CssBaseline />
-        </ThemeProvider>
-      </AccountSettingProvider>
+            <CssBaseline />
+          </ThemeProvider>
+        </AccountSettingProvider>
+      </RecoilRoot>
     </>
   );
 };
