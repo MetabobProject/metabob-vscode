@@ -1,35 +1,43 @@
-import * as vscode from 'vscode'
-import { Result } from 'rusty-result-ts'
-import { submitService, SubmitRepresentationResponse, ApiErrorBase } from '../services/'
-import { IDocumentMetaData } from '../types'
-import { AnalyzeState, Analyze } from '../state'
-import Util from '../utils'
-import CONSTANTS from '../constants'
+import * as vscode from 'vscode';
+import { Result } from 'rusty-result-ts';
+import { submitService, SubmitRepresentationResponse, ApiErrorBase } from '../services/';
+import { IDocumentMetaData } from '../types';
+import { AnalyzeState, Analyze } from '../state';
+import Util from '../utils';
+import CONSTANTS from '../constants';
+import { getAnalysisEventEmitter } from '../events';
 
-const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' }
+const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' };
 
-export const verifyResponseOfSubmit = (response: Result<SubmitRepresentationResponse | null, ApiErrorBase>) => {
+export const verifyResponseOfSubmit = (
+  response: Result<SubmitRepresentationResponse | null, ApiErrorBase>,
+) => {
   if (response.isErr()) {
-    return undefined
+    return undefined;
   }
 
   if (response.isOk()) {
-    return response.value !== null ? response.value : undefined
+    return response.value !== null ? response.value : undefined;
   }
 
-  return undefined
-}
+  return undefined;
+};
 
 export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string,
   analyzeState: Analyze,
   jobId?: string,
-  suppressRateLimitErrors = false
+  suppressRateLimitErrors = false,
 ) => {
-  const editor = vscode.window.activeTextEditor
+  const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.fileName !== metaDataDocument.filePath) {
-    return failedResponseReturn
+    getAnalysisEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+
+    return failedResponseReturn;
   }
 
   const response =
@@ -39,43 +47,59 @@ export const handleDocumentAnalyze = async (
           metaDataDocument.relativePath,
           metaDataDocument.fileContent,
           metaDataDocument.filePath,
-          sessionToken
-        )
+          sessionToken,
+        );
 
-  const verifiedResponse = verifyResponseOfSubmit(response)
+  const verifiedResponse = verifyResponseOfSubmit(response);
   if (!verifiedResponse || !verifiedResponse.results) {
     if (!suppressRateLimitErrors) {
-      vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage)
+      getAnalysisEventEmitter().fire({
+        type: 'Analysis_Error',
+        data: '',
+      });
+      vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage);
     }
 
-    return failedResponseReturn
+    return failedResponseReturn;
   } else if (verifiedResponse.status === 'failed') {
-    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage)
+    getAnalysisEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
 
-    return failedResponseReturn
+    return failedResponseReturn;
   }
 
   // If the response is pending or running, return verified response early
   if (verifiedResponse.status !== 'complete') {
-    return verifiedResponse
+    return verifiedResponse;
   }
 
   // collect all the problems and add them to the state as separate keys
-  const results: AnalyzeState = {}
+  const results: AnalyzeState = {};
 
   verifiedResponse.results.forEach(problem => {
-    const key = `${problem.path}@@${problem.id}`
+    const key = `${problem.path}@@${problem.id}`;
     results[key] = {
       ...problem,
-      isDiscarded: false
-    }
-  })
+      isDiscarded: false,
+    };
+  });
 
-  analyzeState.set(results)
+  analyzeState.set(results);
 
-  const decorationFromResponse = Util.transformResponseToDecorations(verifiedResponse.results, editor, jobId)
-  editor.setDecorations(decorationFromResponse.decorationType, [])
-  editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations)
+  const decorationFromResponse = Util.transformResponseToDecorations(
+    verifiedResponse.results,
+    editor,
+    jobId,
+  );
+  editor.setDecorations(decorationFromResponse.decorationType, []);
+  editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations);
+  getAnalysisEventEmitter().fire({
+    type: 'Analysis_Completed',
+    data: '',
+  });
 
-  return verifiedResponse
-}
+  return verifiedResponse;
+};

@@ -40,11 +40,17 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
 
   const setHasWorkSpaceFolders = useSetRecoilState(State.hasWorkSpaceFolders);
   const setHasOpenTextDocuments = useSetRecoilState(State.hasOpenTextDocuments);
+  const setIsAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
       switch (event.data.type) {
+        case EventDataType.ANALYSIS_ERROR:
+        case EventDataType.ANALYSIS_COMPLETED:
+          setIsAnalysisLoading(false);
+          break;
+
         case EventDataType.INIT_DATA:
           const { hasOpenTextDocuments, hasWorkSpaceFolders } = payload;
 
@@ -190,6 +196,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
       setGenerate,
       setHasWorkSpaceFolders,
       setHasOpenTextDocuments,
+      setIsAnalysisLoading,
     ],
   );
 

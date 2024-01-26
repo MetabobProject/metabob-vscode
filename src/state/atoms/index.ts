@@ -1,11 +1,16 @@
-import { atom } from 'recoil'
+import { atom } from 'recoil';
 
 export const hasOpenTextDocuments = atom<boolean>({
   default: false,
-  key: 'Metabob:hasOpenTextDocuments'
-})
+  key: 'Metabob:hasOpenTextDocuments',
+});
 
 export const hasWorkSpaceFolders = atom<boolean>({
   default: false,
-  key: 'Metabob:hasWorkSpaceFolders'
-})
+  key: 'Metabob:hasWorkSpaceFolders',
+});
+
+export const isAnalysisLoading = atom<boolean>({
+  default: false,
+  key: 'Metabob:isAnalysisCompleted',
+});

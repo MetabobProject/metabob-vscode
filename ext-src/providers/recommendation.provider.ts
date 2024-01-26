@@ -23,18 +23,26 @@ import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
 import debugChannel from '../debug';
+import { AnalysisEvents } from '../events';
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
   private readonly extensionPath: string;
   private readonly extensionURI: Uri;
   private readonly extensionContext: ExtensionContext;
+  private analysisEventEmitter: EventEmitter<AnalysisEvents>;
 
-  constructor(extensionPath: string, extensionURI: Uri, context: ExtensionContext) {
+  constructor(
+    extensionPath: string,
+    extensionURI: Uri,
+    context: ExtensionContext,
+    analysisEventEmitter: EventEmitter<AnalysisEvents>,
+  ) {
     this.extensionPath = extensionPath;
     this.extensionURI = extensionURI;
     this.extensionContext = context;
     this.extensionContext.globalState.update(CONSTANTS.webview, this);
+    this.analysisEventEmitter = analysisEventEmitter;
   }
 
   private onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<
@@ -69,6 +77,18 @@ export class RecommendationWebView implements WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
     this._view = webviewView;
     this.activateMessageListener();
+    this.activateAnalysisEventListener();
+  }
+
+  activateAnalysisEventListener(): void {
+    this.analysisEventEmitter.event(event => {
+      debugChannel.appendLine(JSON.stringify(event));
+      if (event.type === 'Analysis_Error' || event.type === 'Analysis_Completed') {
+        this._view?.webview.postMessage({
+          type: event.type,
+        });
+      }
+    });
   }
 
   async updateCurrentQuestionState(payload: CurrentQuestionState): Promise<void> {
