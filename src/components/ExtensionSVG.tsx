@@ -1,19 +1,25 @@
 interface ExtensionSVGProps {
-  width?: string
-  height?: string
-  viewBox?: string
-  fill?: string
+  width?: string;
+  height?: string;
+  viewBox?: string;
+  fill?: string;
 }
 
 export const ExtensionSVG = ({
-  width = '132',
+  width = '120',
   height = '39',
   viewBox = '0 0 132 39',
-  fill = 'none'
+  fill = 'none',
 }: ExtensionSVGProps): JSX.Element => {
   return (
     <>
-      <svg width={width} height={height} viewBox={viewBox} fill={fill} xmlns='http://www.w3.org/2000/svg'>
+      <svg
+        width={width}
+        height={height}
+        viewBox={viewBox}
+        fill={fill}
+        xmlns='http://www.w3.org/2000/svg'
+      >
         <path
           fill-rule='evenodd'
           clip-rule='evenodd'
@@ -83,5 +89,5 @@ export const ExtensionSVG = ({
         </defs>
       </svg>
     </>
-  )
-}
+  );
+};

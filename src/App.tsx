@@ -56,6 +56,7 @@ const AppLayout = (): JSX.Element => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            minWidth: '120px',
           }}
         >
           <ExtensionSVG />
