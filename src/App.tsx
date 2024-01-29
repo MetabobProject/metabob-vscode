@@ -62,22 +62,36 @@ const AppLayout = (): JSX.Element => {
         </Box>
         <Box
           sx={{
-            marginTop: theme.spacing(2),
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: theme.spacing(20),
           }}
         >
           {(!hasWorkSpaceFolders || !hasOpenTextDocuments) && (
             <>
-              <div className='flex justify-center px-4 py-2'>
-                <Button variant='contained' disabled>
-                  Please open a project to analyze
-                </Button>
-              </div>
+              <Button
+                sx={{
+                  width: '100%',
+                }}
+                variant='contained'
+                color='primary'
+                disabled
+              >
+                Please open a project to analyze
+              </Button>
             </>
           )}
 
           {hasWorkSpaceFolders && hasOpenTextDocuments && (
             <>
-              <Button variant='contained' onClick={handleAnalyzeClick}>
+              <Button
+                sx={{
+                  minWidth: '120px',
+                }}
+                variant='contained'
+                color='primary'
+                onClick={handleAnalyzeClick}
+              >
                 {isAnalysisLoading && (
                   <CircularProgress
                     size={15}
