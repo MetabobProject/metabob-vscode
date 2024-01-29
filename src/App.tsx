@@ -87,7 +87,7 @@ const AppLayout = (): JSX.Element => {
             <>
               <Button
                 sx={{
-                  minWidth: '120px',
+                  minWidth: '140px',
                 }}
                 variant='contained'
                 color='primary'
