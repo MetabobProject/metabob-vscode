@@ -1,0 +1,6 @@
+dist
+build
+coverage
+.history
+out
+node_modules

@@ -1,6 +1,19 @@
+import { Box } from '@mui/material';
+
 export interface LayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
-export const Layout = ({ children }: LayoutProps) => {
-  return <div className='p-5'>{children}</div>
-}
+export const Layout = ({ children }: LayoutProps): JSX.Element => {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        p: 2,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};

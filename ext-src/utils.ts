@@ -9,15 +9,23 @@ import CONSTANTS from './constants'
 export default class Utils {
   static context: ExtensionContext
 
-  static getSessionToken() {
+  static getSessionToken(): string {
     return this.context.globalState.get<string>(CONSTANTS.sessionKey) || ''
   }
 
-  static async updateSessionToken(sessionToken: string) {
+  static async updateSessionToken(sessionToken: string): Promise<void> {
     return await this.context.globalState.update(CONSTANTS.sessionKey, sessionToken)
   }
 
-  static isLoggedIn() {
+  static hasWorkspaceFolder(): boolean {
+    return vscode.workspace.workspaceFolders !== undefined
+  }
+
+  static hasOpenTextDocuments(): boolean {
+    return !!vscode.window.activeTextEditor
+  }
+
+  static isLoggedIn(): boolean {
     return !!this.context.globalState.get(CONSTANTS.sessionKey) && !!this.context.globalState.get(CONSTANTS.apiKey)
   }
 
@@ -33,7 +41,7 @@ export default class Utils {
     return languages.match(textLanguageIds, doc) > 0
   }
 
-  static getNonce() {
+  static getNonce(): string {
     let text = ''
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     for (let i = 0; i < 32; i++) {
@@ -43,15 +51,15 @@ export default class Utils {
     return text
   }
 
-  static sleep = (ms: number) => new Promise(res => setTimeout(res, ms))
+  static sleep = (ms: number): Promise<void> => new Promise(res => setTimeout(res, ms))
 
-  static getWorkspacePath() {
+  static getWorkspacePath(): string | undefined {
     const folders = workspace.workspaceFolders
 
     return folders ? folders![0].uri.fsPath : undefined
   }
 
-  static getResource(rel: string) {
+  static getResource(rel: string): string {
     return path.resolve(this.context.extensionPath, rel.replace(/\//g, path.sep)).replace(/\\/g, '/')
   }
 

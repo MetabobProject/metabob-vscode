@@ -1,61 +1,68 @@
-import * as vscode from 'vscode'
-import { AnalyzeDocumentOnSaveConfig } from './config'
-import { RecommendationWebView } from './providers/recommendation.provider'
+import * as vscode from 'vscode';
+import { AnalyzeDocumentOnSaveConfig } from './config';
+import { RecommendationWebView } from './providers/recommendation.provider';
 import {
   activateEndorseCommand,
   activateFocusRecommendCommand,
   activateDetailSuggestionCommand,
   activateFixSuggestionCommand,
   activateDiscardCommand,
-  activateAnalyzeCommand
-} from './commands'
-import { createOrUpdateUserSession, initState, AnalyzeDocumentOnSave } from './helpers'
-import Util from './utils'
-import debugChannel from './debug'
+  activateAnalyzeCommand,
+} from './commands';
+import { createOrUpdateUserSession, initState, AnalyzeDocumentOnSave } from './helpers';
+import Util from './utils';
+import debugChannel from './debug';
+import {
+  bootstrapAnalysisEventEmitter,
+  disposeAnalysisEventEmitter,
+  getAnalysisEventEmitter,
+} from './events';
 
 export function activate(context: vscode.ExtensionContext): void {
-  debugChannel.show(true)
-  debugChannel.appendLine('Activating Metabob Extension...')
+  bootstrapAnalysisEventEmitter();
+  debugChannel.show(true);
+  debugChannel.appendLine('Activating Metabob Extension...');
 
-  initState(context)
+  initState(context);
 
   if (!context.extension || !context.extensionUri) {
     debugChannel.appendLine(
-      'Error Activating Metabob Extension\nReason: context.extension or context.extensionUri is undefined'
-    )
-    return
+      'Error Activating Metabob Extension\nReason: context.extension or context.extensionUri is undefined',
+    );
+
+    return;
   }
 
-  const analyzeDocumentOnSaveConfig = AnalyzeDocumentOnSaveConfig()
+  const analyzeDocumentOnSaveConfig = AnalyzeDocumentOnSaveConfig();
 
   try {
     // Create User Session, If already created get the refresh token
     // otherwise, ping server every 60 second to not destroy the token
     // if the user has not done any activity
-    createOrUpdateUserSession(context)
+    createOrUpdateUserSession(context);
 
     // Analyze command that hit /analyze endpoint with current file content
     // then decorate current file with error
-    activateAnalyzeCommand(context)
+    activateAnalyzeCommand(context);
 
     // If the user Discard a suggestion, it would be removed from decoration
     // and the global state as well
-    activateDiscardCommand(context)
+    activateDiscardCommand(context);
 
     // If the user feels suggestion is good, he can endorse that suggestion
     // Used to notify the model about positive feedback
-    activateEndorseCommand(context)
+    activateEndorseCommand(context);
 
     // Deprecated
-    activateFocusRecommendCommand(context)
+    activateFocusRecommendCommand(context);
 
     // When the user click the detail button on the problem
-    activateDetailSuggestionCommand(context)
+    activateDetailSuggestionCommand(context);
 
     // Whenever the user clicks the fix button
-    activateFixSuggestionCommand(context)
+    activateFixSuggestionCommand(context);
   } catch (error: any) {
-    debugChannel.appendLine(`Metabob: ${error}`)
+    debugChannel.appendLine(`Metabob: ${error}`);
   }
 
   // Analyze on Save functionality is only ran if the user enabled it.
@@ -66,13 +73,13 @@ export function activate(context: vscode.ExtensionContext): void {
         if (Util.isValidDocument(document)) {
           AnalyzeDocumentOnSave(
             {
-              document
+              document,
             },
-            context
-          )
+            context,
+          );
         }
-      })
-    )
+      }),
+    );
   }
 
   // If the user changes the global config from CMD + Shift + P -> User Setting -> Metabob
@@ -80,60 +87,68 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
       if (e.affectsConfiguration('metabob.apiKey') === true) {
-        vscode.window.showInformationMessage('Metabob: API Key Changed')
+        vscode.window.showInformationMessage('Metabob: API Key Changed');
 
-        return
+        return;
       }
       if (e.affectsConfiguration('metabob.baseURl') === true) {
-        vscode.window.showInformationMessage('Metabob: Base URL Changed')
+        vscode.window.showInformationMessage('Metabob: Base URL Changed');
 
-        return
+        return;
       }
       if (e.affectsConfiguration('metabob.chatgptToken') === true) {
-        vscode.window.showInformationMessage('Metabob: ChatGPT API Changed')
+        vscode.window.showInformationMessage('Metabob: ChatGPT API Changed');
 
-        return
+        return;
       }
       if (e.affectsConfiguration('metabob.backendSelection') === true) {
-        const reloadWindowItem = { title: 'Reload Window' }
+        const reloadWindowItem = { title: 'Reload Window' };
         vscode.window
           .showInformationMessage('Reload the window to apply changes?', reloadWindowItem)
           .then(selection => {
             if (selection === reloadWindowItem) {
-              vscode.commands.executeCommand('workbench.action.reloadWindow')
+              vscode.commands.executeCommand('workbench.action.reloadWindow');
 
-              return
+              return;
             }
 
-            return
-          })
+            return;
+          });
       }
       if (e.affectsConfiguration('metabob.analyzeDocumentOnSave') === true) {
-        const reloadWindowItem = { title: 'Reload Window' }
+        const reloadWindowItem = { title: 'Reload Window' };
         vscode.window
           .showInformationMessage('Reload the window to apply changes?', reloadWindowItem)
           .then(selection => {
             if (selection === reloadWindowItem) {
-              vscode.commands.executeCommand('workbench.action.reloadWindow')
+              vscode.commands.executeCommand('workbench.action.reloadWindow');
 
-              return
+              return;
             }
 
-            return
-          })
+            return;
+          });
       }
-    })
-  )
+    }),
+  );
+
+  const analysisEventEmitter = getAnalysisEventEmitter();
 
   // Recommendation Panel Webview Provider that is the normal Metabob workflow
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       'recommendation-panel-webview',
-      new RecommendationWebView(context.extensionPath, context.extensionUri, context)
-    )
-  )
+      new RecommendationWebView(
+        context.extensionPath,
+        context.extensionUri,
+        context,
+        analysisEventEmitter,
+      ),
+    ),
+  );
 }
 
 export function deactivate(): void {
-  debugChannel.dispose()
+  debugChannel.dispose();
+  disposeAnalysisEventEmitter();
 }
