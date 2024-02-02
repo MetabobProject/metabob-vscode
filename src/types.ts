@@ -54,3 +54,8 @@ export enum EventDataType {
   ANALYSIS_ERROR = 'Analysis_Error',
   ANALYSIS_COMPLETED = 'Analysis_Completed',
 }
+
+export enum ApplicationWebviewState {
+  ANALYZE_MODE,
+  RECOMMENDATION_MODE,
+}

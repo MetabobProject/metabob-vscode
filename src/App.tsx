@@ -1,19 +1,19 @@
 import * as React from 'react';
 import { RecoilRoot, useRecoilState, useRecoilValue } from 'recoil';
-import { Box, CircularProgress, CssBaseline, useTheme } from '@mui/material';
-import Button from '@mui/material/Button';
+import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { ExtensionSVG } from './components';
+import { AnalyzePage } from './components';
 import { AccountSettingProvider } from './context/UserContext';
 import { Layout } from './layout/Layout';
 import { muiThemeDark } from './theme';
 import * as State from './state';
+import { ApplicationWebviewState } from './types';
 
 const AppLayout = (): JSX.Element => {
-  const theme = useTheme();
   const [isAnalysisLoading, setIsAnalysisLoading] = useRecoilState(State.isAnalysisLoading);
   const hasWorkSpaceFolders = useRecoilValue(State.hasWorkSpaceFolders);
   const hasOpenTextDocuments = useRecoilValue(State.hasOpenTextDocuments);
+  const applicationState = useRecoilValue(State.applicationState);
 
   const handleDocsClick: React.MouseEventHandler<HTMLButtonElement> = React.useCallback(async e => {
     e.preventDefault();
@@ -38,76 +38,37 @@ const AppLayout = (): JSX.Element => {
     [hasWorkSpaceFolders, hasOpenTextDocuments, setIsAnalysisLoading],
   );
 
+  const renderApplicationBasedOnState = React.useMemo(() => {
+    switch (applicationState) {
+      case ApplicationWebviewState.ANALYZE_MODE:
+        return (
+          <>
+            <AnalyzePage
+              handleAnalyzeClick={handleAnalyzeClick}
+              handleDocsClick={handleDocsClick}
+              isAnalysisLoading={isAnalysisLoading}
+              hasWorkSpaceFolders={hasWorkSpaceFolders}
+              hasOpenTextDocuments={hasOpenTextDocuments}
+            />
+          </>
+        );
+      case ApplicationWebviewState.RECOMMENDATION_MODE:
+        return <>RECOMMENDATION_MODE</>;
+      default:
+        return <></>;
+    }
+  }, [
+    applicationState,
+    handleAnalyzeClick,
+    handleDocsClick,
+    isAnalysisLoading,
+    hasWorkSpaceFolders,
+    hasOpenTextDocuments,
+  ]);
+
   return (
     <>
-      <Layout>
-        <Button
-          sx={{
-            alignSelf: 'flex-end',
-          }}
-          variant='contained'
-          color='primary'
-          onClick={handleDocsClick}
-        >
-          Docs
-        </Button>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minWidth: '120px',
-          }}
-        >
-          <ExtensionSVG />
-        </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            marginTop: theme.spacing(20),
-          }}
-        >
-          {(!hasWorkSpaceFolders || !hasOpenTextDocuments) && (
-            <>
-              <Button
-                sx={{
-                  width: '100%',
-                }}
-                variant='contained'
-                color='primary'
-                disabled
-              >
-                Please open a project to analyze
-              </Button>
-            </>
-          )}
-
-          {hasWorkSpaceFolders && hasOpenTextDocuments && (
-            <>
-              <Button
-                sx={{
-                  minWidth: '140px',
-                }}
-                variant='contained'
-                color='primary'
-                onClick={handleAnalyzeClick}
-              >
-                {isAnalysisLoading && (
-                  <CircularProgress
-                    size={15}
-                    sx={{
-                      marginRight: '10px',
-                      color: 'whitesmoke',
-                    }}
-                  />
-                )}
-                Analyze
-              </Button>
-            </>
-          )}
-        </Box>
-      </Layout>
+      <Layout>{renderApplicationBasedOnState}</Layout>
     </>
   );
 };

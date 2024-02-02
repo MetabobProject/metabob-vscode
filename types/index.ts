@@ -4,36 +4,39 @@
 export enum MessageType {
   ANALYSIS_CURRENT_FILE,
   OPEN_EXTERNAL_LINK,
-  ON_SUGGESTION_CLICK
+  ON_SUGGESTION_CLICK,
 }
 
 // Define a base message type with a 'type' property
 interface BaseMessage {
-  type: MessageType
+  type: MessageType;
 }
 
 // Define types for each message and its associated data
 interface AnalysisCurrentFileMessage extends BaseMessage {
-  type: MessageType.ANALYSIS_CURRENT_FILE
+  type: MessageType.ANALYSIS_CURRENT_FILE;
 }
 
 interface OpenExternalLinkMessage extends BaseMessage {
-  type: MessageType.OPEN_EXTERNAL_LINK
+  type: MessageType.OPEN_EXTERNAL_LINK;
   data: {
-    url: string
-  }
+    url: string;
+  };
 }
 
 interface OnSuggestionClickedMessage extends BaseMessage {
-  type: MessageType.ON_SUGGESTION_CLICK
+  type: MessageType.ON_SUGGESTION_CLICK;
   data: {
-    input: string
+    input: string;
     initData: {
-      isReset?: boolean
-      isFix?: boolean
-    }
-  }
+      isReset?: boolean;
+      isFix?: boolean;
+    };
+  };
 }
 
 // Union type for all possible messages
-export type ExtensionMessage = AnalysisCurrentFileMessage | OpenExternalLinkMessage | OnSuggestionClickedMessage
+export type ExtensionMessage =
+  | AnalysisCurrentFileMessage
+  | OpenExternalLinkMessage
+  | OnSuggestionClickedMessage;
