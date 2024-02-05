@@ -2,7 +2,7 @@ import * as React from 'react';
 import { RecoilRoot, useRecoilState, useRecoilValue } from 'recoil';
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { AnalyzePage } from './components';
+import { AnalyzePage, SuggestionPage } from './components';
 import { AccountSettingProvider } from './context/UserContext';
 import { Layout } from './layout/Layout';
 import { muiThemeDark } from './theme';
@@ -14,16 +14,6 @@ const AppLayout = (): JSX.Element => {
   const hasWorkSpaceFolders = useRecoilValue(State.hasWorkSpaceFolders);
   const hasOpenTextDocuments = useRecoilValue(State.hasOpenTextDocuments);
   const applicationState = useRecoilValue(State.applicationState);
-
-  const handleDocsClick: React.MouseEventHandler<HTMLButtonElement> = React.useCallback(async e => {
-    e.preventDefault();
-    vscode.postMessage({
-      type: 'open_external_link',
-      data: {
-        url: 'https://marketplace.visualstudio.com/items?itemName=Metabob.metabob',
-      },
-    });
-  }, []);
 
   const handleAnalyzeClick: React.MouseEventHandler<HTMLButtonElement> = React.useCallback(
     e => {
@@ -45,22 +35,20 @@ const AppLayout = (): JSX.Element => {
           <>
             <AnalyzePage
               handleAnalyzeClick={handleAnalyzeClick}
-              handleDocsClick={handleDocsClick}
               isAnalysisLoading={isAnalysisLoading}
               hasWorkSpaceFolders={hasWorkSpaceFolders}
               hasOpenTextDocuments={hasOpenTextDocuments}
             />
           </>
         );
-      case ApplicationWebviewState.RECOMMENDATION_MODE:
-        return <>RECOMMENDATION_MODE</>;
+      case ApplicationWebviewState.SUGGESTION_MODE:
+        return <SuggestionPage />;
       default:
         return <></>;
     }
   }, [
     applicationState,
     handleAnalyzeClick,
-    handleDocsClick,
     isAnalysisLoading,
     hasWorkSpaceFolders,
     hasOpenTextDocuments,

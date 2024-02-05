@@ -30,24 +30,21 @@ export class RecommendationWebView implements WebviewViewProvider {
   private readonly extensionPath: string;
   private readonly extensionURI: Uri;
   private readonly extensionContext: ExtensionContext;
-  private analysisEventEmitter: EventEmitter<AnalysisEvents>;
+  private extensionEventEmitter: EventEmitter<AnalysisEvents>;
 
   constructor(
     extensionPath: string,
     extensionURI: Uri,
     context: ExtensionContext,
-    analysisEventEmitter: EventEmitter<AnalysisEvents>,
+    extensionEventEmitter: EventEmitter<AnalysisEvents>,
   ) {
     this.extensionPath = extensionPath;
     this.extensionURI = extensionURI;
     this.extensionContext = context;
-    this.extensionContext.globalState.update(CONSTANTS.webview, this);
-    this.analysisEventEmitter = analysisEventEmitter;
-  }
 
-  private onDidChangeTreeData: EventEmitter<any | undefined | null | void> = new EventEmitter<
-    any | undefined | null | void
-  >();
+    // this.extensionContext.globalState.update(CONSTANTS.webview, this);
+    this.extensionEventEmitter = extensionEventEmitter;
+  }
 
   getCurrentQuestionValue(): CurrentQuestionState | undefined {
     const currentQuestion = new CurrentQuestion(this.extensionContext).get()?.value;
@@ -63,7 +60,6 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   refresh(): void {
-    this.onDidChangeTreeData.fire(null);
     if (this._view) {
       this._view.webview.html = this._getHtmlForWebview(this._view?.webview);
     }
@@ -76,18 +72,21 @@ export class RecommendationWebView implements WebviewViewProvider {
     };
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
     this._view = webviewView;
-    this.activateMessageListener();
-    this.activateAnalysisEventListener();
+    this.activateWebviewMessageListener();
+    this.activateExtensionEventListener();
   }
 
-  activateAnalysisEventListener(): void {
-    this.analysisEventEmitter.event(event => {
-      debugChannel.appendLine(JSON.stringify(event));
-      if (event.type === 'Analysis_Error' || event.type === 'Analysis_Completed') {
-        this._view?.webview.postMessage({
-          type: event.type,
-        });
+  activateExtensionEventListener(): void {
+    this.extensionEventEmitter.event(event => {
+      if (this?._view === null || this?._view === undefined || !this?._view.webview) {
+        debugChannel.appendLine(
+          `Metabob: this.view.webview is undefined and got event ${JSON.stringify(event)}`,
+        );
+
+        return;
       }
+
+      this._view.webview.postMessage(event);
     });
   }
 
@@ -242,7 +241,9 @@ export class RecommendationWebView implements WebviewViewProvider {
       if (!isChatConfigEnabled) {
         this._view?.webview.postMessage({
           type: 'onGenerateClicked:Response',
-          data: response.value,
+          data: {
+            recommendation: response.value.recommendation,
+          },
         });
 
         return;
@@ -266,7 +267,7 @@ export class RecommendationWebView implements WebviewViewProvider {
         ],
       };
       const chatresponse = await openai.createChatCompletion({ ...payload });
-      this._view?.webview.postMessage({
+      this._view.webview.postMessage({
         type: 'onGenerateClickedGPT:Response',
         data: { ...chatresponse.data },
       });
@@ -289,7 +290,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     });
   }
 
-  postInitData(initData: CurrentQuestionState): void {
+  postInitData(initData: CurrentQuestionState | undefined): void {
     if (this._view === null || this._view === undefined || this._view.webview === undefined) {
       return;
     }
@@ -346,10 +347,13 @@ export class RecommendationWebView implements WebviewViewProvider {
     return;
   }
 
-  private activateMessageListener() {
+  private activateWebviewMessageListener() {
     if (this._view === null || this._view === undefined || this._view.webview === undefined) {
       return;
     }
+
+    const { postMessage } = this._view.webview;
+
     this._view.webview.onDidReceiveMessage(async (message: any) => {
       if (this._view === null || this._view === undefined || this._view.webview === undefined) {
         return;
@@ -372,7 +376,8 @@ export class RecommendationWebView implements WebviewViewProvider {
           const initData = data?.initData;
           if (initData === null || !initData) {
             window.showErrorMessage('Metabob: Init Data is null');
-            this._view.webview.postMessage({
+
+            postMessage({
               type: 'onSuggestionClicked:Error',
               data: {},
             });
@@ -382,7 +387,7 @@ export class RecommendationWebView implements WebviewViewProvider {
             await this.handleSuggestionClick(input, initData);
             window.showInformationMessage(message.data);
           } catch {
-            this._view.webview.postMessage({
+            postMessage({
               type: 'onSuggestionClicked:Error',
               data: {},
             });
@@ -411,17 +416,17 @@ export class RecommendationWebView implements WebviewViewProvider {
             window.showErrorMessage('Metabob: Init Data is null');
             this._view.webview.postMessage({
               type: 'onGenerateClicked:Error',
-              data: {},
+              data: `Metabob: onGenerateClicked input in undefined ${JSON.stringify(data)}`,
             });
           }
 
           try {
             await this.handleRecommendationClick(input, initData);
             window.showInformationMessage(message.data);
-          } catch {
+          } catch (error: any) {
             this._view.webview.postMessage({
               type: 'onGenerateClicked:Error',
-              data: {},
+              data: JSON.stringify(error),
             });
           }
           break;

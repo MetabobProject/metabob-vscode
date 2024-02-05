@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react'
-import { useUser } from '../hooks/useUser'
-import { ReactMarkdownComponent } from '../markdown/ReactMarkdownComponent'
-import { GeneratePaginationPanel } from './GeneratePaginationPanel'
+import { useCallback, useState } from 'react';
+import { useUser } from '../hooks/useUser';
+
+// import { ReactMarkdownComponent } from '../markdown/ReactMarkdownComponent'
+import { GeneratePaginationPanel } from './GeneratePaginationPanel';
 
 export const RecommendationPanel = () => {
   const {
@@ -9,54 +10,56 @@ export const RecommendationPanel = () => {
     isgenerateClicked,
     isGenerateWithoutQuestionLoading,
     setIsGenerateWithoutQuestionLoading,
-    generate,
     isGenerateWithQuestionLoading,
-    setIsGenerateWithQuestionLoading
-  } = useUser()
-  const [userQuestionAboutRecommendation, setUserQuestionAboutRecommendation] = useState<string>('')
+    setIsGenerateWithQuestionLoading,
+  } = useUser();
+  const [userQuestionAboutRecommendation, setUserQuestionAboutRecommendation] =
+    useState<string>('');
   const handleGenerateClickWithoutQuestion = useCallback(
     (e: any) => {
-      e.preventDefault()
-      setIsGenerateWithoutQuestionLoading(true)
+      e.preventDefault();
+      setIsGenerateWithoutQuestionLoading(true);
       vscode.postMessage({
         type: 'onGenerateClicked',
         data: {
           input: '',
-          initData: initialState
-        }
-      })
+          initData: initialState,
+        },
+      });
     },
-    [initialState]
-  )
+    [initialState],
+  );
 
   const handleQuestionChange = useCallback(
     (e: any) => {
-      e.preventDefault()
-      setUserQuestionAboutRecommendation(e.target.value)
+      e.preventDefault();
+      setUserQuestionAboutRecommendation(e.target.value);
     },
-    [setUserQuestionAboutRecommendation]
-  )
+    [setUserQuestionAboutRecommendation],
+  );
 
   const handleGenerateRecommendationWithQuestion = useCallback(
     (e: any) => {
-      e.preventDefault()
-      setIsGenerateWithQuestionLoading(true)
+      e.preventDefault();
+      setIsGenerateWithQuestionLoading(true);
       vscode.postMessage({
         type: 'onGenerateClicked',
         data: {
           input: userQuestionAboutRecommendation,
-          initData: initialState
-        }
-      })
+          initData: initialState,
+        },
+      });
     },
-    [initialState, userQuestionAboutRecommendation]
-  )
+    [initialState, userQuestionAboutRecommendation],
+  );
 
   return (
     <>
       <div className="className='w-full'">
         <div className='flex flex-wrap my-3 flex-row mx-auto justify-between'>
-          <span className='font-bold text-clifford text-1xl transition duration-300 antialiased'>Recommendation</span>
+          <span className='font-bold text-clifford text-1xl transition duration-300 antialiased'>
+            Recommendation
+          </span>
           {!isgenerateClicked ? (
             <>
               <span className='order-last'>
@@ -97,7 +100,8 @@ export const RecommendationPanel = () => {
         </div>
         {isgenerateClicked ? (
           <>
-            <ReactMarkdownComponent text={generate} />
+            {/* <ReactMarkdownComponent text={generate} />
+             */}
             <GeneratePaginationPanel />
             <form className='w-full'>
               <div className='flex items-center border-b border-teal-500 py-2'>
@@ -108,7 +112,7 @@ export const RecommendationPanel = () => {
                   aria-label='your question about recommendation?'
                   onChange={handleQuestionChange}
                   onKeyDown={e => {
-                    e.key === 'Enter' && handleGenerateRecommendationWithQuestion(e)
+                    e.key === 'Enter' && handleGenerateRecommendationWithQuestion(e);
                   }}
                   value={userQuestionAboutRecommendation}
                 />
@@ -148,5 +152,5 @@ export const RecommendationPanel = () => {
         )}
       </div>
     </>
-  )
-}
+  );
+};

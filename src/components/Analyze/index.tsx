@@ -1,18 +1,12 @@
 import { Box, CircularProgress, useTheme } from '@mui/material';
 import Button from '@mui/material/Button';
-import { ExtensionSVG } from '../ExtensionSVG';
 import { ProblemList } from './ProblemList';
-import {
-  AnalyzePageButtonHeader,
-  AnalyzePageSvgContainer,
-  AnalyzePageBodyContainer,
-} from './styles';
+import { AnalyzePageBodyContainer } from './styles';
 
 interface AnalyzeProps {
   hasWorkSpaceFolders: boolean;
   hasOpenTextDocuments: boolean;
   isAnalysisLoading: boolean;
-  handleDocsClick: React.MouseEventHandler<HTMLButtonElement>;
   handleAnalyzeClick: React.MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -20,7 +14,6 @@ export const AnalyzePage = ({
   hasWorkSpaceFolders,
   hasOpenTextDocuments,
   isAnalysisLoading,
-  handleDocsClick,
   handleAnalyzeClick,
 }: AnalyzeProps): JSX.Element => {
   const theme = useTheme();
@@ -29,17 +22,6 @@ export const AnalyzePage = ({
 
   return (
     <>
-      <Button
-        sx={AnalyzePageButtonHeader}
-        variant='contained'
-        color='primary'
-        onClick={handleDocsClick}
-      >
-        Docs
-      </Button>
-      <Box sx={AnalyzePageSvgContainer}>
-        <ExtensionSVG />
-      </Box>
       <Box sx={AnalyzePageBodyContainer(theme)}>
         {(!hasWorkSpaceFolders || !hasOpenTextDocuments) && (
           <>
@@ -65,6 +47,7 @@ export const AnalyzePage = ({
               variant='contained'
               color='primary'
               onClick={handleAnalyzeClick}
+              disabled={isAnalysisLoading}
             >
               {isAnalysisLoading && (
                 <CircularProgress

@@ -10,7 +10,7 @@ import { Problem } from '../types';
 
 export type DiscardCommandHandler = { id: string; path: string };
 
-export function activateDiscardCommand(context: vscode.ExtensionContext) {
+export function activateDiscardCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.discardSuggestionCommand;
 
   const commandHandler = async (args: DiscardCommandHandler) => {

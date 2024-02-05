@@ -13,13 +13,13 @@ import { createOrUpdateUserSession, initState, AnalyzeDocumentOnSave } from './h
 import Util from './utils';
 import debugChannel from './debug';
 import {
-  bootstrapAnalysisEventEmitter,
-  disposeAnalysisEventEmitter,
-  getAnalysisEventEmitter,
+  bootstrapExtensionEventEmitter,
+  disposeExtensionEventEmitter,
+  getExtensionEventEmitter,
 } from './events';
 
 export function activate(context: vscode.ExtensionContext): void {
-  bootstrapAnalysisEventEmitter();
+  bootstrapExtensionEventEmitter();
   debugChannel.show(true);
   debugChannel.appendLine('Activating Metabob Extension...');
 
@@ -132,7 +132,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  const analysisEventEmitter = getAnalysisEventEmitter();
+  const extensionEventEmitter = getExtensionEventEmitter();
+
+  // Subscribe to the onDidOpenTextDocument event
+  // context.subscriptions.push(
+  //   vscode.workspace.onDidOpenTextDocument((e: vscode.TextDocument) => {}),
+  // );
 
   // Recommendation Panel Webview Provider that is the normal Metabob workflow
   context.subscriptions.push(
@@ -142,7 +147,7 @@ export function activate(context: vscode.ExtensionContext): void {
         context.extensionPath,
         context.extensionUri,
         context,
-        analysisEventEmitter,
+        extensionEventEmitter,
       ),
     ),
   );
@@ -150,5 +155,5 @@ export function activate(context: vscode.ExtensionContext): void {
 
 export function deactivate(): void {
   debugChannel.dispose();
-  disposeAnalysisEventEmitter();
+  disposeExtensionEventEmitter();
 }

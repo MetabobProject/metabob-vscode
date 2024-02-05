@@ -1,6 +1,11 @@
 import { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { useSetRecoilState } from 'recoil';
-import { EventDataType, MessageType } from '../types';
+import {
+  ApplicationWebviewState,
+  EventDataType,
+  FixSuggestionsPayload,
+  MessageType,
+} from '../types';
 import { defaultProvider } from './utils';
 import * as State from '../state';
 
@@ -41,11 +46,20 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setHasWorkSpaceFolders = useSetRecoilState(State.hasWorkSpaceFolders);
   const setHasOpenTextDocuments = useSetRecoilState(State.hasOpenTextDocuments);
   const setIsAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
+  const setApplicationState = useSetRecoilState(State.applicationState);
+  const setIdentifiedSuggestion = useSetRecoilState(State.identifiedSuggestion);
+  const setIsRecommendationLoading = useSetRecoilState(State.isRecommendationLoading);
+  const setIdentifiedRecommendation = useSetRecoilState(State.identifiedRecommendation);
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
+      console.log(event);
       switch (event.data.type) {
+        case EventDataType.FIX_SUGGESTION:
+          setApplicationState(ApplicationWebviewState.SUGGESTION_MODE);
+          setIdentifiedSuggestion(payload as FixSuggestionsPayload);
+          break;
         case EventDataType.ANALYSIS_ERROR:
         case EventDataType.ANALYSIS_COMPLETED:
           setIsAnalysisLoading(false);
@@ -131,6 +145,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           break;
         case EventDataType.GENERATE_CLICKED_GPT_RESPONSE:
           setGenerate(payload.choices[0].message.content);
+          setIsRecommendationLoading(false);
           break;
         case EventDataType.GENERATE_CLICKED_RESPONSE:
           const { recommendation } = payload;
@@ -144,12 +159,14 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             setGeneratePaginationRegenerate(previous => {
               return [...previous, `${recommendation}`];
             });
+            setIdentifiedRecommendation({ recommendation: adjustedRecommendation });
             setIsgenerateClicked(true);
           } else {
             setIsGenerateWithoutQuestionLoading(false);
             setIsGenerateWithQuestionLoading(false);
             setIsRecommendationRegenerateLoading(false);
           }
+          setIsRecommendationLoading(false);
           break;
         case EventDataType.GENERATE_CLICKED_ERROR:
           setGenerate('');
@@ -157,21 +174,17 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIsgenerateClicked(false);
           setIsGenerateWithQuestionLoading(false);
           setIsRecommendationRegenerateLoading(false);
+
+          setIsRecommendationLoading(false);
           break;
 
+        case EventDataType.DISCARD_SUGGESTION_ERROR:
         case EventDataType.DISCARD_SUGGESTION_SUCCESS: {
           setDiscardSuggestionClicked(false);
           break;
         }
-        case EventDataType.DISCARD_SUGGESTION_ERROR: {
-          setDiscardSuggestionClicked(false);
-          break;
-        }
+        case EventDataType.ENDORSE_SUGGESTION_ERROR:
         case EventDataType.ENDORSE_SUGGESTION_SUCCESS: {
-          setEndorseSuggestionClicked(false);
-          break;
-        }
-        case EventDataType.ENDORSE_SUGGESTION_ERROR: {
           setEndorseSuggestionClicked(false);
           break;
         }
@@ -182,7 +195,10 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
     [
       setInitialState,
       setSuggestion,
+      setApplicationState,
+      setIsRecommendationLoading,
       setIsSuggestionRegenerateLoading,
+      setIdentifiedRecommendation,
       setEndorseSuggestionClicked,
       setDiscardSuggestionClicked,
       userQuestionAboutSuggestion,

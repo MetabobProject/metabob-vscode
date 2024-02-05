@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import CONSTANTS from '../constants';
 import { Problem } from '../types';
 import { CurrentQuestion } from '../state';
+import debugChannel from '../debug';
+import { getExtensionEventEmitter } from '../events';
 
 export type FixSuggestionCommandHandler = {
   path: string;
@@ -10,19 +12,34 @@ export type FixSuggestionCommandHandler = {
   jobId?: string;
 };
 
-export function activateFixSuggestionCommand(context: vscode.ExtensionContext) {
+export function activateFixSuggestionCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.fixSuggestionCommand;
 
   const commandHandler = async (args: FixSuggestionCommandHandler) => {
     const { path, id, vuln } = args;
-    const currentQuestionState = new CurrentQuestion(context);
-    currentQuestionState.set({
-      path,
-      id,
-      vuln,
-      isFix: true,
-      isReset: false,
-    });
+    try {
+      const currentQuestionState = new CurrentQuestion(context);
+      await currentQuestionState.set({
+        path,
+        id,
+        vuln,
+        isFix: true,
+        isReset: false,
+      });
+      getExtensionEventEmitter().fire({
+        type: 'FIX_SUGGESTION',
+        data: {
+          path,
+          id,
+          vuln,
+          isFix: true,
+          isReset: false,
+        },
+      });
+    } catch (error) {
+      debugChannel.appendLine(`Metabob: Error while `);
+    }
+
     vscode.commands.executeCommand('recommendation-panel-webview.focus');
   };
 
