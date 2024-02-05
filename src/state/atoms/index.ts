@@ -1,5 +1,10 @@
 import { atom } from 'recoil';
-import { ApplicationWebviewState, FixSuggestionsPayload, RecommendationPayload } from '../../types';
+import {
+  AnalyzeState,
+  ApplicationWebviewState,
+  FixSuggestionsPayload,
+  RecommendationPayload,
+} from '../../types';
 
 export const hasOpenTextDocuments = atom<boolean>({
   default: false,
@@ -34,4 +39,9 @@ export const isRecommendationLoading = atom<boolean>({
 export const identifiedRecommendation = atom<RecommendationPayload | undefined>({
   default: undefined,
   key: 'Metabob:identifiedRecommendation',
+});
+
+export const identifiedProblems = atom<AnalyzeState | undefined>({
+  default: undefined,
+  key: 'Metabob:IdentifiedProblems',
 });

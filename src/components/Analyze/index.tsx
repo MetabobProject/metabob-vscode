@@ -1,7 +1,10 @@
+import { useRecoilValue } from 'recoil';
 import { Box, CircularProgress, useTheme } from '@mui/material';
 import Button from '@mui/material/Button';
 import { ProblemList } from './ProblemList';
 import { AnalyzePageBodyContainer } from './styles';
+import * as State from '../../state';
+import { useMemo } from 'react';
 
 interface AnalyzeProps {
   hasWorkSpaceFolders: boolean;
@@ -18,7 +21,25 @@ export const AnalyzePage = ({
 }: AnalyzeProps): JSX.Element => {
   const theme = useTheme();
 
-  const problems = [{ name: 'app.py' }, { name: 'cli.py' }];
+  const identifiedProblems = useRecoilValue(State.identifiedProblems);
+
+  const problems = useMemo(() => {
+    if (!identifiedProblems) return undefined;
+
+    return Object.keys(identifiedProblems)
+      .filter(problemKey => {
+        const problem = identifiedProblems[problemKey];
+
+        return !problem.isDiscarded;
+      })
+      .map(problemKey => {
+        const problem = identifiedProblems[problemKey];
+
+        return {
+          name: problem.path,
+        };
+      });
+  }, [identifiedProblems]);
 
   return (
     <>
@@ -63,7 +84,8 @@ export const AnalyzePage = ({
           </>
         )}
       </Box>
-      <ProblemList problems={problems} />
+
+      {problems && <ProblemList problems={problems} />}
     </>
   );
 };

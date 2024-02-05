@@ -1,12 +1,10 @@
 import * as vscode from 'vscode';
-import { CurrentQuestion, Analyze, Session } from '../state';
+import { CurrentQuestion, Analyze, Session, AnalyseMetaData } from '../state';
 import { GenerateDecorations } from '../helpers/GenerateDecorations';
 import { FeedbackSuggestionPayload, feedbackService } from '../services';
-import { RecommendationWebView } from '../providers/recommendation.provider';
 import CONSTANTS from '../constants';
 import Utils from '../utils';
 import _debug from '../debug';
-import { Problem } from '../types';
 
 export type DiscardCommandHandler = { id: string; path: string };
 
@@ -31,16 +29,21 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     }
 
     const session = new Session(context).get()?.value;
-    if (!session) return;
+    if (!session) {
+      _debug?.appendLine('Metabob: Session is undefined in Discard Suggestion');
+
+      return;
+    }
 
     const analyzeState = new Analyze(context);
     const currentQuestion = new CurrentQuestion(context);
 
     const problems = analyzeState.get()?.value;
-    if (!problems) return;
+    if (!problems) {
+      _debug?.appendLine('Metabob: Problems is undefined in Discard Suggestion');
 
-    const webview = context.globalState.get<RecommendationWebView>(CONSTANTS.webview);
-    if (!webview || !webview.postInitData) return;
+      return;
+    }
 
     const payload: FeedbackSuggestionPayload = {
       problemId,
@@ -67,19 +70,25 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       return;
     }
 
+    const analyzeValue = analyzeState.get()?.value;
+
+    if (!analyzeValue) {
+      _debug?.appendLine('Metabob: analyzeValue is undefined in Discard Suggestion');
+
+      return;
+    }
+
     // Map all non discarded problems to the results array
-    const results = Object.keys(analyzeState.get()?.value ?? {})
-      .filter(key => !analyzeState.get()?.value[key].isDiscarded)
-      .map(key => analyzeState.get()?.value[key] ?? ({} as Problem));
+    const results: AnalyseMetaData[] = Object.keys(analyzeValue)
+      .filter(localKey => !analyzeValue[key].isDiscarded || localKey === key)
+      .map(key => analyzeValue[key]);
 
     const decorations = GenerateDecorations(results, editor);
     editor.setDecorations(decorations.decorationType, []);
     editor.setDecorations(decorations.decorationType, decorations.decorations);
     currentQuestion.clear();
-    const currentQuestionMarshalled = currentQuestion.get()?.value;
-    if (!currentQuestionMarshalled) return;
 
-    webview.postInitData(currentQuestionMarshalled);
+    // TODO: Send current question update to webview
 
     return;
   };

@@ -1,4 +1,4 @@
-import { useCallback, MouseEventHandler, useMemo } from 'react';
+import { useCallback, MouseEventHandler, useMemo, useEffect } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import * as State from '../../state';
 import { Feedback } from './Feedback';
@@ -10,6 +10,8 @@ import {
   generateRecommendationButtonContainer,
 } from './styles';
 import { Recommendation } from './Recommendation';
+import { RecommendationSkeletonLoader } from './Recommendation/Skeleton';
+import { RecommendationPagination } from './Pagination';
 
 export const SuggestionPage = (): JSX.Element => {
   const suggestion = useRecoilValue(State.identifiedSuggestion);
@@ -18,6 +20,25 @@ export const SuggestionPage = (): JSX.Element => {
   const [isRecommendationLoading, setIsRecommendationLoading] = useRecoilState(
     State.isRecommendationLoading,
   );
+
+  useEffect(() => {
+    if (!suggestion) return;
+
+    const isFix = suggestion.isFix;
+    const isReset = suggestion.isReset;
+
+    if (isFix === true && isReset === false) {
+      vscode.postMessage({
+        type: 'onGenerateClicked',
+        data: {
+          input: '',
+          initData: suggestion,
+        },
+      });
+
+      setIsRecommendationLoading(true);
+    }
+  }, [suggestion, setIsRecommendationLoading]);
 
   const handleDiscardClick: MouseEventHandler<HTMLButtonElement> = useCallback(e => {
     e.preventDefault();
@@ -98,10 +119,26 @@ export const SuggestionPage = (): JSX.Element => {
           Generate Recommendation
         </Button>
       </Box>
-      {recommendationMemo && (
-        <Box width='100%'>
-          <Recommendation text={recommendationMemo} />
+
+      {!recommendation && isRecommendationLoading && (
+        <Box
+          width='100%'
+          maxHeight='100px'
+          sx={{
+            marginTop: '20px',
+          }}
+        >
+          <RecommendationSkeletonLoader />
         </Box>
+      )}
+
+      {recommendationMemo && (
+        <>
+          <Box width='100%' height='40%' overflow='scroll' marginTop='12px'>
+            <Recommendation text={recommendationMemo} />
+          </Box>
+          <RecommendationPagination />
+        </>
       )}
     </>
   );

@@ -96,9 +96,10 @@ export const handleDocumentAnalyze = async (
   );
   editor.setDecorations(decorationFromResponse.decorationType, []);
   editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations);
+
   getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
-    data: '',
+    data: results,
   });
 
   return verifiedResponse;

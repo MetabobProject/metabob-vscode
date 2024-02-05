@@ -82,3 +82,18 @@ export interface FixSuggestionsPayload {
 export interface RecommendationPayload {
   recommendation: string;
 }
+
+export type AnalyseMetaData = {
+  id: string;
+  path: string;
+  startLine: number;
+  endLine: number;
+  category: string;
+  summary: string;
+  description: string;
+  isDiscarded?: boolean;
+};
+
+export type AnalyzeState = {
+  [filepathAndProblemId: string]: AnalyseMetaData;
+};

@@ -9,7 +9,12 @@ import {
   activateDiscardCommand,
   activateAnalyzeCommand,
 } from './commands';
-import { createOrUpdateUserSession, initState, AnalyzeDocumentOnSave } from './helpers';
+import {
+  createOrUpdateUserSession,
+  initState,
+  AnalyzeDocumentOnSave,
+  GenerateDecorations,
+} from './helpers';
 import Util from './utils';
 import debugChannel from './debug';
 import {
@@ -17,6 +22,7 @@ import {
   disposeExtensionEventEmitter,
   getExtensionEventEmitter,
 } from './events';
+import { AnalyseMetaData, Analyze } from './state';
 
 export function activate(context: vscode.ExtensionContext): void {
   bootstrapExtensionEventEmitter();
@@ -135,9 +141,49 @@ export function activate(context: vscode.ExtensionContext): void {
   const extensionEventEmitter = getExtensionEventEmitter();
 
   // Subscribe to the onDidOpenTextDocument event
-  // context.subscriptions.push(
-  //   vscode.workspace.onDidOpenTextDocument((e: vscode.TextDocument) => {}),
-  // );
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument(() => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
+      }
+
+      if (!Util.isValidDocument(editor.document)) {
+        return;
+      }
+
+      const documentMetaData = Util.extractMetaDataFromDocument(editor.document);
+
+      const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
+
+      if (!filename) return;
+
+      const analyzeState = new Analyze(context);
+
+      const analyzeValue = analyzeState.get()?.value;
+
+      if (!analyzeValue) return;
+
+      const results: AnalyseMetaData[] = [];
+
+      for (const [key, value] of Object.entries(analyzeValue)) {
+        const splitString: string | undefined = key.split('@@')[0];
+        if (splitString === undefined) continue;
+
+        if (splitString === filename && value.isDiscarded === false) {
+          results.push(value);
+        }
+      }
+
+      if (results.length === 0) {
+        return;
+      }
+
+      const decorations = GenerateDecorations(results, editor);
+      editor.setDecorations(decorations.decorationType, []);
+      editor.setDecorations(decorations.decorationType, decorations.decorations);
+    }),
+  );
 
   // Recommendation Panel Webview Provider that is the normal Metabob workflow
   context.subscriptions.push(

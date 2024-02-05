@@ -1,6 +1,7 @@
 import { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { useSetRecoilState } from 'recoil';
 import {
+  AnalyzeState,
   ApplicationWebviewState,
   EventDataType,
   FixSuggestionsPayload,
@@ -50,6 +51,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setIdentifiedSuggestion = useSetRecoilState(State.identifiedSuggestion);
   const setIsRecommendationLoading = useSetRecoilState(State.isRecommendationLoading);
   const setIdentifiedRecommendation = useSetRecoilState(State.identifiedRecommendation);
+  const setIdentifiedProblems = useSetRecoilState(State.identifiedProblems);
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
@@ -61,10 +63,12 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIdentifiedSuggestion(payload as FixSuggestionsPayload);
           break;
         case EventDataType.ANALYSIS_ERROR:
-        case EventDataType.ANALYSIS_COMPLETED:
           setIsAnalysisLoading(false);
           break;
-
+        case EventDataType.ANALYSIS_COMPLETED:
+          setIdentifiedProblems(payload as AnalyzeState);
+          setIsAnalysisLoading(false);
+          break;
         case EventDataType.INIT_DATA:
           const { hasOpenTextDocuments, hasWorkSpaceFolders } = payload;
 
