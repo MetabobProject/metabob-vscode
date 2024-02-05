@@ -163,7 +163,10 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             setGeneratePaginationRegenerate(previous => {
               return [...previous, `${recommendation}`];
             });
-            setIdentifiedRecommendation({ recommendation: adjustedRecommendation });
+            setIdentifiedRecommendation(prev => {
+              return [...(prev || []), { recommendation: adjustedRecommendation }];
+            });
+
             setIsgenerateClicked(true);
           } else {
             setIsGenerateWithoutQuestionLoading(false);

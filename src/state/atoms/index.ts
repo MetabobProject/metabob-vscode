@@ -36,7 +36,7 @@ export const isRecommendationLoading = atom<boolean>({
   key: 'Metabob:isRecommendationLoading',
 });
 
-export const identifiedRecommendation = atom<RecommendationPayload | undefined>({
+export const identifiedRecommendation = atom<RecommendationPayload[] | undefined>({
   default: undefined,
   key: 'Metabob:identifiedRecommendation',
 });

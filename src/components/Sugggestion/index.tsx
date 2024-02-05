@@ -12,10 +12,14 @@ import {
 import { Recommendation } from './Recommendation';
 import { RecommendationSkeletonLoader } from './Recommendation/Skeleton';
 import { RecommendationPagination } from './Pagination';
+import { usePagination } from '../../hooks';
 
 export const SuggestionPage = (): JSX.Element => {
   const suggestion = useRecoilValue(State.identifiedSuggestion);
-  const recommendation = useRecoilValue(State.identifiedRecommendation);
+  const recommendations = useRecoilValue(State.identifiedRecommendation);
+
+  const { goToNextPage, goToPrevPage, currentData, currentPage, totalPages } =
+    usePagination(recommendations);
 
   const [isRecommendationLoading, setIsRecommendationLoading] = useRecoilState(
     State.isRecommendationLoading,
@@ -88,8 +92,30 @@ export const SuggestionPage = (): JSX.Element => {
   }, [suggestion]);
 
   const recommendationMemo = useMemo(() => {
-    return recommendation?.recommendation;
-  }, [recommendation]);
+    return currentData?.recommendation;
+  }, [currentData]);
+
+  const shouldRenderPagination = useMemo(() => {
+    if (!recommendations) return false;
+
+    return recommendations.length > 1;
+  }, [recommendations]);
+
+  const shouldConvertButtonText = useMemo(() => {
+    if (!recommendations) return false;
+
+    return recommendations.length > 0;
+  }, [recommendations]);
+
+  const handleApplyRecommendation = useCallback(() => {
+    vscode.postMessage({
+      type: 'applyRecommendation',
+      data: {
+        input: recommendationMemo,
+        initData: { ...suggestion },
+      },
+    });
+  }, [recommendationMemo, suggestion]);
 
   return (
     <>
@@ -116,11 +142,11 @@ export const SuggestionPage = (): JSX.Element => {
               />
             </>
           )}
-          Generate Recommendation
+          {shouldConvertButtonText ? 'ReGenerate' : 'Generate'} Recommendation
         </Button>
       </Box>
 
-      {!recommendation && isRecommendationLoading && (
+      {!recommendationMemo && isRecommendationLoading && (
         <Box
           width='100%'
           maxHeight='100px'
@@ -137,7 +163,14 @@ export const SuggestionPage = (): JSX.Element => {
           <Box width='100%' height='40%' overflow='scroll' marginTop='12px'>
             <Recommendation text={recommendationMemo} />
           </Box>
-          <RecommendationPagination />
+          <RecommendationPagination
+            gotoNextPage={goToNextPage}
+            gotoPreviousPage={goToPrevPage}
+            shouldRenderPagination={shouldRenderPagination}
+            handleApplyRecommendation={handleApplyRecommendation}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
         </>
       )}
     </>
