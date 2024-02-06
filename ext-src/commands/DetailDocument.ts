@@ -24,16 +24,18 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       isReset: false,
     };
 
-    getExtensionEventEmitter().fire({
-      type: 'FIX_SUGGESTION',
-      data: {
-        path: args.path,
-        id: args.id,
-        vuln: args.vuln,
-        isFix: false,
-        isReset: false,
-      },
-    });
+    setTimeout(() => {
+      getExtensionEventEmitter().fire({
+        type: 'FIX_SUGGESTION',
+        data: {
+          path: args.path,
+          id: args.id,
+          vuln: args.vuln,
+          isFix: false,
+          isReset: false,
+        },
+      });
+    }, 2000);
 
     await currentQuestionState.set(payload);
     vscode.commands.executeCommand('recommendation-panel-webview.focus');

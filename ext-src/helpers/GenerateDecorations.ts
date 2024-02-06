@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Problem } from '../types';
 import { FixSuggestionCommandHandler } from '../commands';
 
-const decorationType = vscode.window.createTextEditorDecorationType({
+export const decorationType = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
   isWholeLine: true,
   overviewRulerLane: 7,
@@ -47,7 +47,7 @@ export function GenerateDecorations(
       hoverMessage,
       renderOptions: {
         after: {
-          contentText: '×',
+          contentText: '',
           color: 'red',
         },
       },
