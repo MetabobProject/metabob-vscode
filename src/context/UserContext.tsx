@@ -66,6 +66,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.ANALYSIS_CALLED_ON_SAVE:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           setAnalysisLoading(true);
+          setIdentifiedProblems({} as AnalyzeState);
           break;
         case EventDataType.FIX_SUGGESTION:
           setApplicationState(ApplicationWebviewState.SUGGESTION_MODE);

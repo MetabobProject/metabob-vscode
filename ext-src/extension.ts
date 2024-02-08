@@ -145,10 +145,6 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'Analysis_Called_On_Save',
           data: {},
         });
-        extensionEventEmitter.fire({
-          type: 'Analysis_Completed',
-          data: {},
-        });
       }
     }),
   );
