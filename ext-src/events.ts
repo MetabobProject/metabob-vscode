@@ -1,7 +1,12 @@
 import { EventEmitter } from 'vscode';
 
 export interface AnalysisEvents {
-  type: 'Analysis_Error' | 'Analysis_Completed' | 'Analysis_Called_On_Save' | 'FIX_SUGGESTION';
+  type:
+    | 'Analysis_Error'
+    | 'Analysis_Completed'
+    | 'Analysis_Called_On_Save'
+    | 'No_Editor_Detected'
+    | 'FIX_SUGGESTION';
   data: any;
 }
 

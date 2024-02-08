@@ -350,17 +350,12 @@ export class RecommendationWebView implements WebviewViewProvider {
       throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
     }
 
-    debugChannel.appendLine('here1');
     const setAnalyzeState = new Analyze(this.extensionContext);
     const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
 
-    debugChannel.appendLine('here2');
-
     if (!getanalyzeState) {
-      debugChannel.appendLine('here3');
       throw new Error('Analze is undefined');
     }
-    debugChannel.appendLine('here4');
 
     const copyAnalyzeValue = { ...getanalyzeState };
 
@@ -369,19 +364,13 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     const results: AnalyseMetaData[] = [];
 
-    debugChannel.appendLine('here5');
-
     for (const [, value] of Object.entries(copyAnalyzeValue)) {
       if (!value.isDiscarded) {
         results.push(value);
       }
     }
 
-    debugChannel.appendLine('here6');
-
     setAnalyzeState.set({ ...copyAnalyzeValue }).then(() => {
-      debugChannel.appendLine('here7');
-
       const startLine = initData.vuln.startLine;
       const endLine = initData.vuln.endLine;
       const comment = `${input.replace('```', '')}`;
@@ -394,8 +383,6 @@ export class RecommendationWebView implements WebviewViewProvider {
 
       editor.setDecorations(decorationType, []);
       editor.setDecorations(decorationType, decorations);
-
-      debugChannel.appendLine('here8');
 
       editor.edit((editBuilder: TextEditorEdit) => {
         editBuilder.replace(range, comment + '\n');

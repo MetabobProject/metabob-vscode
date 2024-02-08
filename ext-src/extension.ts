@@ -145,12 +145,24 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'Analysis_Called_On_Save',
           data: {},
         });
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: {},
+        });
       }
     }),
   );
 
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument(() => {
+      const editor = vscode.window.activeTextEditor;
+
+      if (!editor) {
+        extensionEventEmitter.fire({
+          type: 'No_Editor_Detected',
+          data: {},
+        });
+      }
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
         data: {},

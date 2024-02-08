@@ -85,7 +85,9 @@ export const AnalyzePage = ({
         )}
       </Box>
 
-      {problems && <ProblemList problems={problems} />}
+      {problems && hasWorkSpaceFolders && hasOpenTextDocuments && (
+        <ProblemList problems={problems} />
+      )}
     </>
   );
 };

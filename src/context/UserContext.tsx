@@ -58,6 +58,11 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
       switch (event.data.type) {
+        case EventDataType.NO_EDITOR_DETECTED:
+          setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
+          setHasOpenTextDocuments(false);
+          setHasWorkSpaceFolders(false);
+          break;
         case EventDataType.ANALYSIS_CALLED_ON_SAVE:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           setAnalysisLoading(true);
