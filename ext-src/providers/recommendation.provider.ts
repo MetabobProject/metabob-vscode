@@ -16,9 +16,9 @@ import {
 } from 'vscode';
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services';
-import { CurrentQuestion, CurrentQuestionState, Session } from '../state';
+import { CurrentQuestion, CurrentQuestionState, Session, Analyze, AnalyseMetaData } from '../state';
 import { BackendService, GetChatGPTToken } from '../config';
-import { GenerateDecorations } from '../helpers';
+import { GenerateDecorations, decorationType } from '../helpers';
 import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
@@ -31,6 +31,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   private readonly extensionURI: Uri;
   private readonly extensionContext: ExtensionContext;
   private extensionEventEmitter: EventEmitter<AnalysisEvents>;
+  private eventEmitterQueue: Array<AnalysisEvents> = [];
 
   constructor(
     extensionPath: string,
@@ -84,6 +85,29 @@ export class RecommendationWebView implements WebviewViewProvider {
         );
 
         return;
+      }
+
+      let interval: NodeJS.Timeout | undefined = undefined;
+
+      if (!this._view.visible) {
+        this.eventEmitterQueue.push(event);
+        interval = setInterval(() => {
+          if (this?._view === null || this?._view === undefined || !this?._view.webview) {
+            return;
+          }
+
+          if (!this._view.visible) {
+            return;
+          }
+
+          const latestEvent = this.eventEmitterQueue.pop();
+          if (latestEvent) {
+            this?._view?.webview?.postMessage(latestEvent);
+          }
+
+          this.eventEmitterQueue = [];
+          clearInterval(interval);
+        }, 500);
       }
 
       this._view.webview.postMessage(event);
@@ -286,7 +310,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     const comment = `\t\t#${input}`;
     const position = new Position(startLine - 1, 0); // convert line number to position
     editor.edit((editBuilder: TextEditorEdit) => {
-      editBuilder.insert(position, comment + '\n');
+      editBuilder.replace(position, comment + '\n');
     });
   }
 
@@ -326,18 +350,56 @@ export class RecommendationWebView implements WebviewViewProvider {
       throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
     }
 
-    const startLine = initData.vuln.startLine;
-    const endLine = initData.vuln.endLine;
-    const comment = `${input.replace('```', '')}`;
+    debugChannel.appendLine('here1');
+    const setAnalyzeState = new Analyze(this.extensionContext);
+    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
 
-    const data = initData.vuln;
-    const start = new Position(startLine - 1, 0); // convert line number to position
-    const end = new Position(endLine, 0); // convert line number to position
-    const range = new Range(start, end);
-    editor.edit((editBuilder: TextEditorEdit) => {
-      const decorations = GenerateDecorations([{ ...data }], editor);
-      editor.setDecorations(decorations.decorationType, []);
-      editBuilder.replace(range, comment + '\n');
+    debugChannel.appendLine('here2');
+
+    if (!getanalyzeState) {
+      debugChannel.appendLine('here3');
+      throw new Error('Analze is undefined');
+    }
+    debugChannel.appendLine('here4');
+
+    const copyAnalyzeValue = { ...getanalyzeState };
+
+    const key = `${initData.path}@@${initData.id}`;
+    copyAnalyzeValue[key].isDiscarded = true;
+
+    const results: AnalyseMetaData[] = [];
+
+    debugChannel.appendLine('here5');
+
+    for (const [, value] of Object.entries(copyAnalyzeValue)) {
+      if (!value.isDiscarded) {
+        results.push(value);
+      }
+    }
+
+    debugChannel.appendLine('here6');
+
+    setAnalyzeState.set({ ...copyAnalyzeValue }).then(() => {
+      debugChannel.appendLine('here7');
+
+      const startLine = initData.vuln.startLine;
+      const endLine = initData.vuln.endLine;
+      const comment = `${input.replace('```', '')}`;
+
+      const start = new Position(startLine - 1, 0); // convert line number to position
+      const end = new Position(endLine, 0); // convert line number to position
+      const range = new Range(start, end);
+
+      const { decorations } = GenerateDecorations(results, editor);
+
+      editor.setDecorations(decorationType, []);
+      editor.setDecorations(decorationType, decorations);
+
+      debugChannel.appendLine('here8');
+
+      editor.edit((editBuilder: TextEditorEdit) => {
+        editBuilder.replace(range, comment + '\n');
+      });
     });
   }
 
@@ -466,7 +528,9 @@ export class RecommendationWebView implements WebviewViewProvider {
           }
           try {
             this.handleApplyRecommendation(input, initData);
-          } catch {
+          } catch (error: any) {
+            debugChannel.appendLine(`Metabob: Apply Recommendation Error ${JSON.stringify(error)}`);
+
             this._view.webview.postMessage({
               type: 'applyRecommendation:Error',
               data: {},

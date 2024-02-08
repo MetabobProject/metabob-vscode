@@ -53,6 +53,7 @@ export enum EventDataType {
   ENDORSE_SUGGESTION_ERROR = 'onEndorseSuggestionClicked:Error',
   ANALYSIS_ERROR = 'Analysis_Error',
   ANALYSIS_COMPLETED = 'Analysis_Completed',
+  ANALYSIS_CALLED_ON_SAVE = 'Analysis_Called_On_Save',
   FIX_SUGGESTION = 'FIX_SUGGESTION',
 }
 

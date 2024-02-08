@@ -28,7 +28,7 @@ export const RecommendationPagination = ({
       <Box
         display='flex'
         flexDirection='row'
-        justifyContent='space-between'
+        justifyContent={!shouldRenderPagination ? 'flex-end' : 'space-between'}
         marginTop='10px'
         width='100%'
       >

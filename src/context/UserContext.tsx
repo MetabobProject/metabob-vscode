@@ -52,12 +52,16 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setIsRecommendationLoading = useSetRecoilState(State.isRecommendationLoading);
   const setIdentifiedRecommendation = useSetRecoilState(State.identifiedRecommendation);
   const setIdentifiedProblems = useSetRecoilState(State.identifiedProblems);
+  const setAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
-      console.log(event);
       switch (event.data.type) {
+        case EventDataType.ANALYSIS_CALLED_ON_SAVE:
+          setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
+          setAnalysisLoading(true);
+          break;
         case EventDataType.FIX_SUGGESTION:
           setApplicationState(ApplicationWebviewState.SUGGESTION_MODE);
           setIdentifiedSuggestion(payload as FixSuggestionsPayload);
@@ -140,6 +144,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setSuggestionClicked(false);
           setIsSuggestionRegenerateLoading(false);
           setSuggestion(payload.choices[0].message.content);
+
           setShowSuggestionPaginationPanel(true);
           break;
         case EventDataType.SUGGESTION_CLICKED_ERROR:
@@ -149,7 +154,11 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           break;
         case EventDataType.GENERATE_CLICKED_GPT_RESPONSE:
           setGenerate(payload.choices[0].message.content);
+          setIdentifiedRecommendation(prev => {
+            return [...(prev || []), { recommendation: payload.choices[0].message.content }];
+          });
           setIsRecommendationLoading(false);
+
           break;
         case EventDataType.GENERATE_CLICKED_RESPONSE:
           const { recommendation } = payload;
@@ -203,6 +212,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
       setInitialState,
       setSuggestion,
       setApplicationState,
+      setAnalysisLoading,
       setIsRecommendationLoading,
       setIsSuggestionRegenerateLoading,
       setIdentifiedRecommendation,

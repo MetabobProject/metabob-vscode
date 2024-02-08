@@ -44,25 +44,31 @@ export const SuggestionPage = (): JSX.Element => {
     }
   }, [suggestion, setIsRecommendationLoading]);
 
-  const handleDiscardClick: MouseEventHandler<HTMLButtonElement> = useCallback(e => {
-    e.preventDefault();
-    vscode.postMessage({
-      type: 'onDiscardSuggestionClicked',
-      data: {
-        initData: { ...suggestion },
-      },
-    });
-  }, []);
+  const handleDiscardClick: MouseEventHandler<HTMLButtonElement> = useCallback(
+    e => {
+      e.preventDefault();
+      vscode.postMessage({
+        type: 'onDiscardSuggestionClicked',
+        data: {
+          initData: { ...suggestion },
+        },
+      });
+    },
+    [suggestion],
+  );
 
-  const handleEndorseClick: MouseEventHandler<HTMLButtonElement> = useCallback(e => {
-    e.preventDefault();
-    vscode.postMessage({
-      type: 'onEndorseSuggestionClicked',
-      data: {
-        initData: { ...suggestion },
-      },
-    });
-  }, []);
+  const handleEndorseClick: MouseEventHandler<HTMLButtonElement> = useCallback(
+    e => {
+      e.preventDefault();
+      vscode.postMessage({
+        type: 'onEndorseSuggestionClicked',
+        data: {
+          initData: { ...suggestion },
+        },
+      });
+    },
+    [suggestion],
+  );
 
   const handleGenerateRecommendation: MouseEventHandler<HTMLButtonElement> = useCallback(
     e => {

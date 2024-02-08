@@ -118,4 +118,12 @@ export default class Utils {
 
     return decor;
   }
+
+  static openFileInNewTab(filePath: string): Thenable<vscode.TextEditor | undefined> {
+    const uri = vscode.Uri.file(filePath);
+
+    return vscode.workspace.openTextDocument(uri).then(document => {
+      return vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+    });
+  }
 }
