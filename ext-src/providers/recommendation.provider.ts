@@ -590,8 +590,13 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: Webview) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const manifest = require(path.join(this.extensionPath, 'build', 'asset-manifest.json'));
+    debugChannel.appendLine('manifest: ' + this.extensionPath);
+
+    // https://stackoverflow.com/questions/34828722/how-can-i-make-webpack-skip-a-require
+    // @ts-ignore
+    const manifest = __non_webpack_require__(
+      path.join(this.extensionPath, 'build', 'asset-manifest.json'),
+    );
     const mainScript = manifest['files']['main.js'];
     const mainStyle = manifest['files']['main.css'];
 

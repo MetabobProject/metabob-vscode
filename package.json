@@ -2,7 +2,7 @@
   "name": "metabob",
   "displayName": "Metabob: Debug and Refactor with AI",
   "description": "Generative AI to automate debugging and refactoring Python code",
-  "version": "1.0.13",
+  "version": "1.0.21",
   "icon": "media/extension-icon.png",
   "repository": {
     "url": "https://github.com/MetabobProject/metabob-vscode",
@@ -169,7 +169,7 @@
     "package": "vsce package --no-yarn",
     "vscode:prepublish": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json",
     "start": "react-scripts start",
-    "build": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json"
+    "build": "node ./scripts/build-non-split.js && webpack --mode production --devtool hidden-source-map"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",
@@ -194,10 +194,10 @@
     "react-scripts": "^5.0.1",
     "rewire": "^6.0.0",
     "style-loader": "^2.0.0",
-    "ts-loader": "^8.0.15",
-    "typescript": "^4.1.2",
+    "ts-loader": "^8.4.0",
+    "typescript": "^4.9.5",
     "vscode-test": "^1.4.1",
-    "webpack": "^5.76.0",
+    "webpack": "^5.90.1",
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
