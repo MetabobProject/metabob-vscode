@@ -592,6 +592,8 @@ export class RecommendationWebView implements WebviewViewProvider {
   private _getHtmlForWebview(webview: Webview) {
     debugChannel.appendLine('manifest: ' + this.extensionPath);
 
+    debugChannel.appendLine('manifest' + this.extensionPath);
+
     // https://stackoverflow.com/questions/34828722/how-can-i-make-webpack-skip-a-require
     // @ts-ignore
     const manifest = __non_webpack_require__(
@@ -602,6 +604,8 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     const scriptUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainScript));
     const styleUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainStyle));
+
+    debugChannel.appendLine('styleUri' + styleUri);
 
     // Use a nonce to whitelist which scripts can be run
     const nonce = Util.getNonce();

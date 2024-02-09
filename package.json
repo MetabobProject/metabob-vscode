@@ -8,9 +8,10 @@
     "url": "https://github.com/MetabobProject/metabob-vscode",
     "type": "git"
   },
+  "main": "./build/ext-src/extension.js",
   "publisher": "Metabob",
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.64.0"
   },
   "categories": [
     "Linters",
@@ -39,7 +40,6 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./build/ext-src/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -167,7 +167,7 @@
     "watch:nodemon": "nodemon",
     "lint": "eslint src --ext ts",
     "package": "vsce package --no-yarn",
-    "vscode:prepublish": "node ./scripts/build-non-split.js && tsc -p tsconfig.extension.json",
+    "vscode:prepublish": "npm run build",
     "start": "react-scripts start",
     "build": "node ./scripts/build-non-split.js && webpack --mode production --devtool hidden-source-map"
   },
