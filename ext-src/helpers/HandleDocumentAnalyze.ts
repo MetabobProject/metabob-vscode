@@ -5,7 +5,7 @@ import { IDocumentMetaData } from '../types';
 import { AnalyzeState, Analyze } from '../state';
 import Util from '../utils';
 import CONSTANTS from '../constants';
-import { getAnalysisEventEmitter } from '../events';
+import { getExtensionEventEmitter } from '../events';
 
 const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' };
 
@@ -32,7 +32,7 @@ export const handleDocumentAnalyze = async (
 ) => {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.fileName !== metaDataDocument.filePath) {
-    getAnalysisEventEmitter().fire({
+    getExtensionEventEmitter().fire({
       type: 'Analysis_Error',
       data: '',
     });
@@ -53,7 +53,7 @@ export const handleDocumentAnalyze = async (
   const verifiedResponse = verifyResponseOfSubmit(response);
   if (!verifiedResponse || !verifiedResponse.results) {
     if (!suppressRateLimitErrors) {
-      getAnalysisEventEmitter().fire({
+      getExtensionEventEmitter().fire({
         type: 'Analysis_Error',
         data: '',
       });
@@ -62,7 +62,7 @@ export const handleDocumentAnalyze = async (
 
     return failedResponseReturn;
   } else if (verifiedResponse.status === 'failed') {
-    getAnalysisEventEmitter().fire({
+    getExtensionEventEmitter().fire({
       type: 'Analysis_Error',
       data: '',
     });
@@ -96,9 +96,10 @@ export const handleDocumentAnalyze = async (
   );
   editor.setDecorations(decorationFromResponse.decorationType, []);
   editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations);
-  getAnalysisEventEmitter().fire({
+
+  getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
-    data: '',
+    data: results,
   });
 
   return verifiedResponse;

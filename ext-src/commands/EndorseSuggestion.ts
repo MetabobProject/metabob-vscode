@@ -8,7 +8,7 @@ export type EndorseCommandHandler = { id: string; path: string };
 export function activateEndorseCommand(
   context: vscode.ExtensionContext,
   _debug?: vscode.OutputChannel,
-) {
+): void {
   const command = CONSTANTS.endorseSuggestionCommand;
 
   const commandHandler = async (args: EndorseCommandHandler) => {

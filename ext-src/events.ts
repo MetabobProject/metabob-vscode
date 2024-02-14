@@ -1,30 +1,35 @@
 import { EventEmitter } from 'vscode';
 
 export interface AnalysisEvents {
-  type: 'Analysis_Error' | 'Analysis_Completed';
+  type:
+    | 'Analysis_Error'
+    | 'Analysis_Completed'
+    | 'Analysis_Called_On_Save'
+    | 'No_Editor_Detected'
+    | 'FIX_SUGGESTION';
   data: any;
 }
 
-let analysisEventEmitter: EventEmitter<AnalysisEvents> | undefined = undefined;
+let extensionEventEmitter: EventEmitter<AnalysisEvents> | undefined = undefined;
 
-export const bootstrapAnalysisEventEmitter = (): void => {
-  if (!analysisEventEmitter) {
-    analysisEventEmitter = new EventEmitter<AnalysisEvents>();
+export const bootstrapExtensionEventEmitter = (): void => {
+  if (!extensionEventEmitter) {
+    extensionEventEmitter = new EventEmitter<AnalysisEvents>();
   }
 };
 
-export const getAnalysisEventEmitter = (): EventEmitter<AnalysisEvents> => {
-  if (!analysisEventEmitter) {
-    analysisEventEmitter = new EventEmitter<AnalysisEvents>();
+export const getExtensionEventEmitter = (): EventEmitter<AnalysisEvents> => {
+  if (!extensionEventEmitter) {
+    extensionEventEmitter = new EventEmitter<AnalysisEvents>();
 
-    return analysisEventEmitter;
+    return extensionEventEmitter;
   }
 
-  return analysisEventEmitter;
+  return extensionEventEmitter;
 };
 
-export const disposeAnalysisEventEmitter = (): void => {
-  if (analysisEventEmitter) {
-    analysisEventEmitter.dispose();
+export const disposeExtensionEventEmitter = (): void => {
+  if (extensionEventEmitter) {
+    extensionEventEmitter.dispose();
   }
 };

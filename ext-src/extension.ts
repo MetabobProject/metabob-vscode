@@ -9,17 +9,26 @@ import {
   activateDiscardCommand,
   activateAnalyzeCommand,
 } from './commands';
-import { createOrUpdateUserSession, initState, AnalyzeDocumentOnSave } from './helpers';
+import {
+  createOrUpdateUserSession,
+  initState,
+  AnalyzeDocumentOnSave,
+  GenerateDecorations,
+  decorationType,
+} from './helpers';
 import Util from './utils';
 import debugChannel from './debug';
 import {
-  bootstrapAnalysisEventEmitter,
-  disposeAnalysisEventEmitter,
-  getAnalysisEventEmitter,
+  bootstrapExtensionEventEmitter,
+  disposeExtensionEventEmitter,
+  getExtensionEventEmitter,
 } from './events';
+import { AnalyseMetaData, Analyze, AnalyzeState } from './state';
+
+let previousEditor: vscode.TextEditor | undefined = undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
-  bootstrapAnalysisEventEmitter();
+  bootstrapExtensionEventEmitter();
   debugChannel.show(true);
   debugChannel.appendLine('Activating Metabob Extension...');
 
@@ -63,23 +72,6 @@ export function activate(context: vscode.ExtensionContext): void {
     activateFixSuggestionCommand(context);
   } catch (error: any) {
     debugChannel.appendLine(`Metabob: ${error}`);
-  }
-
-  // Analyze on Save functionality is only ran if the user enabled it.
-  if (analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true) {
-    context.subscriptions.push(
-      vscode.workspace.onDidSaveTextDocument(document => {
-        // Will check if the current document is valid code file.
-        if (Util.isValidDocument(document)) {
-          AnalyzeDocumentOnSave(
-            {
-              document,
-            },
-            context,
-          );
-        }
-      }),
-    );
   }
 
   // If the user changes the global config from CMD + Shift + P -> User Setting -> Metabob
@@ -132,7 +124,160 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  const analysisEventEmitter = getAnalysisEventEmitter();
+  const extensionEventEmitter = getExtensionEventEmitter();
+
+  // Analyze on Save functionality is only ran if the user enabled it.
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument(document => {
+      // Will check if the current document is valid code file.
+      if (analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true) {
+        if (!Util.isValidDocument) {
+          return;
+        }
+
+        AnalyzeDocumentOnSave(
+          {
+            document,
+          },
+          context,
+        );
+        extensionEventEmitter.fire({
+          type: 'Analysis_Called_On_Save',
+          data: {},
+        });
+      }
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidCloseTextDocument(() => {
+      const editor = vscode.window.activeTextEditor;
+
+      if (!editor) {
+        extensionEventEmitter.fire({
+          type: 'No_Editor_Detected',
+          data: {},
+        });
+      }
+      extensionEventEmitter.fire({
+        type: 'Analysis_Completed',
+        data: {},
+      });
+    }),
+  );
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument(() => {
+      const currentEditor = vscode.window.activeTextEditor;
+      if (!currentEditor) return;
+
+      if (!Util.isValidDocument(currentEditor.document)) {
+        return;
+      }
+
+      const documentMetaData = Util.extractMetaDataFromDocument(currentEditor.document);
+
+      const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
+
+      if (!filename) return;
+
+      const analyzeState = new Analyze(context);
+
+      const analyzeValue = analyzeState.get()?.value;
+
+      if (!analyzeValue) return;
+
+      const results: AnalyseMetaData[] = [];
+      const analzeResultsOfCurrentFile: AnalyzeState = {};
+
+      for (const [key, value] of Object.entries(analyzeValue)) {
+        const splitString: string | undefined = key.split('@@')[0];
+        if (splitString === undefined) continue;
+
+        if (splitString === filename && value.isDiscarded === false) {
+          results.push(value);
+
+          analzeResultsOfCurrentFile[key] = value;
+        }
+      }
+
+      if (results.length === 0) {
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: analzeResultsOfCurrentFile,
+        });
+
+        return;
+      }
+
+      const { decorations } = GenerateDecorations(results, currentEditor);
+
+      currentEditor.setDecorations(decorationType, []);
+      currentEditor.setDecorations(decorationType, decorations);
+      extensionEventEmitter.fire({
+        type: 'Analysis_Completed',
+        data: { ...analzeResultsOfCurrentFile },
+      });
+    }),
+  );
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(currentEditor => {
+      if (!currentEditor) return;
+
+      if (!Util.isValidDocument(currentEditor.document)) {
+        return;
+      }
+
+      const documentMetaData = Util.extractMetaDataFromDocument(currentEditor.document);
+
+      const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
+
+      if (!filename) return;
+
+      const analyzeState = new Analyze(context);
+
+      const analyzeValue = analyzeState.get()?.value;
+
+      if (!analyzeValue) return;
+
+      if (previousEditor) {
+        previousEditor.setDecorations(decorationType, []);
+      }
+
+      const results: AnalyseMetaData[] = [];
+      const analzeResultsOfCurrentFile: AnalyzeState = {};
+
+      for (const [key, value] of Object.entries(analyzeValue)) {
+        const splitString: string | undefined = key.split('@@')[0];
+        if (splitString === undefined) continue;
+
+        if (splitString === filename && value.isDiscarded === false) {
+          results.push(value);
+
+          analzeResultsOfCurrentFile[key] = value;
+        }
+      }
+
+      if (results.length === 0) {
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: analzeResultsOfCurrentFile,
+        });
+
+        return;
+      }
+
+      const { decorations } = GenerateDecorations(results, currentEditor);
+
+      currentEditor.setDecorations(decorationType, []);
+      currentEditor.setDecorations(decorationType, decorations);
+      extensionEventEmitter.fire({
+        type: 'Analysis_Completed',
+        data: { ...analzeResultsOfCurrentFile },
+      });
+
+      previousEditor = currentEditor;
+    }),
+  );
 
   // Recommendation Panel Webview Provider that is the normal Metabob workflow
   context.subscriptions.push(
@@ -142,7 +287,7 @@ export function activate(context: vscode.ExtensionContext): void {
         context.extensionPath,
         context.extensionUri,
         context,
-        analysisEventEmitter,
+        extensionEventEmitter,
       ),
     ),
   );
@@ -150,5 +295,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
 export function deactivate(): void {
   debugChannel.dispose();
-  disposeAnalysisEventEmitter();
+  decorationType.dispose();
+  disposeExtensionEventEmitter();
+  previousEditor = undefined;
 }

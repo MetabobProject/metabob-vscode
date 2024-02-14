@@ -53,4 +53,49 @@ export enum EventDataType {
   ENDORSE_SUGGESTION_ERROR = 'onEndorseSuggestionClicked:Error',
   ANALYSIS_ERROR = 'Analysis_Error',
   ANALYSIS_COMPLETED = 'Analysis_Completed',
+  ANALYSIS_CALLED_ON_SAVE = 'Analysis_Called_On_Save',
+  NO_EDITOR_DETECTED = 'No_Editor_Detected',
+  FIX_SUGGESTION = 'FIX_SUGGESTION',
 }
+
+export enum ApplicationWebviewState {
+  ANALYZE_MODE,
+  SUGGESTION_MODE,
+}
+
+export interface Problem {
+  id: string;
+  path: string;
+  startLine: number;
+  endLine: number;
+  category: string;
+  summary: string;
+  description: string;
+}
+
+export interface FixSuggestionsPayload {
+  path: string;
+  id: string;
+  vuln: Problem;
+  isFix: boolean;
+  isReset: boolean;
+}
+
+export interface RecommendationPayload {
+  recommendation: string;
+}
+
+export type AnalyseMetaData = {
+  id: string;
+  path: string;
+  startLine: number;
+  endLine: number;
+  category: string;
+  summary: string;
+  description: string;
+  isDiscarded?: boolean;
+};
+
+export type AnalyzeState = {
+  [filepathAndProblemId: string]: AnalyseMetaData;
+};

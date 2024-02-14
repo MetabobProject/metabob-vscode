@@ -1,6 +1,12 @@
 import { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { useSetRecoilState } from 'recoil';
-import { EventDataType, MessageType } from '../types';
+import {
+  AnalyzeState,
+  ApplicationWebviewState,
+  EventDataType,
+  FixSuggestionsPayload,
+  MessageType,
+} from '../types';
 import { defaultProvider } from './utils';
 import * as State from '../state';
 
@@ -41,16 +47,38 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setHasWorkSpaceFolders = useSetRecoilState(State.hasWorkSpaceFolders);
   const setHasOpenTextDocuments = useSetRecoilState(State.hasOpenTextDocuments);
   const setIsAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
+  const setApplicationState = useSetRecoilState(State.applicationState);
+  const setIdentifiedSuggestion = useSetRecoilState(State.identifiedSuggestion);
+  const setIsRecommendationLoading = useSetRecoilState(State.isRecommendationLoading);
+  const setIdentifiedRecommendation = useSetRecoilState(State.identifiedRecommendation);
+  const setIdentifiedProblems = useSetRecoilState(State.identifiedProblems);
+  const setAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
       switch (event.data.type) {
+        case EventDataType.NO_EDITOR_DETECTED:
+          setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
+          setHasOpenTextDocuments(false);
+          setHasWorkSpaceFolders(false);
+          break;
+        case EventDataType.ANALYSIS_CALLED_ON_SAVE:
+          setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
+          setAnalysisLoading(true);
+          setIdentifiedProblems({} as AnalyzeState);
+          break;
+        case EventDataType.FIX_SUGGESTION:
+          setApplicationState(ApplicationWebviewState.SUGGESTION_MODE);
+          setIdentifiedSuggestion(payload as FixSuggestionsPayload);
+          break;
         case EventDataType.ANALYSIS_ERROR:
-        case EventDataType.ANALYSIS_COMPLETED:
           setIsAnalysisLoading(false);
           break;
-
+        case EventDataType.ANALYSIS_COMPLETED:
+          setIdentifiedProblems(payload as AnalyzeState);
+          setIsAnalysisLoading(false);
+          break;
         case EventDataType.INIT_DATA:
           const { hasOpenTextDocuments, hasWorkSpaceFolders } = payload;
 
@@ -122,6 +150,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setSuggestionClicked(false);
           setIsSuggestionRegenerateLoading(false);
           setSuggestion(payload.choices[0].message.content);
+
           setShowSuggestionPaginationPanel(true);
           break;
         case EventDataType.SUGGESTION_CLICKED_ERROR:
@@ -131,6 +160,11 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           break;
         case EventDataType.GENERATE_CLICKED_GPT_RESPONSE:
           setGenerate(payload.choices[0].message.content);
+          setIdentifiedRecommendation(prev => {
+            return [...(prev || []), { recommendation: payload.choices[0].message.content }];
+          });
+          setIsRecommendationLoading(false);
+
           break;
         case EventDataType.GENERATE_CLICKED_RESPONSE:
           const { recommendation } = payload;
@@ -144,12 +178,17 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             setGeneratePaginationRegenerate(previous => {
               return [...previous, `${recommendation}`];
             });
+            setIdentifiedRecommendation(prev => {
+              return [...(prev || []), { recommendation: adjustedRecommendation }];
+            });
+
             setIsgenerateClicked(true);
           } else {
             setIsGenerateWithoutQuestionLoading(false);
             setIsGenerateWithQuestionLoading(false);
             setIsRecommendationRegenerateLoading(false);
           }
+          setIsRecommendationLoading(false);
           break;
         case EventDataType.GENERATE_CLICKED_ERROR:
           setGenerate('');
@@ -157,21 +196,17 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIsgenerateClicked(false);
           setIsGenerateWithQuestionLoading(false);
           setIsRecommendationRegenerateLoading(false);
+
+          setIsRecommendationLoading(false);
           break;
 
+        case EventDataType.DISCARD_SUGGESTION_ERROR:
         case EventDataType.DISCARD_SUGGESTION_SUCCESS: {
           setDiscardSuggestionClicked(false);
           break;
         }
-        case EventDataType.DISCARD_SUGGESTION_ERROR: {
-          setDiscardSuggestionClicked(false);
-          break;
-        }
+        case EventDataType.ENDORSE_SUGGESTION_ERROR:
         case EventDataType.ENDORSE_SUGGESTION_SUCCESS: {
-          setEndorseSuggestionClicked(false);
-          break;
-        }
-        case EventDataType.ENDORSE_SUGGESTION_ERROR: {
           setEndorseSuggestionClicked(false);
           break;
         }
@@ -182,7 +217,11 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
     [
       setInitialState,
       setSuggestion,
+      setApplicationState,
+      setAnalysisLoading,
+      setIsRecommendationLoading,
       setIsSuggestionRegenerateLoading,
+      setIdentifiedRecommendation,
       setEndorseSuggestionClicked,
       setDiscardSuggestionClicked,
       userQuestionAboutSuggestion,
