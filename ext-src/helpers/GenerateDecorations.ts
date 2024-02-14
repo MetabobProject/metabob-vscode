@@ -35,8 +35,8 @@ export function GenerateDecorations(
 
     const viewDescriptionURI = encodeURIComponent(JSON.stringify(payload));
 
-    const hoverFixMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI})**`;
-    const hoverViewDescriptionMessage = `**[More Details](command:metabob.showDetailSuggestion?${viewDescriptionURI})**`;
+    const hoverFixMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI} "This action will display a comprehensive view of the issue along with a recommended solution.")**`;
+    const hoverViewDescriptionMessage = `**[More Details](command:metabob.showDetailSuggestion?${viewDescriptionURI} "This action will display a comprehensive view of the issue.")**`;
     const hoverMessage = new vscode.MarkdownString(
       `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverFixMessage} |\r${hoverViewDescriptionMessage}`,
     );

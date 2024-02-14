@@ -29,6 +29,7 @@ export const Layout = ({ children }: LayoutProps): JSX.Element => {
         Docs
       </Button>
 
+
       <Box sx={AnalyzePageSvgContainer}>
         <ExtensionSVG />
       </Box>

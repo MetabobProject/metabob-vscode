@@ -571,10 +571,10 @@ export class RecommendationWebView implements WebviewViewProvider {
           };
           try {
             commands.executeCommand('metabob.discardSuggestion', payload);
-            this._view.webview.postMessage({
-              type: 'onDiscardSuggestionClicked:Success',
-              data: {},
-            });
+            // this._view.webview.postMessage({
+            //   type: 'onDiscardSuggestionClicked:Success',
+            //   data: {},
+            // });
           } catch {
             this._view.webview.postMessage({
               type: 'onDiscardSuggestionClicked:Error',
@@ -590,10 +590,6 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: Webview) {
-    debugChannel.appendLine('manifest: ' + this.extensionPath);
-
-    debugChannel.appendLine('manifest' + this.extensionPath);
-
     // https://stackoverflow.com/questions/34828722/how-can-i-make-webpack-skip-a-require
     // @ts-ignore
     const manifest = __non_webpack_require__(
@@ -605,7 +601,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     const scriptUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainScript));
     const styleUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainStyle));
 
-    debugChannel.appendLine('styleUri' + styleUri);
 
     // Use a nonce to whitelist which scripts can be run
     const nonce = Util.getNonce();
@@ -624,8 +619,8 @@ export class RecommendationWebView implements WebviewViewProvider {
               style-src vscode-resource: 'unsafe-inline' http: https: data:
         ;">
 				<base href="${Uri.file(path.join(this.extensionPath, 'build')).with({
-          scheme: 'vscode-resource',
-        })}/">
+      scheme: 'vscode-resource',
+    })}/">
 			</head>
 
 			<body>

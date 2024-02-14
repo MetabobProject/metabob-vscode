@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { CurrentQuestion, Analyze, Session, AnalyseMetaData } from '../state';
 import { GenerateDecorations, decorationType } from '../helpers/GenerateDecorations';
 import { FeedbackSuggestionPayload, feedbackService } from '../services';
+import { getExtensionEventEmitter } from '../events';
 import CONSTANTS from '../constants';
 import Utils from '../utils';
 import _debug from '../debug';
@@ -12,6 +13,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.discardSuggestionCommand;
 
   const commandHandler = async (args: DiscardCommandHandler) => {
+    const extensionEventEmitter = getExtensionEventEmitter();
     const { id: problemId, path } = args;
     const key = `${path}@@${problemId}`;
 
@@ -75,7 +77,10 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
         editor.setDecorations(decorationType, []);
         editor.setDecorations(decorationType, decorations);
         currentQuestion.clear();
-
+        extensionEventEmitter.fire({
+          type: 'onDiscardSuggestionClicked:Success',
+          data: {},
+        });
         return;
       });
     } catch (error: any) {

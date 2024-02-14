@@ -15,14 +15,7 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     jobId: string;
   }) => {
     _debug.appendLine(`Detail initiated for ${args.path} with Problem ${args.id} `);
-    const currentQuestionState = new CurrentQuestion(context);
-    const payload: CurrentQuestionState = {
-      path: args.path,
-      id: args.id,
-      vuln: args.vuln,
-      isFix: false,
-      isReset: false,
-    };
+    vscode.commands.executeCommand('recommendation-panel-webview.focus');
 
     setTimeout(() => {
       getExtensionEventEmitter().fire({
@@ -35,10 +28,18 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
           isReset: false,
         },
       });
-    }, 2000);
+    }, 500);
+
+    const currentQuestionState = new CurrentQuestion(context);
+    const payload: CurrentQuestionState = {
+      path: args.path,
+      id: args.id,
+      vuln: args.vuln,
+      isFix: false,
+      isReset: false,
+    };
 
     await currentQuestionState.set(payload);
-    vscode.commands.executeCommand('recommendation-panel-webview.focus');
   };
 
   context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));

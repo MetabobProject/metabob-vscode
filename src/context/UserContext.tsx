@@ -85,9 +85,12 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.GENERATE_CLICKED_ERROR:
           setIsRecommendationLoading(false);
           break;
-
-        case EventDataType.DISCARD_SUGGESTION_ERROR:
         case EventDataType.DISCARD_SUGGESTION_SUCCESS: {
+          setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
+          setIdentifiedSuggestion(payload as FixSuggestionsPayload)
+          break;
+        }
+        case EventDataType.DISCARD_SUGGESTION_ERROR: {
           break;
         }
         case EventDataType.ENDORSE_SUGGESTION_ERROR:
