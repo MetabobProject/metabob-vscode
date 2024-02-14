@@ -77,9 +77,14 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
         editor.setDecorations(decorationType, []);
         editor.setDecorations(decorationType, decorations);
         currentQuestion.clear();
+
         extensionEventEmitter.fire({
           type: 'onDiscardSuggestionClicked:Success',
           data: {},
+        });
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: copyProblems,
         });
         return;
       });
