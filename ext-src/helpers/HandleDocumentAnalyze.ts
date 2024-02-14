@@ -2,10 +2,11 @@ import * as vscode from 'vscode';
 import { Result } from 'rusty-result-ts';
 import { submitService, SubmitRepresentationResponse, ApiErrorBase } from '../services/';
 import { IDocumentMetaData } from '../types';
-import { AnalyzeState, Analyze } from '../state';
+import { AnalyzeState, Analyze, AnalyseMetaData } from '../state';
 import Util from '../utils';
 import CONSTANTS from '../constants';
 import { getExtensionEventEmitter } from '../events';
+import debugChannel from '../debug';
 
 const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' };
 
@@ -85,10 +86,13 @@ export const handleDocumentAnalyze = async (
 
   verifiedResponse.results.forEach(problem => {
     const key = `${problem.path}@@${problem.id}`;
-    results[key] = {
+    const analyzeMetaData: AnalyseMetaData = {
       ...problem,
-      isDiscarded: false,
-    };
+      isDiscarded: problem.discarded,
+      isEndorsed: problem.endorsed,
+      isViewed: false,
+    }
+    results[key] = { ...analyzeMetaData }
   });
 
   analyzeState.set(results);

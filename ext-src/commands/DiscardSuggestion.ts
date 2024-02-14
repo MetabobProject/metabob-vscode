@@ -5,6 +5,7 @@ import { FeedbackSuggestionPayload, feedbackService } from '../services';
 import { getExtensionEventEmitter } from '../events';
 import CONSTANTS from '../constants';
 import Utils from '../utils';
+import { Problem } from '../types';
 import _debug from '../debug';
 
 export type DiscardCommandHandler = { id: string; path: string };
@@ -57,19 +58,28 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
 
     try {
       await feedbackService.discardSuggestion(payload, session);
+      await feedbackService.readSuggestion(payload, session);
     } catch (err: any) {
       _debug?.appendLine(err.message);
     }
 
     copyProblems[key].isDiscarded = true;
+    copyProblems[key].isEndorsed = false;
+    copyProblems[key].isViewed = true
 
     try {
       analyzeState.set(copyProblems).then(() => {
-        const results: AnalyseMetaData[] = [];
+        const results: Problem[] = [];
 
         for (const [, value] of Object.entries(copyProblems)) {
+          const problem: Problem = {
+            ...value,
+            discarded: value.isDiscarded || false,
+            endorsed: value.isEndorsed || false
+          };
+
           if (!value.isDiscarded) {
-            results.push(value);
+            results.push(problem);
           }
         }
 

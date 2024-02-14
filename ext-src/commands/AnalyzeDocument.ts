@@ -77,6 +77,10 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
       switch (response.status) {
         case 'failed':
         case 'complete': {
+          extensionEventEmitter.fire({
+            type: 'Analysis_Error',
+            data: 'Session Token is undefined',
+          });
           isInQueue = false;
           break;
         }

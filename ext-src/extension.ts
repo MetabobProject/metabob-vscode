@@ -24,6 +24,7 @@ import {
   getExtensionEventEmitter,
 } from './events';
 import { AnalyseMetaData, Analyze, AnalyzeState } from './state';
+import { Problem } from './types';
 
 let previousEditor: vscode.TextEditor | undefined = undefined;
 
@@ -152,6 +153,11 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument(() => {
       const editor = vscode.window.activeTextEditor;
+      const analyzeState = new Analyze(context);
+
+      const analyzeValue = analyzeState.get()?.value;
+
+      if (!analyzeValue) return;
 
       if (!editor || !editor.document) {
         extensionEventEmitter.fire({
@@ -159,7 +165,7 @@ export function activate(context: vscode.ExtensionContext): void {
           data: {},
         });
 
-        return
+        return;
       }
 
       const isValidEditor = Util.isValidDocument(editor.document);
@@ -167,7 +173,7 @@ export function activate(context: vscode.ExtensionContext): void {
       if (isValidEditor) {
         extensionEventEmitter.fire({
           type: 'Analysis_Completed',
-          data: {},
+          data: analyzeValue,
         });
       }
     }),
@@ -193,24 +199,29 @@ export function activate(context: vscode.ExtensionContext): void {
 
       if (!analyzeValue) return;
 
-      const results: AnalyseMetaData[] = [];
-      const analzeResultsOfCurrentFile: AnalyzeState = {};
+      const results: Problem[] = [];
 
       for (const [key, value] of Object.entries(analyzeValue)) {
         const splitString: string | undefined = key.split('@@')[0];
         if (splitString === undefined) continue;
 
         if (splitString === filename && value.isDiscarded === false) {
-          results.push(value);
 
-          analzeResultsOfCurrentFile[key] = value;
+          const problem: Problem = {
+            ...value,
+            discarded: value.isDiscarded || false,
+            endorsed: value.isEndorsed || false,
+          };
+
+          results.push(problem);
+
         }
       }
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
           type: 'Analysis_Completed',
-          data: analzeResultsOfCurrentFile,
+          data: analyzeValue,
         });
 
         return;
@@ -222,7 +233,7 @@ export function activate(context: vscode.ExtensionContext): void {
       currentEditor.setDecorations(decorationType, decorations);
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
-        data: { ...analzeResultsOfCurrentFile },
+        data: { ...analyzeValue },
       });
     }),
   );
@@ -250,24 +261,28 @@ export function activate(context: vscode.ExtensionContext): void {
         previousEditor.setDecorations(decorationType, []);
       }
 
-      const results: AnalyseMetaData[] = [];
-      const analzeResultsOfCurrentFile: AnalyzeState = {};
+      const results: Problem[] = [];
 
       for (const [key, value] of Object.entries(analyzeValue)) {
         const splitString: string | undefined = key.split('@@')[0];
         if (splitString === undefined) continue;
 
         if (splitString === filename && value.isDiscarded === false) {
-          results.push(value);
+          const problem: Problem = {
+            ...value,
+            discarded: value.isDiscarded || false,
+            endorsed: value.isEndorsed || false,
+          };
 
-          analzeResultsOfCurrentFile[key] = value;
+          results.push(problem);
+
         }
       }
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
           type: 'Analysis_Completed',
-          data: analzeResultsOfCurrentFile,
+          data: analyzeValue,
         });
 
         return;
@@ -279,7 +294,7 @@ export function activate(context: vscode.ExtensionContext): void {
       currentEditor.setDecorations(decorationType, decorations);
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
-        data: { ...analzeResultsOfCurrentFile },
+        data: { ...analyzeValue },
       });
 
       previousEditor = currentEditor;

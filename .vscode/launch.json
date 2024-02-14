@@ -13,7 +13,7 @@
 			],
 			"sourceMaps": true,
 			"outFiles": [
-				"${workspaceFolder}/build/**/*.js",
+				"${workspaceRoot}/ext-src/**/*.ts",
 				"!**/node_modules/**"
 			]
 		}
