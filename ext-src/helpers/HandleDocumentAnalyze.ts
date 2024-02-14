@@ -44,11 +44,11 @@ export const handleDocumentAnalyze = async (
     jobId !== undefined
       ? await submitService.getJobStatus(sessionToken, jobId)
       : await submitService.submitTextFile(
-          metaDataDocument.relativePath,
-          metaDataDocument.fileContent,
-          metaDataDocument.filePath,
-          sessionToken,
-        );
+        metaDataDocument.relativePath,
+        metaDataDocument.fileContent,
+        metaDataDocument.filePath,
+        sessionToken,
+      );
 
   const verifiedResponse = verifyResponseOfSubmit(response);
   if (!verifiedResponse || !verifiedResponse.results) {
@@ -59,7 +59,11 @@ export const handleDocumentAnalyze = async (
       });
       vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage);
     }
-
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
     return failedResponseReturn;
   } else if (verifiedResponse.status === 'failed') {
     getExtensionEventEmitter().fire({

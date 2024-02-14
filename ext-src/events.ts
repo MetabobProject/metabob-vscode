@@ -7,7 +7,8 @@ export interface AnalysisEvents {
   | 'onDiscardSuggestionClicked:Success'
   | 'Analysis_Called_On_Save'
   | 'No_Editor_Detected'
-  | 'FIX_SUGGESTION';
+  | 'FIX_SUGGESTION'
+  | 'RE_COMPUTE_THEME';
   data: any;
 }
 

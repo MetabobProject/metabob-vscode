@@ -13,7 +13,7 @@ export const Header = ({ category, description }: HeaderProps): JSX.Element => {
           <Typography component='span' variant='subtitle1' color='whitesmoke' fontWeight={600}>
             Problem Category:
           </Typography>{' '}
-          <Typography variant='body1' display='inline'>
+          <Typography variant='body1' display='inline' color='whitesmoke'>
             {category}
           </Typography>
         </Box>
@@ -24,7 +24,7 @@ export const Header = ({ category, description }: HeaderProps): JSX.Element => {
           <Typography variant='subtitle1' component='span' fontWeight={600} color='whitesmoke'>
             Problem Description:
           </Typography>{' '}
-          <Typography variant='body1' display='inline'>
+          <Typography variant='body1' display='inline' color='whitesmoke'>
             {description}
           </Typography>
         </Box>

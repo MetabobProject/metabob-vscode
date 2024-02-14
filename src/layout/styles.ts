@@ -16,5 +16,5 @@ export const AnalyzePageSvgContainer: SxProps = {
   alignItems: 'center',
   justifyContent: 'center',
   minWidth: '120px',
-  marginBottom: '30px',
+  marginTop: '30px',
 };
