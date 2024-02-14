@@ -153,16 +153,23 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.workspace.onDidCloseTextDocument(() => {
       const editor = vscode.window.activeTextEditor;
 
-      if (!editor) {
+      if (!editor || !editor.document) {
         extensionEventEmitter.fire({
           type: 'No_Editor_Detected',
           data: {},
         });
+
+        return
       }
-      extensionEventEmitter.fire({
-        type: 'Analysis_Completed',
-        data: {},
-      });
+
+      const isValidEditor = Util.isValidDocument(editor.document);
+
+      if (isValidEditor) {
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: {},
+        });
+      }
     }),
   );
   context.subscriptions.push(
