@@ -21,6 +21,7 @@ export enum EventDataType {
   ANALYSIS_CALLED_ON_SAVE = 'Analysis_Called_On_Save',
   NO_EDITOR_DETECTED = 'No_Editor_Detected',
   FIX_SUGGESTION = 'FIX_SUGGESTION',
+  CURRENT_FILE = 'CURRENT_FILE'
 }
 
 export enum ApplicationWebviewState {
@@ -51,15 +52,18 @@ export interface RecommendationPayload {
 }
 
 export type AnalyseMetaData = {
-  id: string;
-  path: string;
-  startLine: number;
-  endLine: number;
-  category: string;
-  summary: string;
-  description: string;
-  isDiscarded?: boolean;
-};
+  id: string
+  path: string
+  startLine: number
+  endLine: number
+  category: string
+  summary: string
+  description: string
+  severity: string
+  isDiscarded?: boolean
+  isEndorsed?: boolean;
+  isViewed?: boolean
+}
 
 export type AnalyzeState = {
   [filepathAndProblemId: string]: AnalyseMetaData;

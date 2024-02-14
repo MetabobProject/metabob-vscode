@@ -5,16 +5,29 @@ import { IAnalyzeTextDocumentOnSave } from '../types';
 import Util from '../utils';
 import { handleDocumentAnalyze } from './HandleDocumentAnalyze';
 import CONSTANTS from '../constants';
+import { getExtensionEventEmitter } from '../events';
 
 export async function AnalyzeDocumentOnSave(
   _payload: IAnalyzeTextDocumentOnSave,
   context: vscode.ExtensionContext,
 ): Promise<void> {
   const sessionToken = new Session(context).get()?.value;
-  if (!sessionToken) return;
+  const extensionEventEmitter = getExtensionEventEmitter();
+
+  if (!sessionToken) {
+    extensionEventEmitter.fire({
+      type: 'Analysis_Error',
+      data: 'Editor is undefined',
+    });
+    return
+  };
 
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
+    extensionEventEmitter.fire({
+      type: 'Analysis_Error',
+      data: 'Editor is undefined',
+    });
     return;
   }
 
@@ -44,8 +57,17 @@ export async function AnalyzeDocumentOnSave(
       if (response.status === 'complete' || response.status === 'failed') {
         isInQueue = false;
       } else {
+        extensionEventEmitter.fire({
+          type: 'Analysis_Error',
+          data: 'Editor is undefined',
+        });
         isInQueue = true;
       }
+    });
+  } else {
+    extensionEventEmitter.fire({
+      type: 'Analysis_Error',
+      data: 'Editor is undefined',
     });
   }
 }

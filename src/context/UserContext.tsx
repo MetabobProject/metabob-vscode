@@ -26,6 +26,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setIdentifiedRecommendation = useSetRecoilState(State.identifiedRecommendation);
   const setIdentifiedProblems = useSetRecoilState(State.identifiedProblems);
   const setAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
+  const setCurrentEditor = useSetRecoilState(State.currentEditor);
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
@@ -75,7 +76,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           const adjustedRecommendation: string = recommendation;
           adjustedRecommendation.replace("'''", '');
           if (adjustedRecommendation !== '') {
-
             setIdentifiedRecommendation(prev => {
               return [...(prev || []), { recommendation: adjustedRecommendation }];
             });
@@ -87,7 +87,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           break;
         case EventDataType.DISCARD_SUGGESTION_SUCCESS: {
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
-          setIdentifiedSuggestion(payload as FixSuggestionsPayload)
+          setIdentifiedSuggestion(payload as FixSuggestionsPayload);
           break;
         }
         case EventDataType.DISCARD_SUGGESTION_ERROR: {
@@ -97,12 +97,20 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.ENDORSE_SUGGESTION_SUCCESS: {
           break;
         }
+        case EventDataType.CURRENT_FILE:
+          const filename: string | undefined = payload.fileName.split('/').pop();
+          if (!filename) {
+            setCurrentEditor(undefined);
+            break;
+          }
+          setCurrentEditor(filename);
+          break;
         default:
           break;
       }
     },
     [
-
+      setCurrentEditor,
       setApplicationState,
       setAnalysisLoading,
       setIsRecommendationLoading,

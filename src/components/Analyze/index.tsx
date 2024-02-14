@@ -22,15 +22,23 @@ export const AnalyzePage = ({
   const theme = useTheme();
 
   const identifiedProblems = useRecoilValue(State.identifiedProblems);
+  const currentEditor = useRecoilValue(State.currentEditor);
 
-  const problems = useMemo(() => {
+  const otherFileWithProblems = useMemo(() => {
     if (!identifiedProblems) return undefined;
+
+    if (!currentEditor) return undefined;
 
     return Object.keys(identifiedProblems)
       .filter(problemKey => {
-        const problem = identifiedProblems[problemKey];
+        const splitString: string | undefined = problemKey.split('@@')[0];
+        if (splitString === undefined) return false;
+        const isViewed = identifiedProblems[problemKey].isViewed || false;
+        if (splitString !== currentEditor && isViewed === false) {
+          return true;
+        }
 
-        return !problem.isDiscarded;
+        return false;
       })
       .map(problemKey => {
         const problem = identifiedProblems[problemKey];
@@ -39,7 +47,23 @@ export const AnalyzePage = ({
           name: problem.path,
         };
       });
-  }, [identifiedProblems]);
+  }, [identifiedProblems, currentEditor]);
+
+  const detectedProblems = useMemo(() => {
+    if (!identifiedProblems) return undefined;
+
+    if (!currentEditor) return undefined;
+
+    return Object.keys(identifiedProblems).filter(problemKey => {
+      const splitString: string | undefined = problemKey.split('@@')[0];
+      if (splitString === undefined) return false;
+      if (splitString === currentEditor) {
+        return true;
+      }
+
+      return false;
+    }).length;
+  }, [identifiedProblems, currentEditor]);
 
   return (
     <>
@@ -85,8 +109,11 @@ export const AnalyzePage = ({
         )}
       </Box>
 
-      {problems && hasWorkSpaceFolders && hasOpenTextDocuments && (
-        <ProblemList problems={problems} />
+      {detectedProblems && otherFileWithProblems && hasWorkSpaceFolders && hasOpenTextDocuments && (
+        <ProblemList
+          detectedProblems={detectedProblems}
+          otherFileWithProblems={otherFileWithProblems}
+        />
       )}
     </>
   );

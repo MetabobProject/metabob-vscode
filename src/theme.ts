@@ -1,7 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 import { ThemeOptions } from '@mui/material/styles';
 
-
 const shadows: ThemeOptions['shadows'] = [
   'none',
   '0px 2px 1px -1px rgba(19, 17, 32, 0.2), 0px 1px 1px 0px rgba(19, 17, 32, 0.14), 0px 1px 3px 0px rgba(19, 17, 32, 0.12)',
@@ -30,15 +29,10 @@ const shadows: ThemeOptions['shadows'] = [
   '0px 11px 15px -7px rgba(19, 17, 32, 0.2), 0px 24px 38px 3px rgba(19, 17, 32, 0.14), 0px 9px 46px 8px rgba(19, 17, 32, 0.12)',
 ];
 
-
-
 export const registerTheme = () => {
   const vscodeTheme = getComputedStyle(document.documentElement);
   const mainColor = vscodeTheme.getPropertyValue('--vscode-input-foreground');
-  const backgroundDefault = vscodeTheme.getPropertyValue('--vscode-input-background')
-
-  console.log("mainColor", mainColor);
-  console.log("backgroundDefault", backgroundDefault)
+  const backgroundDefault = vscodeTheme.getPropertyValue('--vscode-input-background');
 
   const themeOptions: ThemeOptions = {
     components: {
@@ -172,7 +166,6 @@ export const registerTheme = () => {
     },
   };
 
-  return themeOptions
-
-}
+  return themeOptions;
+};
 export const muiThemeDark = createTheme(registerTheme());

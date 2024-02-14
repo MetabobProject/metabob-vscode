@@ -146,6 +146,11 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'Analysis_Called_On_Save',
           data: {},
         });
+
+        extensionEventEmitter.fire({
+          type: 'CURRENT_FILE',
+          data: { ...document },
+        });
       }
     }),
   );
@@ -174,6 +179,10 @@ export function activate(context: vscode.ExtensionContext): void {
         extensionEventEmitter.fire({
           type: 'Analysis_Completed',
           data: analyzeValue,
+        });
+        extensionEventEmitter.fire({
+          type: 'CURRENT_FILE',
+          data: { ...editor.document },
         });
       }
     }),
@@ -206,7 +215,6 @@ export function activate(context: vscode.ExtensionContext): void {
         if (splitString === undefined) continue;
 
         if (splitString === filename && value.isDiscarded === false) {
-
           const problem: Problem = {
             ...value,
             discarded: value.isDiscarded || false,
@@ -214,7 +222,6 @@ export function activate(context: vscode.ExtensionContext): void {
           };
 
           results.push(problem);
-
         }
       }
 
@@ -224,6 +231,10 @@ export function activate(context: vscode.ExtensionContext): void {
           data: analyzeValue,
         });
 
+        extensionEventEmitter.fire({
+          type: 'CURRENT_FILE',
+          data: { ...currentEditor.document },
+        });
         return;
       }
 
@@ -234,6 +245,10 @@ export function activate(context: vscode.ExtensionContext): void {
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
         data: { ...analyzeValue },
+      });
+      extensionEventEmitter.fire({
+        type: 'CURRENT_FILE',
+        data: { ...currentEditor.document },
       });
     }),
   );
@@ -275,7 +290,6 @@ export function activate(context: vscode.ExtensionContext): void {
           };
 
           results.push(problem);
-
         }
       }
 
@@ -284,7 +298,10 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'Analysis_Completed',
           data: analyzeValue,
         });
-
+        extensionEventEmitter.fire({
+          type: 'CURRENT_FILE',
+          data: { ...currentEditor.document },
+        });
         return;
       }
 
@@ -296,7 +313,10 @@ export function activate(context: vscode.ExtensionContext): void {
         type: 'Analysis_Completed',
         data: { ...analyzeValue },
       });
-
+      extensionEventEmitter.fire({
+        type: 'CURRENT_FILE',
+        data: { ...currentEditor.document },
+      });
       previousEditor = currentEditor;
     }),
   );

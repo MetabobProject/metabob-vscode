@@ -96,6 +96,10 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
           type: 'Analysis_Completed',
           data: copyProblems,
         });
+        extensionEventEmitter.fire({
+          type: 'CURRENT_FILE',
+          data: { ...editor.document },
+        });
         return;
       });
     } catch (error: any) {

@@ -8,7 +8,7 @@ export interface AnalysisEvents {
   | 'Analysis_Called_On_Save'
   | 'No_Editor_Detected'
   | 'FIX_SUGGESTION'
-  | 'RE_COMPUTE_THEME';
+  | 'CURRENT_FILE';
   data: any;
 }
 

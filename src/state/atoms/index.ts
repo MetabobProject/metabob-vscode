@@ -45,3 +45,8 @@ export const identifiedProblems = atom<AnalyzeState | undefined>({
   default: undefined,
   key: 'Metabob:IdentifiedProblems',
 });
+
+export const currentEditor = atom<string | undefined>({
+  default: undefined,
+  key: 'Metabob:currentEditor'
+})

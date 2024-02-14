@@ -24,6 +24,7 @@ import CONSTANTS from '../constants';
 import Util from '../utils';
 import debugChannel from '../debug';
 import { AnalysisEvents } from '../events';
+import { Problem } from '../types';
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
@@ -362,11 +363,17 @@ export class RecommendationWebView implements WebviewViewProvider {
     const key = `${initData.path}@@${initData.id}`;
     copyAnalyzeValue[key].isDiscarded = true;
 
-    const results: AnalyseMetaData[] = [];
+    const results: Problem[] = [];
 
     for (const [, value] of Object.entries(copyAnalyzeValue)) {
+      const problem: Problem = {
+        ...value,
+        discarded: value.isDiscarded || false,
+        endorsed: value.isEndorsed || false,
+      }
+
       if (!value.isDiscarded) {
-        results.push(value);
+        results.push(problem);
       }
     }
 
