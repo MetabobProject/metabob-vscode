@@ -12,8 +12,8 @@ import {
 import { useCallback } from 'react';
 
 export interface ProblemsListProps {
-  detectedProblems: number;
-  otherFileWithProblems: Array<{ name: string }>;
+  detectedProblems?: number;
+  otherFileWithProblems?: Array<{ name: string }>;
 }
 
 export const ProblemList = ({
@@ -36,10 +36,13 @@ export const ProblemList = ({
   return (
     <>
       <Box sx={ProblemListContainer(theme)}>
-        <Typography variant='h6' sx={ProblemListHeading(theme)}>
-          {detectedProblems} Problems Detected
-        </Typography>
-        {otherFileWithProblems.length > 0 && (
+        {detectedProblems !== undefined && (
+          <Typography variant='h6' sx={ProblemListHeading(theme)}>
+            {detectedProblems} Problems Detected
+          </Typography>
+        )}
+
+        {otherFileWithProblems && otherFileWithProblems.length > 0 && (
           <>
             <Typography sx={ListHeaderTypography}>Other files with problems</Typography>
             <List sx={ListContainer}>

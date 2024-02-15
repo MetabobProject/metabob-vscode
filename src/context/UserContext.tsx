@@ -53,6 +53,20 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIdentifiedProblems(payload as AnalyzeState);
           setIsAnalysisLoading(false);
           break;
+        case EventDataType.INIT_DATA_UPON_NEW_FILE_OPEN:
+          const {
+            hasOpenTextDocuments: openTextDocuments,
+            hasWorkSpaceFolders: openWorkSpaceFolders,
+          } = payload;
+
+          if (openTextDocuments) {
+            setHasOpenTextDocuments(openTextDocuments || true);
+          }
+
+          if (openWorkSpaceFolders) {
+            setHasWorkSpaceFolders(openWorkSpaceFolders || true);
+          }
+          break;
         case EventDataType.INIT_DATA:
           const { hasOpenTextDocuments, hasWorkSpaceFolders } = payload;
 

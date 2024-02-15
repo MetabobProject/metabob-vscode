@@ -8,7 +8,8 @@ export interface AnalysisEvents {
   | 'Analysis_Called_On_Save'
   | 'No_Editor_Detected'
   | 'FIX_SUGGESTION'
-  | 'CURRENT_FILE';
+  | 'CURRENT_FILE'
+  | 'INIT_DATA_UPON_NEW_FILE_OPEN';
   data: any;
 }
 

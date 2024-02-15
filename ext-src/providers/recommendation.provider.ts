@@ -14,6 +14,7 @@ import {
   commands,
   env,
   workspace,
+  ViewColumn,
 } from 'vscode';
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services';
@@ -94,22 +95,29 @@ export class RecommendationWebView implements WebviewViewProvider {
       if (!this._view.visible) {
         this.eventEmitterQueue.push(event);
         interval = setInterval(() => {
+          debugChannel.appendLine("interval running: ")
           if (this?._view === null || this?._view === undefined || !this?._view.webview) {
             return;
           }
 
+          debugChannel.appendLine("this.view is defined: ")
+
+
           if (!this._view.visible) {
             return;
           }
+
+          debugChannel.appendLine("webview is visible: ")
 
           const latestEvent = this.eventEmitterQueue.pop();
           if (latestEvent) {
             this?._view?.webview?.postMessage(latestEvent);
           }
 
-          this.eventEmitterQueue = [];
           clearInterval(interval);
+          this.eventEmitterQueue = [];
         }, 500);
+        return
       }
 
       this._view.webview.postMessage(event);
@@ -334,7 +342,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     initPayload.hasOpenTextDocuments = Util.hasOpenTextDocuments();
     initPayload.hasWorkSpaceFolders = Util.hasWorkspaceFolder();
 
-    debugChannel.appendLine(`init data: ${JSON.stringify({ ...initPayload })}`);
 
     this._view.webview
       .postMessage({
@@ -419,7 +426,10 @@ export class RecommendationWebView implements WebviewViewProvider {
     // Use the `openTextDocument` method to open the document
     workspace.openTextDocument(Uri.file(path.fsPath)).then(document => {
       // Use the `showTextDocument` method to show the document in a new tab
-      window.showTextDocument(document);
+      window.showTextDocument(document, {
+        viewColumn: ViewColumn.One,
+        preserveFocus: true
+      });
     });
   }
 

@@ -56,19 +56,13 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       endorsed: false,
     };
 
-    try {
-      await feedbackService.discardSuggestion(payload, session);
-      await feedbackService.readSuggestion(payload, session);
-    } catch (err: any) {
-      _debug?.appendLine(err.message);
-    }
 
     copyProblems[key].isDiscarded = true;
     copyProblems[key].isEndorsed = false;
     copyProblems[key].isViewed = true
 
     try {
-      analyzeState.set(copyProblems).then(() => {
+      analyzeState.set(copyProblems).then(async () => {
         const results: Problem[] = [];
 
         for (const [, value] of Object.entries(copyProblems)) {
@@ -100,6 +94,14 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
           type: 'CURRENT_FILE',
           data: { ...editor.document },
         });
+
+        try {
+          await feedbackService.discardSuggestion(payload, session);
+          await feedbackService.readSuggestion(payload, session);
+        } catch (err: any) {
+          _debug?.appendLine(err.message);
+        }
+
         return;
       });
     } catch (error: any) {

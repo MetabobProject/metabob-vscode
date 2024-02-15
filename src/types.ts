@@ -21,7 +21,8 @@ export enum EventDataType {
   ANALYSIS_CALLED_ON_SAVE = 'Analysis_Called_On_Save',
   NO_EDITOR_DETECTED = 'No_Editor_Detected',
   FIX_SUGGESTION = 'FIX_SUGGESTION',
-  CURRENT_FILE = 'CURRENT_FILE'
+  CURRENT_FILE = 'CURRENT_FILE',
+  INIT_DATA_UPON_NEW_FILE_OPEN = 'INIT_DATA_UPON_NEW_FILE_OPEN'
 }
 
 export enum ApplicationWebviewState {

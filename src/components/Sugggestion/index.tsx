@@ -166,7 +166,7 @@ export const SuggestionPage = (): JSX.Element => {
 
       {recommendationMemo && (
         <>
-          <Box width='100%' height='40%' overflow='scroll' marginTop='12px'>
+          <Box width='100%' marginTop='12px'>
             <Recommendation text={recommendationMemo} />
           </Box>
           <RecommendationPagination

@@ -24,12 +24,12 @@ export const AnalyzePage = ({
   const identifiedProblems = useRecoilValue(State.identifiedProblems);
   const currentEditor = useRecoilValue(State.currentEditor);
 
-  const otherFileWithProblems = useMemo(() => {
+  const otherFileWithProblems: Array<{ name: string }> | undefined = useMemo(() => {
     if (!identifiedProblems) return undefined;
 
     if (!currentEditor) return undefined;
 
-    return Object.keys(identifiedProblems)
+    const results: Array<{ name: string }> = Object.keys(identifiedProblems)
       .filter(problemKey => {
         const splitString: string | undefined = problemKey.split('@@')[0];
         if (splitString === undefined) return false;
@@ -47,6 +47,14 @@ export const AnalyzePage = ({
           name: problem.path,
         };
       });
+
+    const uniqueFiles = Array.from(new Set(results.map(item => item.name)));
+
+    return uniqueFiles.map(name => {
+      return {
+        name,
+      };
+    });
   }, [identifiedProblems, currentEditor]);
 
   const detectedProblems = useMemo(() => {
@@ -110,16 +118,12 @@ export const AnalyzePage = ({
         )}
       </Box>
 
-      {detectedProblems &&
-        detectedProblems !== 0 &&
-        otherFileWithProblems &&
-        hasWorkSpaceFolders &&
-        hasOpenTextDocuments && (
-          <ProblemList
-            detectedProblems={detectedProblems}
-            otherFileWithProblems={otherFileWithProblems}
-          />
-        )}
+      {hasWorkSpaceFolders && hasOpenTextDocuments && (
+        <ProblemList
+          detectedProblems={detectedProblems}
+          otherFileWithProblems={otherFileWithProblems}
+        />
+      )}
     </>
   );
 };

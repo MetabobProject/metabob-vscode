@@ -23,10 +23,11 @@ import {
   disposeExtensionEventEmitter,
   getExtensionEventEmitter,
 } from './events';
-import { AnalyseMetaData, Analyze, AnalyzeState } from './state';
+import { Analyze } from './state';
 import { Problem } from './types';
 
 let previousEditor: vscode.TextEditor | undefined = undefined;
+let isChangingSelection = false;
 
 export function activate(context: vscode.ExtensionContext): void {
   bootstrapExtensionEventEmitter();
@@ -126,7 +127,6 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   const extensionEventEmitter = getExtensionEventEmitter();
-
   // Analyze on Save functionality is only ran if the user enabled it.
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(document => {
@@ -189,6 +189,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(() => {
+      debugChannel.appendLine("onDidOpenTextDocument called: ")
       const currentEditor = vscode.window.activeTextEditor;
       if (!currentEditor) return;
 
@@ -227,6 +228,14 @@ export function activate(context: vscode.ExtensionContext): void {
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
+          type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+          data: {
+            hasOpenTextDocuments: true,
+            hasWorkSpaceFolders: true,
+          },
+        });
+
+        extensionEventEmitter.fire({
           type: 'Analysis_Completed',
           data: analyzeValue,
         });
@@ -243,6 +252,14 @@ export function activate(context: vscode.ExtensionContext): void {
       currentEditor.setDecorations(decorationType, []);
       currentEditor.setDecorations(decorationType, decorations);
       extensionEventEmitter.fire({
+        type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+        data: {
+          hasOpenTextDocuments: true,
+          hasWorkSpaceFolders: true,
+        },
+      });
+
+      extensionEventEmitter.fire({
         type: 'Analysis_Completed',
         data: { ...analyzeValue },
       });
@@ -252,8 +269,61 @@ export function activate(context: vscode.ExtensionContext): void {
       });
     }),
   );
+
+  // context.subscriptions.push(
+  //   vscode.window.onDidChangeTextEditorSelection(() => {
+  //     if (!isChangingSelection) {
+  //       debugChannel.appendLine("onDidChangeTextEditorSelection called: ")
+  //       // Set a flag to prevent recursive loop
+  //       isChangingSelection = true;
+
+  //       // Check if there is an active text editor
+  //       const currentEditor = vscode.window.activeTextEditor;
+  //       if (!currentEditor) return;
+
+  //       if (!Util.isValidDocument(currentEditor.document)) {
+  //         return;
+  //       }
+
+  //       const documentMetaData = Util.extractMetaDataFromDocument(currentEditor.document);
+
+  //       const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
+
+  //       if (!filename) return;
+
+  //       const analyzeState = new Analyze(context);
+
+  //       const analyzeValue = analyzeState.get()?.value;
+
+  //       if (!analyzeValue) return;
+
+  //       extensionEventEmitter.fire({
+  //         type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+  //         data: {
+  //           hasOpenTextDocuments: true,
+  //           hasWorkSpaceFolders: true,
+  //         },
+  //       });
+
+  //       extensionEventEmitter.fire({
+  //         type: 'Analysis_Completed',
+  //         data: analyzeValue,
+  //       });
+
+  //       extensionEventEmitter.fire({
+  //         type: 'CURRENT_FILE',
+  //         data: { ...currentEditor.document },
+  //       });
+
+  //       // Reset the flag after your logic is executed
+  //       isChangingSelection = false;
+  //     }
+  //   }),
+  // );
+
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor(currentEditor => {
+      debugChannel.appendLine("onDidChangeActiveTextEditor called: ")
       if (!currentEditor) return;
 
       if (!Util.isValidDocument(currentEditor.document)) {
@@ -295,6 +365,14 @@ export function activate(context: vscode.ExtensionContext): void {
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
+          type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+          data: {
+            hasOpenTextDocuments: true,
+            hasWorkSpaceFolders: true,
+          },
+        });
+
+        extensionEventEmitter.fire({
           type: 'Analysis_Completed',
           data: analyzeValue,
         });
@@ -309,6 +387,14 @@ export function activate(context: vscode.ExtensionContext): void {
 
       currentEditor.setDecorations(decorationType, []);
       currentEditor.setDecorations(decorationType, decorations);
+      extensionEventEmitter.fire({
+        type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+        data: {
+          hasOpenTextDocuments: true,
+          hasWorkSpaceFolders: true,
+        },
+      });
+
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
         data: { ...analyzeValue },
@@ -340,4 +426,5 @@ export function deactivate(): void {
   decorationType.dispose();
   disposeExtensionEventEmitter();
   previousEditor = undefined;
+  isChangingSelection = false
 }
