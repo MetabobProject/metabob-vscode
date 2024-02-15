@@ -95,19 +95,13 @@ export class RecommendationWebView implements WebviewViewProvider {
       if (!this._view.visible) {
         this.eventEmitterQueue.push(event);
         interval = setInterval(() => {
-          debugChannel.appendLine("interval running: ")
           if (this?._view === null || this?._view === undefined || !this?._view.webview) {
             return;
           }
 
-          debugChannel.appendLine("this.view is defined: ")
-
-
           if (!this._view.visible) {
             return;
           }
-
-          debugChannel.appendLine("webview is visible: ")
 
           const latestEvent = this.eventEmitterQueue.pop();
           if (latestEvent) {
@@ -117,7 +111,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           clearInterval(interval);
           this.eventEmitterQueue = [];
         }, 500);
-        return
+        return;
       }
 
       this._view.webview.postMessage(event);
@@ -342,7 +336,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     initPayload.hasOpenTextDocuments = Util.hasOpenTextDocuments();
     initPayload.hasWorkSpaceFolders = Util.hasWorkspaceFolder();
 
-
     this._view.webview
       .postMessage({
         type: 'initData',
@@ -378,7 +371,7 @@ export class RecommendationWebView implements WebviewViewProvider {
         ...value,
         discarded: value.isDiscarded || false,
         endorsed: value.isEndorsed || false,
-      }
+      };
 
       if (!value.isDiscarded) {
         results.push(problem);
@@ -411,24 +404,22 @@ export class RecommendationWebView implements WebviewViewProvider {
     return;
   }
 
-
   searchFileByName(fileName: string) {
     const searchPattern = `**/${fileName}`;
     return workspace.findFiles(searchPattern, '**/node_modules/**', 1);
   }
 
   async openFileInNewTab(fileName: string) {
-
     const searchedFilePath = await this.searchFileByName(fileName);
     const path: Uri | undefined = searchedFilePath[0];
 
-    if (!path) return
+    if (!path) return;
     // Use the `openTextDocument` method to open the document
     workspace.openTextDocument(Uri.file(path.fsPath)).then(document => {
       // Use the `showTextDocument` method to show the document in a new tab
       window.showTextDocument(document, {
         viewColumn: ViewColumn.One,
-        preserveFocus: true
+        preserveFocus: true,
       });
     });
   }
@@ -447,9 +438,9 @@ export class RecommendationWebView implements WebviewViewProvider {
       const data = message.data;
       switch (message.type) {
         case 'OPEN_FILE_IN_NEW_TAB':
-          const { name: fileName } = data
-          this.openFileInNewTab(fileName)
-          break
+          const { name: fileName } = data;
+          this.openFileInNewTab(fileName);
+          break;
         case 'analysis_current_file':
           this.clear();
           commands.executeCommand('metabob.analyzeDocument');
@@ -641,7 +632,6 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     const scriptUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainScript));
     const styleUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainStyle));
-
 
     // Use a nonce to whitelist which scripts can be run
     const nonce = Util.getNonce();
