@@ -13,6 +13,7 @@ import {
   Range,
   commands,
   env,
+  workspace,
 } from 'vscode';
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services';
@@ -403,6 +404,25 @@ export class RecommendationWebView implements WebviewViewProvider {
     return;
   }
 
+
+  searchFileByName(fileName: string) {
+    const searchPattern = `**/${fileName}`;
+    return workspace.findFiles(searchPattern, '**/node_modules/**', 1);
+  }
+
+  async openFileInNewTab(fileName: string) {
+
+    const searchedFilePath = await this.searchFileByName(fileName);
+    const path: Uri | undefined = searchedFilePath[0];
+
+    if (!path) return
+    // Use the `openTextDocument` method to open the document
+    workspace.openTextDocument(Uri.file(path.fsPath)).then(document => {
+      // Use the `showTextDocument` method to show the document in a new tab
+      window.showTextDocument(document);
+    });
+  }
+
   private activateWebviewMessageListener() {
     if (this._view === null || this._view === undefined || this._view.webview === undefined) {
       return;
@@ -416,6 +436,10 @@ export class RecommendationWebView implements WebviewViewProvider {
       }
       const data = message.data;
       switch (message.type) {
+        case 'OPEN_FILE_IN_NEW_TAB':
+          const { name: fileName } = data
+          this.openFileInNewTab(fileName)
+          break
         case 'analysis_current_file':
           this.clear();
           commands.executeCommand('metabob.analyzeDocument');

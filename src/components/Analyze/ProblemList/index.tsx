@@ -25,7 +25,10 @@ export const ProblemList = ({
   const handleOpenOtherFile: (name: string) => React.MouseEventHandler = useCallback(
     (name: string) => e => {
       e.preventDefault();
-      console.log(name);
+      vscode.postMessage({
+        type: 'OPEN_FILE_IN_NEW_TAB',
+        data: { name },
+      });
     },
     [],
   );
@@ -36,7 +39,7 @@ export const ProblemList = ({
         <Typography variant='h6' sx={ProblemListHeading(theme)}>
           {detectedProblems} Problems Detected
         </Typography>
-        {otherFileWithProblems.length !== 0 && (
+        {otherFileWithProblems.length > 0 && (
           <>
             <Typography sx={ListHeaderTypography}>Other files with problems</Typography>
             <List sx={ListContainer}>

@@ -55,9 +55,10 @@ export const AnalyzePage = ({
     if (!currentEditor) return undefined;
 
     return Object.keys(identifiedProblems).filter(problemKey => {
+      const problem = identifiedProblems[problemKey];
       const splitString: string | undefined = problemKey.split('@@')[0];
       if (splitString === undefined) return false;
-      if (splitString === currentEditor) {
+      if (splitString === currentEditor && problem.isDiscarded === false) {
         return true;
       }
 
@@ -109,12 +110,16 @@ export const AnalyzePage = ({
         )}
       </Box>
 
-      {detectedProblems && otherFileWithProblems && hasWorkSpaceFolders && hasOpenTextDocuments && (
-        <ProblemList
-          detectedProblems={detectedProblems}
-          otherFileWithProblems={otherFileWithProblems}
-        />
-      )}
+      {detectedProblems &&
+        detectedProblems !== 0 &&
+        otherFileWithProblems &&
+        hasWorkSpaceFolders &&
+        hasOpenTextDocuments && (
+          <ProblemList
+            detectedProblems={detectedProblems}
+            otherFileWithProblems={otherFileWithProblems}
+          />
+        )}
     </>
   );
 };

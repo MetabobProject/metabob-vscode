@@ -76,7 +76,7 @@ export default class Utils {
   }
 
   static extractMetaDataFromDocument(document: vscode.TextDocument): IDocumentMetaData {
-    const filePath = document.fileName;
+    const filePath = document.uri.fsPath;
     const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
     const relativePath = workspaceFolder ? path.relative(workspaceFolder.uri.fsPath, filePath) : '';
     const fileContent = document.getText();

@@ -6,6 +6,7 @@ import { AnalyzeState, Analyze, AnalyseMetaData } from '../state';
 import Util from '../utils';
 import CONSTANTS from '../constants';
 import { getExtensionEventEmitter } from '../events';
+import debugChannel from '../debug';
 
 const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' };
 
