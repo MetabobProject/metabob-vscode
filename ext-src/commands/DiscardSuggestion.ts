@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CurrentQuestion, Analyze, Session, AnalyseMetaData } from '../state';
+import { CurrentQuestion, Analyze, Session } from '../state';
 import { GenerateDecorations, decorationType } from '../helpers/GenerateDecorations';
 import { FeedbackSuggestionPayload, feedbackService } from '../services';
 import { getExtensionEventEmitter } from '../events';
@@ -56,57 +56,50 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       endorsed: false,
     };
 
-
     copyProblems[key].isDiscarded = true;
     copyProblems[key].isEndorsed = false;
-    copyProblems[key].isViewed = true
-
+    copyProblems[key].isViewed = true;
     try {
-      analyzeState.set(copyProblems).then(async () => {
-        const results: Problem[] = [];
+      await analyzeState.set(copyProblems);
+      const results: Problem[] = [];
+      for (const [, value] of Object.entries(copyProblems)) {
+        const problem: Problem = {
+          ...value,
+          startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,
+          endLine: value.endLine < 0 ? value.endLine * -1 : value.endLine,
+          discarded: value.isDiscarded || false,
+          endorsed: value.isEndorsed || false,
+        };
 
-        for (const [, value] of Object.entries(copyProblems)) {
-          const problem: Problem = {
-            ...value,
-            discarded: value.isDiscarded || false,
-            endorsed: value.isEndorsed || false
-          };
-
-          if (!value.isDiscarded) {
-            results.push(problem);
-          }
+        if (!value.isDiscarded) {
+          results.push(problem);
         }
+      }
 
-        const { decorations } = GenerateDecorations(results, editor);
-        editor.setDecorations(decorationType, []);
-        editor.setDecorations(decorationType, decorations);
-        currentQuestion.clear();
+      const { decorations } = GenerateDecorations(results, editor);
+      editor.setDecorations(decorationType, []);
+      editor.setDecorations(decorationType, decorations);
+      currentQuestion.clear();
 
-        extensionEventEmitter.fire({
-          type: 'onDiscardSuggestionClicked:Success',
-          data: {},
-        });
-        extensionEventEmitter.fire({
-          type: 'Analysis_Completed',
-          data: copyProblems,
-        });
-        extensionEventEmitter.fire({
-          type: 'CURRENT_FILE',
-          data: { ...editor.document },
-        });
-
-        try {
-          await feedbackService.discardSuggestion(payload, session);
-          await feedbackService.readSuggestion(payload, session);
-        } catch (err: any) {
-          _debug?.appendLine(err.message);
-        }
-
-        return;
+      extensionEventEmitter.fire({
+        type: 'onDiscardSuggestionClicked:Success',
+        data: {},
       });
+      extensionEventEmitter.fire({
+        type: 'Analysis_Completed',
+        data: copyProblems,
+      });
+      extensionEventEmitter.fire({
+        type: 'CURRENT_FILE',
+        data: { ...editor.document },
+      });
+      await Promise.all([
+        feedbackService.discardSuggestion(payload, session),
+        feedbackService.readSuggestion(payload, session),
+      ]);
     } catch (error: any) {
       _debug.appendLine(error);
-
+      vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
       return;
     }
   };

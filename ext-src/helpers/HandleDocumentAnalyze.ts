@@ -6,7 +6,6 @@ import { AnalyzeState, Analyze, AnalyseMetaData } from '../state';
 import Util from '../utils';
 import CONSTANTS from '../constants';
 import { getExtensionEventEmitter } from '../events';
-import debugChannel from '../debug';
 
 const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' };
 
@@ -81,29 +80,19 @@ export const handleDocumentAnalyze = async (
     return verifiedResponse;
   }
 
-  // collect all the problems and add them to the state as separate keys
-  const analyseStateValue = analyzeState.get()?.value;
-
-  if (!analyseStateValue) {
-    getExtensionEventEmitter().fire({
-      type: 'Analysis_Error',
-      data: '',
-    });
-    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
-    return failedResponseReturn
-  }
-
-  const results: AnalyzeState = { ...analyseStateValue };
+  let results: AnalyzeState = {};
 
   verifiedResponse.results.forEach(problem => {
     const key = `${problem.path}@@${problem.id}`;
     const analyzeMetaData: AnalyseMetaData = {
       ...problem,
+      startLine: problem.startLine < 0 ? problem.startLine * -1 : problem.startLine,
+      endLine: problem.endLine < 0 ? problem.endLine * -1 : problem.endLine,
       isDiscarded: problem.discarded,
       isEndorsed: problem.endorsed,
       isViewed: false,
-    }
-    results[key] = { ...analyzeMetaData }
+    };
+    results[key] = { ...analyzeMetaData };
   });
 
   analyzeState.set(results);

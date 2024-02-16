@@ -217,6 +217,8 @@ export function activate(context: vscode.ExtensionContext): void {
         if (splitString === filename && value.isDiscarded === false) {
           const problem: Problem = {
             ...value,
+            startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,
+            endLine: value.endLine < 0 ? value.endLine * -1 : value.endLine,
             discarded: value.isDiscarded || false,
             endorsed: value.isEndorsed || false,
           };
@@ -366,6 +368,8 @@ export function activate(context: vscode.ExtensionContext): void {
         if (splitString === filename && value.isDiscarded === false) {
           const problem: Problem = {
             ...value,
+            startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,
+            endLine: value.endLine < 0 ? value.endLine * -1 : value.endLine,
             discarded: value.isDiscarded || false,
             endorsed: value.isEndorsed || false,
           };
