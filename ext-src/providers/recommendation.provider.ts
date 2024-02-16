@@ -354,7 +354,7 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     this.extensionEventEmitter.fire({
       type: 'Analysis_Completed',
-      data: { shouldResetRecomendation: true, ...getanalyzeState },
+      data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...getanalyzeState },
     });
 
     this.extensionEventEmitter.fire({

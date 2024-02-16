@@ -56,7 +56,7 @@ export const AnalyzePage = ({
       };
     });
   }, [identifiedProblems, currentEditor]);
-  console.log(otherFileWithProblems);
+
   const detectedProblems = useMemo(() => {
     if (!identifiedProblems) return undefined;
 

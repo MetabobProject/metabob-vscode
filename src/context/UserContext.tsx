@@ -30,7 +30,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
-      console.log(event.data);
       const payload = event.data.data;
       switch (event.data.type) {
         case EventDataType.NO_EDITOR_DETECTED:
