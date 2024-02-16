@@ -60,11 +60,7 @@ export const handleDocumentAnalyze = async (
       });
       vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage);
     }
-    getExtensionEventEmitter().fire({
-      type: 'Analysis_Error',
-      data: '',
-    });
-    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
+
     return failedResponseReturn;
   } else if (verifiedResponse.status === 'failed') {
     getExtensionEventEmitter().fire({
