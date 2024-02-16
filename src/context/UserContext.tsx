@@ -30,6 +30,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
+      console.log(event.data);
       const payload = event.data.data;
       switch (event.data.type) {
         case EventDataType.NO_EDITOR_DETECTED:
@@ -41,6 +42,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           setAnalysisLoading(true);
           setIdentifiedProblems({} as AnalyzeState);
+          setIdentifiedRecommendation(undefined);
           break;
         case EventDataType.FIX_SUGGESTION:
           setApplicationState(ApplicationWebviewState.SUGGESTION_MODE);
@@ -50,7 +52,15 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIsAnalysisLoading(false);
           break;
         case EventDataType.ANALYSIS_COMPLETED:
-          setIdentifiedProblems(payload as AnalyzeState);
+          const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
+          setIdentifiedProblems(problem as AnalyzeState);
+          if (shouldMoveToAnalyzePage) {
+            setIdentifiedSuggestion(undefined);
+            setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
+          }
+          if (shouldResetRecomendation) {
+            setIdentifiedRecommendation(undefined);
+          }
           setIsAnalysisLoading(false);
           break;
         case EventDataType.INIT_DATA_UPON_NEW_FILE_OPEN:
@@ -100,8 +110,9 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIsRecommendationLoading(false);
           break;
         case EventDataType.DISCARD_SUGGESTION_SUCCESS: {
+          setIdentifiedRecommendation(undefined);
+          setIdentifiedSuggestion(undefined);
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
-          setIdentifiedSuggestion(payload as FixSuggestionsPayload);
           break;
         }
         case EventDataType.DISCARD_SUGGESTION_ERROR: {

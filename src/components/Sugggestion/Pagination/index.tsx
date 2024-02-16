@@ -1,4 +1,5 @@
-import { Box, Button, ButtonGroup } from '@mui/material';
+import { Box, Button, ButtonGroup, SxProps } from '@mui/material';
+import { useMemo } from 'react';
 
 interface RecommendationPaginationProps {
   gotoNextPage: () => void;
@@ -23,6 +24,30 @@ export const RecommendationPagination = ({
   // Disable right arrow if on the last page
   const isRightArrowDisabled = currentPage >= totalPages - 1;
 
+  const leftButtonSxProps = useMemo(() => {
+    if (isLeftArrowDisabled === true) {
+      return {
+        backgroundColor: `rgb(105,105,105) !important`,
+      } as SxProps;
+    }
+
+    return {
+      backgroundColor: `rgb(19, 96, 196)`,
+    } as SxProps;
+  }, [isLeftArrowDisabled]);
+
+  const rightButtonSxProps = useMemo(() => {
+    if (isRightArrowDisabled === true) {
+      return {
+        backgroundColor: `rgb(105,105,105) !important`,
+      } as SxProps;
+    }
+
+    return {
+      backgroundColor: `rgb(19, 96, 196)`,
+    } as SxProps;
+  }, [isRightArrowDisabled]);
+
   return (
     <>
       <Box
@@ -39,7 +64,12 @@ export const RecommendationPagination = ({
               justifyContent: 'flex-start',
             }}
           >
-            <Button color='primary' onClick={gotoPreviousPage} disabled={isLeftArrowDisabled}>
+            <Button
+              color='primary'
+              onClick={gotoPreviousPage}
+              disabled={isLeftArrowDisabled}
+              sx={leftButtonSxProps}
+            >
               <svg
                 width='25'
                 height='8'
@@ -53,7 +83,12 @@ export const RecommendationPagination = ({
                 />
               </svg>
             </Button>
-            <Button color='primary' onClick={gotoNextPage} disabled={isRightArrowDisabled}>
+            <Button
+              color='primary'
+              onClick={gotoNextPage}
+              disabled={isRightArrowDisabled}
+              sx={rightButtonSxProps}
+            >
               <svg
                 width='25'
                 height='8'

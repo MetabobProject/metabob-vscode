@@ -42,7 +42,7 @@ export function activateEndorseCommand(
       await analyzeState.set(copyProblems)
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
-        data: { ...copyProblems }
+        data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...copyProblems }
       })
     } catch {
       _debug?.appendLine(`Metabob: Error Endorsing Problem With ${args.id}`);

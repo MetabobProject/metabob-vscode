@@ -37,7 +37,7 @@ export async function AnalyzeDocumentOnSave(
   let isInQueue = false;
 
   const jobId = await Util.withProgress<SubmitRepresentationResponse>(
-    handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, undefined, true),
+    handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, undefined, true),
     CONSTANTS.analyzeCommandProgressMessage,
   ).then(response => {
     if (response.status === 'pending' || response.status === 'running') {
@@ -51,7 +51,7 @@ export async function AnalyzeDocumentOnSave(
 
   if (isInQueue) {
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, jobId, true),
+      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, jobId, true),
       CONSTANTS.analyzeCommandQueueMessage,
     ).then(response => {
       if (response.status === 'complete' || response.status === 'failed') {

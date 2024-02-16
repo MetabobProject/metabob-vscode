@@ -176,9 +176,9 @@ export function activate(context: vscode.ExtensionContext): void {
       const isValidEditor = Util.isValidDocument(editor.document);
 
       if (isValidEditor) {
-        extensionEventEmitter.fire({
+        getExtensionEventEmitter().fire({
           type: 'Analysis_Completed',
-          data: analyzeValue,
+          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
@@ -236,9 +236,9 @@ export function activate(context: vscode.ExtensionContext): void {
           },
         });
 
-        extensionEventEmitter.fire({
+        getExtensionEventEmitter().fire({
           type: 'Analysis_Completed',
-          data: analyzeValue,
+          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
 
         extensionEventEmitter.fire({
@@ -260,9 +260,9 @@ export function activate(context: vscode.ExtensionContext): void {
         },
       });
 
-      extensionEventEmitter.fire({
+      getExtensionEventEmitter().fire({
         type: 'Analysis_Completed',
-        data: { ...analyzeValue },
+        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
@@ -271,69 +271,69 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  context.subscriptions.push(
-    vscode.window.onDidChangeTextEditorSelection(() => {
-      if (!isChangingSelection) {
-        // Set a flag to prevent recursive loop
-        isChangingSelection = true;
+  // context.subscriptions.push(
+  //   vscode.window.onDidChangeTextEditorSelection(() => {
+  //     if (!isChangingSelection) {
+  //       // Set a flag to prevent recursive loop
+  //       isChangingSelection = true;
 
-        // Check if there is an active text editor
-        const currentEditor = vscode.window.activeTextEditor;
-        if (!currentEditor) {
-          // Set a flag to prevent recursive loop
-          isChangingSelection = false;
-          return
-        };
+  //       // Check if there is an active text editor
+  //       const currentEditor = vscode.window.activeTextEditor;
+  //       if (!currentEditor) {
+  //         // Set a flag to prevent recursive loop
+  //         isChangingSelection = false;
+  //         return
+  //       };
 
-        if (!Util.isValidDocument(currentEditor.document)) {
-          // Set a flag to prevent recursive loop
-          isChangingSelection = false;
-          return
-        };
+  //       if (!Util.isValidDocument(currentEditor.document)) {
+  //         // Set a flag to prevent recursive loop
+  //         isChangingSelection = false;
+  //         return
+  //       };
 
-        const documentMetaData = Util.extractMetaDataFromDocument(currentEditor.document);
+  //       const documentMetaData = Util.extractMetaDataFromDocument(currentEditor.document);
 
-        const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
+  //       const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
 
-        if (!filename) {
-          // Set a flag to prevent recursive loop
-          isChangingSelection = false;
-          return
-        };;
+  //       if (!filename) {
+  //         // Set a flag to prevent recursive loop
+  //         isChangingSelection = false;
+  //         return
+  //       };;
 
-        const analyzeState = new Analyze(context);
+  //       const analyzeState = new Analyze(context);
 
-        const analyzeValue = analyzeState.get()?.value;
+  //       const analyzeValue = analyzeState.get()?.value;
 
-        if (!analyzeValue) {
-          // Set a flag to prevent recursive loop
-          isChangingSelection = false;
-          return
-        };;
+  //       if (!analyzeValue) {
+  //         // Set a flag to prevent recursive loop
+  //         isChangingSelection = false;
+  //         return
+  //       };;
 
-        extensionEventEmitter.fire({
-          type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
-          data: {
-            hasOpenTextDocuments: true,
-            hasWorkSpaceFolders: true,
-          },
-        });
+  //       extensionEventEmitter.fire({
+  //         type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+  //         data: {
+  //           hasOpenTextDocuments: true,
+  //           hasWorkSpaceFolders: true,
+  //         },
+  //       });
 
-        extensionEventEmitter.fire({
-          type: 'Analysis_Completed',
-          data: analyzeValue,
-        });
+  //       getExtensionEventEmitter().fire({
+  //         type: 'Analysis_Completed',
+  //         data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...analyzeValue },
+  //       });
 
-        extensionEventEmitter.fire({
-          type: 'CURRENT_FILE',
-          data: { ...currentEditor.document },
-        });
+  //       extensionEventEmitter.fire({
+  //         type: 'CURRENT_FILE',
+  //         data: { ...currentEditor.document },
+  //       });
 
-        // Reset the flag after your logic is executed
-        isChangingSelection = false;
-      }
-    }),
-  );
+  //       // Reset the flag after your logic is executed
+  //       isChangingSelection = false;
+  //     }
+  //   }),
+  // );
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor(currentEditor => {
@@ -387,9 +387,9 @@ export function activate(context: vscode.ExtensionContext): void {
           },
         });
 
-        extensionEventEmitter.fire({
+        getExtensionEventEmitter().fire({
           type: 'Analysis_Completed',
-          data: analyzeValue,
+          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
@@ -410,9 +410,9 @@ export function activate(context: vscode.ExtensionContext): void {
         },
       });
 
-      extensionEventEmitter.fire({
+      getExtensionEventEmitter().fire({
         type: 'Analysis_Completed',
-        data: { ...analyzeValue },
+        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
@@ -441,5 +441,5 @@ export function deactivate(): void {
   decorationType.dispose();
   disposeExtensionEventEmitter();
   previousEditor = undefined;
-  isChangingSelection = false
+  isChangingSelection = false;
 }

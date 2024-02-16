@@ -46,7 +46,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.extensionURI = extensionURI;
     this.extensionContext = context;
 
-    // this.extensionContext.globalState.update(CONSTANTS.webview, this);
     this.extensionEventEmitter = extensionEventEmitter;
   }
 
@@ -318,8 +317,17 @@ export class RecommendationWebView implements WebviewViewProvider {
     });
   }
 
-  postInitData(initData: CurrentQuestionState | undefined): void {
-    if (this._view === null || this._view === undefined || this._view.webview === undefined) {
+  postInitData(): void {
+    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
+    const currentEditor = window.activeTextEditor;
+
+    if (
+      this._view === null ||
+      this._view === undefined ||
+      this._view.webview === undefined ||
+      !currentEditor ||
+      this._view.visible === false
+    ) {
       return;
     }
 
@@ -329,12 +337,30 @@ export class RecommendationWebView implements WebviewViewProvider {
       hasWorkSpaceFolders?: boolean;
     } = {};
 
-    if (initData) {
-      initPayload.initData = initData;
+    if (getanalyzeState) {
+      initPayload.initData = { ...getanalyzeState };
     }
 
     initPayload.hasOpenTextDocuments = Util.hasOpenTextDocuments();
     initPayload.hasWorkSpaceFolders = Util.hasWorkspaceFolder();
+
+    this.extensionEventEmitter.fire({
+      type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+      data: {
+        hasOpenTextDocuments: true,
+        hasWorkSpaceFolders: true,
+      },
+    });
+
+    this.extensionEventEmitter.fire({
+      type: 'Analysis_Completed',
+      data: { shouldResetRecomendation: true, ...getanalyzeState },
+    });
+
+    this.extensionEventEmitter.fire({
+      type: 'CURRENT_FILE',
+      data: { ...currentEditor.document },
+    });
 
     this._view.webview
       .postMessage({
@@ -344,6 +370,7 @@ export class RecommendationWebView implements WebviewViewProvider {
       .then(undefined, err => {
         window.showErrorMessage(err);
       });
+
   }
 
   handleApplyRecommendation(input: string, initData: CurrentQuestionState): void {
@@ -476,8 +503,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           break;
         }
         case 'getInitData': {
-          const state = this.getCurrentQuestionValue();
-          this.postInitData(state);
+          this.postInitData();
           break;
         }
         case 'initData:FixRecieved': {

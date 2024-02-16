@@ -108,7 +108,7 @@ export const registerTheme = () => {
       text: {
         primary: `rgba(${mainColor}, 0.87)`,
         secondary: `rgba(${mainColor}, 0.68)`,
-        disabled: `rgba(${mainColor}, 0.46)`,
+        disabled: `rgba(#DCDCDC, 0.46)`,
       },
       divider: `rgba(${mainColor}, 0.12)`,
       background: {
@@ -119,8 +119,8 @@ export const registerTheme = () => {
         active: `rgba(#1360C4, 0.54)`,
         hover: `rgba(#1360C4, 0.04)`,
         selected: `rgba(#1360C4, 0.08)`,
-        disabled: `rgba(#A0A0A0, 0.3)`,
-        disabledBackground: `rgba(#A0A0A0, 0.18)`,
+        disabled: `rgba(#696969, 0.46)`,
+        disabledBackground: `rgba(#696969, 0.18)`,
         focus: `rgba(#1360C4, 0.12)`,
       },
     },

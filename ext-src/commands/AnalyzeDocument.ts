@@ -7,6 +7,7 @@ import CONSTANTS from '../constants';
 import Util from '../utils';
 import { getExtensionEventEmitter } from '../events';
 
+
 export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.analyzeDocumentCommand;
 
@@ -54,8 +55,9 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
 
     debugChannel.appendLine(`Metabob: Starting Analysis for ${documentMetaData.filePath}`);
 
+
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState),
+      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context),
       CONSTANTS.analyzeCommandProgressMessage,
     ).then(response => {
       if (response.status === 'pending' || response.status === 'running') {
@@ -69,7 +71,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
     }
 
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, inflightJobId),
+      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, inflightJobId,),
       CONSTANTS.analyzeCommandQueueMessage,
     ).then(response => {
       debugChannel.appendLine(response.status);
@@ -77,10 +79,6 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
       switch (response.status) {
         case 'failed':
         case 'complete': {
-          extensionEventEmitter.fire({
-            type: 'Analysis_Error',
-            data: 'Session Token is undefined',
-          });
           isInQueue = false;
           break;
         }

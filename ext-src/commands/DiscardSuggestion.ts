@@ -85,10 +85,12 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
         type: 'onDiscardSuggestionClicked:Success',
         data: {},
       });
-      extensionEventEmitter.fire({
+
+      getExtensionEventEmitter().fire({
         type: 'Analysis_Completed',
-        data: copyProblems,
+        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...copyProblems },
       });
+
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
         data: { ...editor.document },

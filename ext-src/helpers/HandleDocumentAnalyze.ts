@@ -27,6 +27,7 @@ export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string,
   analyzeState: Analyze,
+  context: vscode.ExtensionContext,
   jobId?: string,
   suppressRateLimitErrors = false,
 ) => {
@@ -81,19 +82,44 @@ export const handleDocumentAnalyze = async (
   }
 
   let results: AnalyzeState = {};
+  const analyzeStateValue = new Analyze(context).get()?.value;
 
-  verifiedResponse.results.forEach(problem => {
-    const key = `${problem.path}@@${problem.id}`;
-    const analyzeMetaData: AnalyseMetaData = {
-      ...problem,
-      startLine: problem.startLine < 0 ? problem.startLine * -1 : problem.startLine,
-      endLine: problem.endLine < 0 ? problem.endLine * -1 : problem.endLine,
-      isDiscarded: problem.discarded,
-      isEndorsed: problem.endorsed,
-      isViewed: false,
-    };
-    results[key] = { ...analyzeMetaData };
-  });
+  if (analyzeStateValue) {
+    const aggregatedProblemsFilePaths = verifiedResponse.results.map(problem => {
+      return problem.path;
+    });
+
+    let buggerAnalyzeStateValue: AnalyzeState = {};
+
+    Object.keys(analyzeStateValue).forEach(key => {
+      const problem = analyzeStateValue[key];
+      if (!aggregatedProblemsFilePaths.includes(problem.path)) {
+        buggerAnalyzeStateValue[key] = { ...problem };
+      }
+    });
+    results = { ...buggerAnalyzeStateValue };
+  }
+
+  verifiedResponse.results
+    .filter(vulnerability => {
+      const { endLine, startLine } = vulnerability;
+      if (endLine - 1 < 0 || startLine - 1 < 0) {
+        return false;
+      }
+      return true;
+    })
+    .forEach(problem => {
+      const key = `${problem.path}@@${problem.id}`;
+      const analyzeMetaData: AnalyseMetaData = {
+        ...problem,
+        startLine: problem.startLine < 0 ? problem.startLine * -1 : problem.startLine,
+        endLine: problem.endLine < 0 ? problem.endLine * -1 : problem.endLine,
+        isDiscarded: problem.discarded,
+        isEndorsed: problem.endorsed,
+        isViewed: false,
+      };
+      results[key] = { ...analyzeMetaData };
+    });
 
   analyzeState.set(results);
 
@@ -107,7 +133,7 @@ export const handleDocumentAnalyze = async (
 
   getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
-    data: results,
+    data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...results },
   });
 
   return verifiedResponse;

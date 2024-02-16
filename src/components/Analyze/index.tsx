@@ -56,7 +56,7 @@ export const AnalyzePage = ({
       };
     });
   }, [identifiedProblems, currentEditor]);
-
+  console.log(otherFileWithProblems);
   const detectedProblems = useMemo(() => {
     if (!identifiedProblems) return undefined;
 
@@ -65,7 +65,11 @@ export const AnalyzePage = ({
     return Object.keys(identifiedProblems).filter(problemKey => {
       const problem = identifiedProblems[problemKey];
       const splitString: string | undefined = problemKey.split('@@')[0];
-      if (splitString === undefined) return false;
+
+      if (splitString === undefined || problem.endLine - 1 < 0 || problem.startLine - 1 < 0) {
+        return false;
+      }
+
       if (splitString === currentEditor && problem.isDiscarded === false) {
         return true;
       }

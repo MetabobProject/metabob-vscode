@@ -68,9 +68,9 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
         },
       });
 
-      extensionEventEmitter.fire({
+      getExtensionEventEmitter().fire({
         type: 'Analysis_Completed',
-        data: copiedAnalyzeValue,
+        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false, ...copiedAnalyzeValue },
       });
 
       extensionEventEmitter.fire({
