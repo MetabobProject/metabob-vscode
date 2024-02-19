@@ -370,59 +370,55 @@ export class RecommendationWebView implements WebviewViewProvider {
       .then(undefined, err => {
         window.showErrorMessage(err);
       });
-
   }
 
-  handleApplyRecommendation(input: string, initData: CurrentQuestionState): void {
-    const editor = window.activeTextEditor;
-    if (!editor || !initData) {
+  async handleApplyRecommendation(input: string, initData: CurrentQuestionState) {
+    const documentMetadata = Util.getFileNameFromCurrentEditor();
+    if (!documentMetadata || !initData) {
       throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
+    }
+
+    const key = `${initData.path}@@${initData.id}`;
+    if (documentMetadata.fileName !== initData.path) {
+      throw new Error('handleApplyRecommendation: User editor changed');
     }
 
     const setAnalyzeState = new Analyze(this.extensionContext);
     const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
-
     if (!getanalyzeState) {
-      throw new Error('Analze is undefined');
+      throw new Error('handleApplyRecommendation: Analze is undefined');
     }
 
     const copyAnalyzeValue = { ...getanalyzeState };
-
-    const key = `${initData.path}@@${initData.id}`;
     copyAnalyzeValue[key].isDiscarded = true;
+    copyAnalyzeValue[key].isEndorsed = false;
+    copyAnalyzeValue[key].isViewed = true;
 
-    const results: Problem[] = [];
-
-    for (const [, value] of Object.entries(copyAnalyzeValue)) {
-      const problem: Problem = {
-        ...value,
-        discarded: value.isDiscarded || false,
-        endorsed: value.isEndorsed || false,
-      };
-
-      if (!value.isDiscarded) {
-        results.push(problem);
-      }
+    const results: Problem[] | undefined = Util.getCurrentEditorProblems(
+      copyAnalyzeValue,
+      initData.path,
+    );
+    if (!results) {
+      throw new Error('handleApplyRecommendation: Results are undefined');
     }
 
-    setAnalyzeState.set({ ...copyAnalyzeValue }).then(() => {
-      const startLine = initData.vuln.startLine;
-      const endLine = initData.vuln.endLine;
-      const comment = `${input.replace('```', '')}`;
+    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(results, documentMetadata.editor)
 
-      const start = new Position(startLine - 1, 0); // convert line number to position
-      const end = new Position(endLine, 0); // convert line number to position
-      const range = new Range(start, end);
+    if (!isCurrentFileDecorated) {
+      throw new Error('handleApplyRecommendation: could not decorate current file');
+    }
 
-      const { decorations } = GenerateDecorations(results, editor);
-
-      editor.setDecorations(decorationType, []);
-      editor.setDecorations(decorationType, decorations);
-
-      editor.edit((editBuilder: TextEditorEdit) => {
-        editBuilder.replace(range, comment + '\n');
-      });
+    // Immediately replace suggested recommendation in the editor
+    const startLine = initData.vuln.startLine;
+    const endLine = initData.vuln.endLine;
+    const comment = `${input.replace('```', '')}`;
+    const start = new Position(startLine - 1, 0); // convert line number to position
+    const end = new Position(endLine, 0); // convert line number to position
+    const range = new Range(start, end);
+    documentMetadata.editor.edit((editBuilder: TextEditorEdit) => {
+      editBuilder.replace(range, comment + '\n');
     });
+    await setAnalyzeState.set({ ...copyAnalyzeValue });
   }
 
   async openExternalLink(url: string): Promise<void> {
@@ -575,7 +571,7 @@ export class RecommendationWebView implements WebviewViewProvider {
             this.handleApplyRecommendation(input, initData);
           } catch (error: any) {
             debugChannel.appendLine(`Metabob: Apply Recommendation Error ${JSON.stringify(error)}`);
-
+            window.showErrorMessage(`${CONSTANTS.applyRecommendationEror}`);
             this._view.webview.postMessage({
               type: 'applyRecommendation:Error',
               data: {},

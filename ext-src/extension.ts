@@ -187,6 +187,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
   );
+
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(() => {
       let currentEditor = Util.getFileNameFromCurrentEditor();
@@ -252,47 +253,21 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(currentEditor => {
-      if (!currentEditor) return;
-
-      if (!Util.isValidDocument(currentEditor.document)) {
-        return;
-      }
-
-      const documentMetaData = Util.extractMetaDataFromDocument(currentEditor.document);
-
-      const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
-
-      if (!filename) return;
-
-      const analyzeState = new Analyze(context);
-
-      const analyzeValue = analyzeState.get()?.value;
-
-      if (!analyzeValue) return;
-
+    vscode.window.onDidChangeActiveTextEditor(() => {
       if (previousEditor) {
         previousEditor.setDecorations(decorationType, []);
       }
 
-      const results: Problem[] = [];
+      const documentMetaData = Util.getFileNameFromCurrentEditor();
+      if (!documentMetaData) return
 
-      for (const [key, value] of Object.entries(analyzeValue)) {
-        const splitString: string | undefined = key.split('@@')[0];
-        if (splitString === undefined) continue;
+      const analyzeState = new Analyze(context);
+      const analyzeValue = analyzeState.get()?.value;
+      if (!analyzeValue) return;
 
-        if (splitString === filename && value.isDiscarded === false) {
-          const problem: Problem = {
-            ...value,
-            startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,
-            endLine: value.endLine < 0 ? value.endLine * -1 : value.endLine,
-            discarded: value.isDiscarded || false,
-            endorsed: value.isEndorsed || false,
-          };
 
-          results.push(problem);
-        }
-      }
+      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, documentMetaData.fileName)
+      if (!results) return
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
@@ -309,15 +284,14 @@ export function activate(context: vscode.ExtensionContext): void {
         });
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...currentEditor.document },
+          data: { ...documentMetaData.editor.document },
         });
         return;
       }
 
-      const { decorations } = GenerateDecorations(results, currentEditor);
+      const isProblemsDecorated = Util.decorateCurrentEditorWithHighlights(results, documentMetaData.editor);
+      if (!isProblemsDecorated) return
 
-      currentEditor.setDecorations(decorationType, []);
-      currentEditor.setDecorations(decorationType, decorations);
       extensionEventEmitter.fire({
         type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
         data: {
@@ -330,11 +304,12 @@ export function activate(context: vscode.ExtensionContext): void {
         type: 'Analysis_Completed',
         data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
+
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...currentEditor.document },
+        data: { ...documentMetaData.editor.document },
       });
-      previousEditor = currentEditor;
+      previousEditor = documentMetaData.editor;
     }),
   );
 

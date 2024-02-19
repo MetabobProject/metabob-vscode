@@ -22,6 +22,7 @@ const CONSTANTS = {
   analyzeCommandQueueMessage: 'Metabob: Document is Queued',
   analyzeCommandErrorMessage: 'Metabob: Error Analyzing the Document',
   analyzeCommandTimeoutMessage: 'Metabob: Looks like the server is overloaded, please try again later',
+  applyRecommendationEror: 'Metabob: Could not apply recommendation to file',
 
   // Error Constants
   editorNotSelectorError: 'Metabob: kindly select an editor to perform this command',
