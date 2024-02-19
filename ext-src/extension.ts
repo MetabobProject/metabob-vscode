@@ -189,18 +189,8 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(() => {
-      const currentEditor = vscode.window.activeTextEditor;
+      let currentEditor = Util.getFileNameFromCurrentEditor();
       if (!currentEditor) return;
-
-      if (!Util.isValidDocument(currentEditor.document)) {
-        return;
-      }
-
-      const documentMetaData = Util.extractMetaDataFromDocument(currentEditor.document);
-
-      const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
-
-      if (!filename) return;
 
       const analyzeState = new Analyze(context);
 
@@ -208,24 +198,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
       if (!analyzeValue) return;
 
-      const results: Problem[] = [];
+      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, currentEditor.fileName)
 
-      for (const [key, value] of Object.entries(analyzeValue)) {
-        const splitString: string | undefined = key.split('@@')[0];
-        if (splitString === undefined) continue;
-
-        if (splitString === filename && value.isDiscarded === false) {
-          const problem: Problem = {
-            ...value,
-            startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,
-            endLine: value.endLine < 0 ? value.endLine * -1 : value.endLine,
-            discarded: value.isDiscarded || false,
-            endorsed: value.isEndorsed || false,
-          };
-
-          results.push(problem);
-        }
-      }
+      if (!results) return;
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
@@ -241,17 +216,20 @@ export function activate(context: vscode.ExtensionContext): void {
           data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
 
+        const editor = vscode.window.activeTextEditor;
+        if (!editor?.document) return;
+
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...currentEditor.document },
+          data: { ...editor.document },
         });
         return;
       }
 
-      const { decorations } = GenerateDecorations(results, currentEditor);
+      const isProblemsDecorated = Util.decorateCurrentEditorWithHighlights(results, currentEditor.editor);
 
-      currentEditor.setDecorations(decorationType, []);
-      currentEditor.setDecorations(decorationType, decorations);
+      if (!isProblemsDecorated) return
+
       extensionEventEmitter.fire({
         type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
         data: {
@@ -264,76 +242,14 @@ export function activate(context: vscode.ExtensionContext): void {
         type: 'Analysis_Completed',
         data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
+
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...currentEditor.document },
+        data: { ...currentEditor.editor.document },
       });
+
     }),
   );
-
-  // context.subscriptions.push(
-  //   vscode.window.onDidChangeTextEditorSelection(() => {
-  //     if (!isChangingSelection) {
-  //       // Set a flag to prevent recursive loop
-  //       isChangingSelection = true;
-
-  //       // Check if there is an active text editor
-  //       const currentEditor = vscode.window.activeTextEditor;
-  //       if (!currentEditor) {
-  //         // Set a flag to prevent recursive loop
-  //         isChangingSelection = false;
-  //         return
-  //       };
-
-  //       if (!Util.isValidDocument(currentEditor.document)) {
-  //         // Set a flag to prevent recursive loop
-  //         isChangingSelection = false;
-  //         return
-  //       };
-
-  //       const documentMetaData = Util.extractMetaDataFromDocument(currentEditor.document);
-
-  //       const filename: string | undefined = documentMetaData.relativePath.split('/').pop();
-
-  //       if (!filename) {
-  //         // Set a flag to prevent recursive loop
-  //         isChangingSelection = false;
-  //         return
-  //       };;
-
-  //       const analyzeState = new Analyze(context);
-
-  //       const analyzeValue = analyzeState.get()?.value;
-
-  //       if (!analyzeValue) {
-  //         // Set a flag to prevent recursive loop
-  //         isChangingSelection = false;
-  //         return
-  //       };;
-
-  //       extensionEventEmitter.fire({
-  //         type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
-  //         data: {
-  //           hasOpenTextDocuments: true,
-  //           hasWorkSpaceFolders: true,
-  //         },
-  //       });
-
-  //       getExtensionEventEmitter().fire({
-  //         type: 'Analysis_Completed',
-  //         data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...analyzeValue },
-  //       });
-
-  //       extensionEventEmitter.fire({
-  //         type: 'CURRENT_FILE',
-  //         data: { ...currentEditor.document },
-  //       });
-
-  //       // Reset the flag after your logic is executed
-  //       isChangingSelection = false;
-  //     }
-  //   }),
-  // );
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor(currentEditor => {

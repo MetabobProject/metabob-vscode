@@ -5,6 +5,7 @@ import { Analyze, CurrentQuestion, CurrentQuestionState, Session } from '../stat
 import { Problem } from '../types';
 import { getExtensionEventEmitter } from '../events';
 import { FeedbackSuggestionPayload, feedbackService } from '../services';
+import Utils from '../utils';
 
 export function activateDetailSuggestionCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.showDetailSuggestionCommand;
@@ -15,36 +16,31 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     vuln: Problem;
     jobId: string;
   }) => {
-    _debug.appendLine(`Detail initiated for ${args.path} with Problem ${args.id} `);
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
-
-      return;
-    }
-
-    vscode.commands.executeCommand('recommendation-panel-webview.focus');
     const key = `${args.path}@@${args.id}`;
     const setAnalyzeState = new Analyze(context);
     const analyzeStateValue = new Analyze(context).get()?.value;
     const sessionToken = new Session(context).get()?.value;
     const extensionEventEmitter = getExtensionEventEmitter();
 
-    if (!sessionToken) {
+    _debug.appendLine(`Detail initiated for ${args.path} with Problem ${args.id} `);
+
+    const documentMetaData = Utils.getFileNameFromCurrentEditor();
+
+    if (!documentMetaData) {
+      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
+      return
+    }
+
+    if (!sessionToken || !analyzeStateValue) {
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...editor.document },
+        data: { ...documentMetaData.editor.document },
       });
+      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
       return;
     }
 
-    if (!analyzeStateValue) {
-      extensionEventEmitter.fire({
-        type: 'CURRENT_FILE',
-        data: { ...editor.document },
-      });
-      return;
-    }
+    vscode.commands.executeCommand('recommendation-panel-webview.focus');
 
     const copiedAnalyzeValue = { ...analyzeStateValue };
 
@@ -70,27 +66,23 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
 
       getExtensionEventEmitter().fire({
         type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false, ...copiedAnalyzeValue },
+        data: {
+          shouldResetRecomendation: true,
+          shouldMoveToAnalyzePage: false,
+          ...copiedAnalyzeValue,
+        },
       });
 
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...editor.document },
+        data: { ...documentMetaData.editor.document },
       });
     }, 500);
 
-    const currentQuestionState = new CurrentQuestion(context);
-    const payload: CurrentQuestionState = {
-      path: args.path,
-      id: args.id,
-      vuln: args.vuln,
-      isFix: false,
-      isReset: false,
-    };
-
-    await feedbackService.readSuggestion(readSuggestionPayload, sessionToken);
-    await setAnalyzeState.set(copiedAnalyzeValue);
-    await currentQuestionState.set(payload);
+    await Promise.allSettled([
+      feedbackService.readSuggestion(readSuggestionPayload, sessionToken),
+      setAnalyzeState.set(copiedAnalyzeValue),
+    ]);
   };
 
   context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));

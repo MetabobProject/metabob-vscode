@@ -9,8 +9,9 @@ import {
   ProgressLocation,
   ExtensionContext,
 } from 'vscode';
-import { GenerateDecorations } from './helpers';
+import { GenerateDecorations, decorationType } from './helpers';
 import CONSTANTS from './constants';
+import { AnalyzeState } from './state';
 
 // Normal Utilities used shared across folders
 export default class Utils {
@@ -125,5 +126,64 @@ export default class Utils {
     return vscode.workspace.openTextDocument(uri).then(document => {
       return vscode.window.showTextDocument(document, vscode.ViewColumn.One);
     });
+  }
+
+  static getFileNameFromCurrentEditor(): {
+    fileName: string;
+    editor: vscode.TextEditor
+  } | undefined {
+    const editor = vscode.window.activeTextEditor
+    if (!editor) return undefined;
+    if (!this.isValidDocument(editor.document)) {
+      return undefined;
+    }
+
+    let documentMetaData = this.extractMetaDataFromDocument(editor.document);
+    let fileName: string | undefined = documentMetaData.relativePath.split('/').pop();
+    if (!fileName) return undefined
+
+    return {
+      fileName,
+      editor
+    }
+  }
+
+  static getCurrentEditorProblems(analyzeValue: AnalyzeState, problemFileName: string): Problem[] | undefined {
+    const results: Problem[] = [];
+
+    for (const [key, value] of Object.entries(analyzeValue)) {
+      const fileNameFromKey: string | undefined = key.split('@@')[0];
+      if (fileNameFromKey === undefined) continue;
+
+      // verifying that we only show current opened file decorations that are not discarded.
+      if (fileNameFromKey === problemFileName && value.isDiscarded === false) {
+        const problem: Problem = {
+          ...value,
+          startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,
+          endLine: value.endLine < 0 ? value.endLine * -1 : value.endLine,
+          discarded: value.isDiscarded || false,
+          endorsed: value.isEndorsed || false,
+        };
+
+        results.push(problem);
+      }
+    }
+
+    return results
+  }
+
+  static decorateCurrentEditorWithHighlights(problems: Problem[], problemEditor: vscode.TextEditor): boolean {
+    const currentEditor = vscode.window.activeTextEditor;
+    if (!currentEditor) return false;
+
+    const isUserOnProblemEditor = problemEditor.document.fileName === currentEditor.document.fileName
+
+    if (!isUserOnProblemEditor) return false;
+
+    const { decorations } = GenerateDecorations(problems, currentEditor);
+    problemEditor.setDecorations(decorationType, []);
+    problemEditor.setDecorations(decorationType, decorations);
+
+    return false
   }
 }

@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { CurrentQuestion, Analyze, Session } from '../state';
-import { GenerateDecorations, decorationType } from '../helpers/GenerateDecorations';
 import { FeedbackSuggestionPayload, feedbackService } from '../services';
 import { getExtensionEventEmitter } from '../events';
 import CONSTANTS from '../constants';
@@ -14,39 +13,36 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.discardSuggestionCommand;
 
   const commandHandler = async (args: DiscardCommandHandler) => {
+    const analyzeState = new Analyze(context);
+    const problems = analyzeState.get()?.value;
+
+    if (!problems) {
+      _debug?.appendLine('Metabob: Problems is undefined in Discard Suggestion');
+      vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
+      return;
+    }
+
+    const currentQuestion = new CurrentQuestion(context);
     const extensionEventEmitter = getExtensionEventEmitter();
     const { id: problemId, path } = args;
     const key = `${path}@@${problemId}`;
 
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
-
-      return;
-    }
-
-    if (!Utils.isValidDocument(editor.document)) {
-      _debug?.appendLine(CONSTANTS.editorSelectedIsInvalid);
-
-      return;
-    }
-
     const session = new Session(context).get()?.value;
     if (!session) {
       _debug?.appendLine('Metabob: Session is undefined in Discard Suggestion');
-
+      vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
       return;
     }
 
-    const analyzeState = new Analyze(context);
-    const currentQuestion = new CurrentQuestion(context);
-
-    const problems = analyzeState.get()?.value;
-    if (!problems) {
-      _debug?.appendLine('Metabob: Problems is undefined in Discard Suggestion');
-
+    // verifying that in-fact user viewing problem.path file.
+    const documentMetaData = Utils.getFileNameFromCurrentEditor();
+    if (!documentMetaData) {
+      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
       return;
     }
+
+    const filename: string | undefined = documentMetaData.fileName;
+    const isUserOnProblemFile: boolean = filename === path;
 
     const copyProblems = { ...problems };
 
@@ -56,31 +52,24 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       endorsed: false,
     };
 
+    // Updating the state with discarded problem values.
     copyProblems[key].isDiscarded = true;
     copyProblems[key].isEndorsed = false;
     copyProblems[key].isViewed = true;
-    try {
-      await analyzeState.set(copyProblems);
-      const results: Problem[] = [];
-      for (const [, value] of Object.entries(copyProblems)) {
-        const problem: Problem = {
-          ...value,
-          startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,
-          endLine: value.endLine < 0 ? value.endLine * -1 : value.endLine,
-          discarded: value.isDiscarded || false,
-          endorsed: value.isEndorsed || false,
-        };
 
-        if (!value.isDiscarded) {
-          results.push(problem);
-        }
-      }
+    // Filtering the problem that are not not supported by vscode. Line range should be in range [0, lineNumber].
+    const results: Problem[] | undefined = Utils.getCurrentEditorProblems(copyProblems, path);
+    if (!results) {
+      vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
+      return;
+    }
 
-      const { decorations } = GenerateDecorations(results, editor);
-      editor.setDecorations(decorationType, []);
-      editor.setDecorations(decorationType, decorations);
-      currentQuestion.clear();
+    const isDecorationsApplied = Utils.decorateCurrentEditorWithHighlights(
+      results,
+      documentMetaData.editor,
+    );
 
+    if (isUserOnProblemFile && isDecorationsApplied) {
       extensionEventEmitter.fire({
         type: 'onDiscardSuggestionClicked:Success',
         data: {},
@@ -93,17 +82,17 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
 
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...editor.document },
+        data: { ...documentMetaData.editor.document },
       });
-      await Promise.all([
-        feedbackService.discardSuggestion(payload, session),
-        feedbackService.readSuggestion(payload, session),
-      ]);
-    } catch (error: any) {
-      _debug.appendLine(error);
-      vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
-      return;
     }
+
+    await Promise.allSettled([
+      analyzeState.set(copyProblems),
+      feedbackService.discardSuggestion(payload, session),
+      feedbackService.readSuggestion(payload, session),
+    ]);
+
+    currentQuestion.clear();
   };
 
   context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));
