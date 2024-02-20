@@ -299,9 +299,7 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      const isApplied = Util.decorateCurrentEditorWithHighlights(results, e);
-      debugChannel.appendLine('onDidChangeActiveTextEditor: ' + isApplied);
-
+      Util.decorateCurrentEditorWithHighlights(results, e);
       extensionEventEmitter.fire({
         type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
         data: {

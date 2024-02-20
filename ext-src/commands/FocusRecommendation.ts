@@ -12,7 +12,6 @@ export function activateFocusRecommendCommand(context: vscode.ExtensionContext):
     const { id, vuln, path } = args;
     const key = `${path}@@${id}`;
     _debug?.appendLine(`Current Detection Set for ${path} with Problem ${id} `);
-    const extensionEventEmitter = getExtensionEventEmitter();
 
     const analyzeState = new Analyze(context);
     const analyzeStateValue = analyzeState.get()?.value;

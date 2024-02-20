@@ -74,8 +74,6 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
       handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, inflightJobId,),
       CONSTANTS.analyzeCommandQueueMessage,
     ).then(response => {
-      debugChannel.appendLine(response.status);
-
       switch (response.status) {
         case 'failed':
         case 'complete': {

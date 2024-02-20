@@ -9,6 +9,9 @@ export const LayoutContainer: SxProps = {
   flexDirection: 'column',
   alignItems: 'center',
   p: 2,
+  overflow: 'hidden',
+  height: '100vh',
+  width: '100vw'
 };
 
 export const AnalyzePageSvgContainer: SxProps = {

@@ -1,7 +1,6 @@
 import { ApiServiceBase } from '../base.service'
 import FormData from 'form-data'
 import { Edge, Identity, Problem, Node } from '../../types'
-import debugChannel from '../../debug'
 
 export interface SubmitRepresentationResponse {
   jobId: string

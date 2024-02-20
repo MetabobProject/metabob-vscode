@@ -20,7 +20,6 @@ import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services';
 import { CurrentQuestion, CurrentQuestionState, Session, Analyze, AnalyseMetaData } from '../state';
 import { BackendService, GetChatGPTToken } from '../config';
-import { GenerateDecorations, decorationType } from '../helpers';
 import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
@@ -570,7 +569,6 @@ export class RecommendationWebView implements WebviewViewProvider {
           try {
             this.handleApplyRecommendation(input, initData);
           } catch (error: any) {
-            debugChannel.appendLine(`Metabob: Apply Recommendation Error ${JSON.stringify(error)}`);
             window.showErrorMessage(`${CONSTANTS.applyRecommendationEror}`);
             this._view.webview.postMessage({
               type: 'applyRecommendation:Error',

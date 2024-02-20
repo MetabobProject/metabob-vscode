@@ -115,6 +115,21 @@ export const handleDocumentAnalyze = async (
       }
       return true;
     })
+    .filter((vulnerability) => {
+      const { endLine, startLine } = vulnerability;
+      const range = new vscode.Range(
+        startLine - 1,
+        0,
+        endLine - 1,
+        documentMetaData.editor.document.lineAt(endLine - 1).text.length,
+      );
+
+      const text = documentMetaData.editor.document.getText(range).replace("\n", "").replace("\t", "")
+      if (text.length === 0 || text === '' || text === ' ') {
+        return false
+      }
+      return true
+    })
     .forEach(problem => {
       const key = `${problem.path}@@${problem.id}`;
       const analyzeMetaData: AnalyseMetaData = {
