@@ -1,5 +1,5 @@
 import { useRecoilValue } from 'recoil';
-import { Box, CircularProgress, useTheme } from '@mui/material';
+import { Box, CircularProgress, SxProps, useTheme } from '@mui/material';
 import Button from '@mui/material/Button';
 import { ProblemList } from './ProblemList';
 import { AnalyzePageBodyContainer } from './styles';
@@ -33,7 +33,11 @@ export const AnalyzePage = ({
       .filter(problemKey => {
         const splitString: string | undefined = problemKey.split('@@')[0];
         if (splitString === undefined) return false;
-        const isViewed = identifiedProblems[problemKey].isViewed || false;
+        const isViewed =
+          identifiedProblems[problemKey].isViewed ||
+          identifiedProblems[problemKey].isDiscarded ||
+          false;
+
         if (splitString !== currentEditor && isViewed === false) {
           return true;
         }
@@ -78,15 +82,34 @@ export const AnalyzePage = ({
     }).length;
   }, [identifiedProblems, currentEditor]);
 
+  const analyzeButtonDisabledSxProps = useMemo(() => {
+    if (isAnalysisLoading === true) {
+      return {
+        minWidth: '140px',
+        backgroundColor: `rgb(105,105,105) !important`,
+      } as SxProps;
+    }
+
+    return {
+      minWidth: '140px',
+      backgroundColor: `rgb(19, 96, 196)`,
+    } as SxProps;
+  }, [isAnalysisLoading]);
+
+  const hasWorkSpaceFoldersButtonSxProps = useMemo(() => {
+    return {
+      width: '100%',
+      backgroundColor: `rgb(105,105,105) !important`,
+    } as SxProps;
+  }, []);
+
   return (
     <>
       <Box sx={AnalyzePageBodyContainer(theme)}>
         {(!hasWorkSpaceFolders || !hasOpenTextDocuments) && (
           <>
             <Button
-              sx={{
-                width: '100%',
-              }}
+              sx={hasWorkSpaceFoldersButtonSxProps}
               variant='contained'
               color='primary'
               disabled
@@ -99,9 +122,7 @@ export const AnalyzePage = ({
         {hasWorkSpaceFolders && hasOpenTextDocuments && (
           <>
             <Button
-              sx={{
-                minWidth: '140px',
-              }}
+              sx={analyzeButtonDisabledSxProps}
               variant='contained'
               color='primary'
               onClick={handleAnalyzeClick}

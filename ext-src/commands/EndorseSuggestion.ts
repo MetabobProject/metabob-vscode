@@ -29,7 +29,7 @@ export function activateEndorseCommand(
 
     copyProblems[key].isDiscarded = false;
     copyProblems[key].isEndorsed = true;
-    copyProblems[key].isViewed = true
+    copyProblems[key].isViewed = true;
 
     const payload: FeedbackSuggestionPayload = {
       problemId,
@@ -39,11 +39,11 @@ export function activateEndorseCommand(
     try {
       await feedbackService.endorseSuggestion(payload, sessionToken);
       await feedbackService.readSuggestion(payload, sessionToken);
-      await analyzeState.set(copyProblems)
+      await analyzeState.set(copyProblems);
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...copyProblems }
-      })
+        data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...copyProblems },
+      });
     } catch {
       _debug?.appendLine(`Metabob: Error Endorsing Problem With ${args.id}`);
       vscode.window.showErrorMessage(CONSTANTS.endorseCommandErrorMessage);

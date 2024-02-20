@@ -45,4 +45,5 @@ export interface IDocumentMetaData {
   isTextDocument: boolean
   languageId: string
   endLine: number
+  fileName: string | undefined
 }

@@ -13,7 +13,6 @@ import {
   createOrUpdateUserSession,
   initState,
   AnalyzeDocumentOnSave,
-  GenerateDecorations,
   decorationType,
 } from './helpers';
 import Util from './utils';
@@ -27,7 +26,6 @@ import { Analyze } from './state';
 import { Problem } from './types';
 
 let previousEditor: vscode.TextEditor | undefined = undefined;
-let isChangingSelection = false;
 
 export function activate(context: vscode.ExtensionContext): void {
   bootstrapExtensionEventEmitter();
@@ -130,40 +128,50 @@ export function activate(context: vscode.ExtensionContext): void {
   // Analyze on Save functionality is only ran if the user enabled it.
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(document => {
+      let savedDocumentMetaData = Util.extractMetaDataFromDocument(document);
+      if (!savedDocumentMetaData.fileName) return;
+
+      let fileName: string = savedDocumentMetaData.fileName;
+
       // Will check if the current document is valid code file.
-      if (analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true) {
-        if (!Util.isValidDocument) {
-          return;
-        }
-
-        AnalyzeDocumentOnSave(
-          {
-            document,
-          },
-          context,
-        );
-        extensionEventEmitter.fire({
-          type: 'Analysis_Called_On_Save',
-          data: {},
-        });
-
-        extensionEventEmitter.fire({
-          type: 'CURRENT_FILE',
-          data: { ...document },
-        });
+      if (!(analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true)) {
+        return;
       }
+
+      const documentMetaData = Util.getFileNameFromCurrentEditor();
+
+      if (!documentMetaData) {
+        return;
+      }
+
+      if (fileName !== documentMetaData.fileName) {
+        return;
+      }
+
+      documentMetaData.editor.setDecorations(decorationType, []);
+
+      AnalyzeDocumentOnSave(
+        {
+          document,
+        },
+        context,
+      );
+
+      extensionEventEmitter.fire({
+        type: 'Analysis_Called_On_Save',
+        data: {},
+      });
+
+      extensionEventEmitter.fire({
+        type: 'CURRENT_FILE',
+        data: { ...document },
+      });
     }),
   );
 
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument(() => {
       const editor = vscode.window.activeTextEditor;
-      const analyzeState = new Analyze(context);
-
-      const analyzeValue = analyzeState.get()?.value;
-
-      if (!analyzeValue) return;
-
       if (!editor || !editor.document) {
         extensionEventEmitter.fire({
           type: 'No_Editor_Detected',
@@ -172,6 +180,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
         return;
       }
+
+      const analyzeState = new Analyze(context);
+      const analyzeValue = analyzeState.get()?.value;
+      if (!analyzeValue) return;
 
       const isValidEditor = Util.isValidDocument(editor.document);
 
@@ -189,18 +201,18 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.workspace.onDidOpenTextDocument(() => {
-      let currentEditor = Util.getFileNameFromCurrentEditor();
-      if (!currentEditor) return;
+    vscode.workspace.onDidOpenTextDocument((e: vscode.TextDocument) => {
+      const documentMetaData = Util.extractMetaDataFromDocument(e);
+      if (!documentMetaData.fileName) return
 
       const analyzeState = new Analyze(context);
-
       const analyzeValue = analyzeState.get()?.value;
-
       if (!analyzeValue) return;
 
-      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, currentEditor.fileName)
-
+      const results: Problem[] | undefined = Util.getCurrentEditorProblems(
+        analyzeValue,
+        documentMetaData.fileName,
+      );
       if (!results) return;
 
       if (results.length === 0) {
@@ -217,19 +229,23 @@ export function activate(context: vscode.ExtensionContext): void {
           data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
 
-        const editor = vscode.window.activeTextEditor;
-        if (!editor?.document) return;
-
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...editor.document },
+          data: { ...e },
         });
         return;
       }
 
-      const isProblemsDecorated = Util.decorateCurrentEditorWithHighlights(results, currentEditor.editor);
+      const activeTextEditor = vscode.window.activeTextEditor;
+      if (!activeTextEditor) return;
+      if (activeTextEditor.document.fileName !== e.fileName) return;
 
-      if (!isProblemsDecorated) return
+      Util.decorateCurrentEditorWithHighlights(results, activeTextEditor);
+
+      extensionEventEmitter.fire({
+        type: 'CURRENT_FILE',
+        data: { ...e },
+      });
 
       extensionEventEmitter.fire({
         type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
@@ -243,31 +259,25 @@ export function activate(context: vscode.ExtensionContext): void {
         type: 'Analysis_Completed',
         data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
-
-      extensionEventEmitter.fire({
-        type: 'CURRENT_FILE',
-        data: { ...currentEditor.editor.document },
-      });
-
     }),
   );
 
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor(() => {
+    vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
+      if (!e) return;
+      const { fileName } = Util.extractMetaDataFromDocument(e.document);
+      if (!fileName) return;
+
       if (previousEditor) {
         previousEditor.setDecorations(decorationType, []);
       }
-
-      const documentMetaData = Util.getFileNameFromCurrentEditor();
-      if (!documentMetaData) return
 
       const analyzeState = new Analyze(context);
       const analyzeValue = analyzeState.get()?.value;
       if (!analyzeValue) return;
 
-
-      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, documentMetaData.fileName)
-      if (!results) return
+      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, fileName);
+      if (!results) return;
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
@@ -277,20 +287,20 @@ export function activate(context: vscode.ExtensionContext): void {
             hasWorkSpaceFolders: true,
           },
         });
-
         getExtensionEventEmitter().fire({
           type: 'Analysis_Completed',
           data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
+
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...documentMetaData.editor.document },
+          data: { ...e.document },
         });
         return;
       }
 
-      const isProblemsDecorated = Util.decorateCurrentEditorWithHighlights(results, documentMetaData.editor);
-      if (!isProblemsDecorated) return
+      const isApplied = Util.decorateCurrentEditorWithHighlights(results, e);
+      debugChannel.appendLine('onDidChangeActiveTextEditor: ' + isApplied);
 
       extensionEventEmitter.fire({
         type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
@@ -307,9 +317,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...documentMetaData.editor.document },
+        data: { ...e.document },
       });
-      previousEditor = documentMetaData.editor;
+
+      previousEditor = e;
     }),
   );
 
@@ -332,5 +343,4 @@ export function deactivate(): void {
   decorationType.dispose();
   disposeExtensionEventEmitter();
   previousEditor = undefined;
-  isChangingSelection = false;
 }

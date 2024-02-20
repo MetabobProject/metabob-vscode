@@ -13,6 +13,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.discardSuggestionCommand;
 
   const commandHandler = async (args: DiscardCommandHandler) => {
+    let isDecorationsApplied = false;
     const analyzeState = new Analyze(context);
     const problems = analyzeState.get()?.value;
 
@@ -64,27 +65,27 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       return;
     }
 
-    const isDecorationsApplied = Utils.decorateCurrentEditorWithHighlights(
-      results,
-      documentMetaData.editor,
-    );
-
-    if (isUserOnProblemFile && isDecorationsApplied) {
-      extensionEventEmitter.fire({
-        type: 'onDiscardSuggestionClicked:Success',
-        data: {},
-      });
-
-      getExtensionEventEmitter().fire({
-        type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...copyProblems },
-      });
-
-      extensionEventEmitter.fire({
-        type: 'CURRENT_FILE',
-        data: { ...documentMetaData.editor.document },
-      });
+    if (isUserOnProblemFile) {
+      isDecorationsApplied = Utils.decorateCurrentEditorWithHighlights(
+        results,
+        documentMetaData.editor,
+      );
     }
+
+    extensionEventEmitter.fire({
+      type: 'onDiscardSuggestionClicked:Success',
+      data: {},
+    });
+
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Completed',
+      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...copyProblems },
+    });
+
+    extensionEventEmitter.fire({
+      type: 'CURRENT_FILE',
+      data: { ...documentMetaData.editor.document },
+    });
 
     await Promise.allSettled([
       analyzeState.set(copyProblems),

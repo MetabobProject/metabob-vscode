@@ -77,6 +77,17 @@ export const handleDocumentAnalyze = async (
     return verifiedResponse;
   }
 
+  const documentMetaData = Util.getFileNameFromCurrentEditor();
+  if (!documentMetaData) {
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
+
+    return failedResponseReturn;
+  }
+
   let results: AnalyzeState = {};
   const analyzeStateValue = new Analyze(context).get()?.value;
 
@@ -117,16 +128,23 @@ export const handleDocumentAnalyze = async (
       results[key] = { ...analyzeMetaData };
     });
 
-  analyzeState.set(results);
+  const problems = Util.getCurrentEditorProblems(results, documentMetaData.fileName);
+  if (!problems) {
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
 
-  const decorationFromResponse = Util.transformResponseToDecorations(
-    verifiedResponse.results,
-    editor,
-    jobId,
+    return failedResponseReturn;
+  }
+
+  Util.decorateCurrentEditorWithHighlights(
+    problems,
+    documentMetaData.editor,
   );
-  editor.setDecorations(decorationFromResponse.decorationType, []);
-  editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations);
 
+  await analyzeState.set(results);
   getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
     data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...results },

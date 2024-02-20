@@ -43,7 +43,8 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     vscode.commands.executeCommand('recommendation-panel-webview.focus');
 
     const copiedAnalyzeValue = { ...analyzeStateValue };
-
+    copiedAnalyzeValue[key].isDiscarded = copiedAnalyzeValue[key].isDiscarded || false;
+    copiedAnalyzeValue[key].isEndorsed = copiedAnalyzeValue[key].isEndorsed || false;
     copiedAnalyzeValue[key].isViewed = true;
 
     const readSuggestionPayload: FeedbackSuggestionPayload = {
@@ -79,9 +80,10 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       });
     }, 500);
 
+    await setAnalyzeState.set(copiedAnalyzeValue);
+
     await Promise.allSettled([
       feedbackService.readSuggestion(readSuggestionPayload, sessionToken),
-      setAnalyzeState.set(copiedAnalyzeValue),
     ]);
   };
 

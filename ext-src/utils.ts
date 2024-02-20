@@ -80,6 +80,7 @@ export default class Utils {
     const filePath = document.uri.fsPath;
     const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
     const relativePath = workspaceFolder ? path.relative(workspaceFolder.uri.fsPath, filePath) : '';
+    const splitKey: string | undefined = relativePath.split('/').pop();
     const fileContent = document.getText();
     const isTextDocument = Utils.isTextDocument(document);
     const languageId = document.languageId;
@@ -92,6 +93,7 @@ export default class Utils {
       isTextDocument,
       languageId,
       endLine,
+      fileName: splitKey
     };
   }
   static async withProgress<T>(task: Promise<T>, title: string): Promise<T> {
@@ -139,7 +141,7 @@ export default class Utils {
     }
 
     let documentMetaData = this.extractMetaDataFromDocument(editor.document);
-    let fileName: string | undefined = documentMetaData.relativePath.split('/').pop();
+    let fileName: string | undefined = documentMetaData.fileName;
     if (!fileName) return undefined
 
     return {
@@ -184,6 +186,6 @@ export default class Utils {
     problemEditor.setDecorations(decorationType, []);
     problemEditor.setDecorations(decorationType, decorations);
 
-    return false
+    return true
   }
 }
