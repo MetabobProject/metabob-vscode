@@ -6,7 +6,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "lib": [
-      "es6"
+      "ES2020"
     ],
     "sourceMap": false,
     "rootDir": ".",

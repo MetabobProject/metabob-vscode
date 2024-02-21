@@ -9,25 +9,44 @@ import {
   ProblemListHeading,
   ButtonGrid,
 } from './styles';
+import { useCallback } from 'react';
 
 export interface ProblemsListProps {
-  problems: Array<{ name: string }>;
+  detectedProblems?: number;
+  otherFileWithProblems?: Array<{ name: string }>;
 }
 
-export const ProblemList = ({ problems }: ProblemsListProps): JSX.Element => {
+export const ProblemList = ({
+  otherFileWithProblems,
+  detectedProblems,
+}: ProblemsListProps): JSX.Element => {
   const theme = useTheme();
+
+  const handleOpenOtherFile: (name: string) => React.MouseEventHandler = useCallback(
+    (name: string) => e => {
+      e.preventDefault();
+      vscode.postMessage({
+        type: 'OPEN_FILE_IN_NEW_TAB',
+        data: { name },
+      });
+    },
+    [],
+  );
 
   return (
     <>
       <Box sx={ProblemListContainer(theme)}>
-        <Typography variant='h6' sx={ProblemListHeading(theme)}>
-          {problems.length} Problems Detected
-        </Typography>
-        {problems.length !== 0 && (
+        {detectedProblems !== undefined && (
+          <Typography variant='h6' sx={ProblemListHeading(theme)}>
+            {detectedProblems} Problems Detected
+          </Typography>
+        )}
+
+        {otherFileWithProblems && otherFileWithProblems.length > 0 && (
           <>
             <Typography sx={ListHeaderTypography}>Other files with problems</Typography>
             <List sx={ListContainer}>
-              {problems.map((item, index) => {
+              {otherFileWithProblems.map((item, index) => {
                 return (
                   <>
                     <ListItem key={index} sx={ListItemStyles}>
@@ -49,6 +68,7 @@ export const ProblemList = ({ problems }: ProblemsListProps): JSX.Element => {
                             size='small'
                             variant='contained'
                             color='primary'
+                            onClick={handleOpenOtherFile(item.name)}
                           >
                             Open
                           </Button>

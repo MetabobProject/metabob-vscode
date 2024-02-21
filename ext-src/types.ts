@@ -8,7 +8,11 @@ export interface Problem {
   category: string
   summary: string
   description: string
+  discarded: boolean
+  endorsed: boolean
+  severity: string
 }
+
 export interface Identity {
   [id: string]: {
     language: string
@@ -41,4 +45,5 @@ export interface IDocumentMetaData {
   isTextDocument: boolean
   languageId: string
   endLine: number
+  fileName: string | undefined
 }

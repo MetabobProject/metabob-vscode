@@ -13,17 +13,19 @@ import {
   Range,
   commands,
   env,
+  workspace,
+  ViewColumn,
 } from 'vscode';
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services';
 import { CurrentQuestion, CurrentQuestionState, Session, Analyze, AnalyseMetaData } from '../state';
 import { BackendService, GetChatGPTToken } from '../config';
-import { GenerateDecorations, decorationType } from '../helpers';
 import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
 import debugChannel from '../debug';
 import { AnalysisEvents } from '../events';
+import { Problem } from '../types';
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
@@ -43,7 +45,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.extensionURI = extensionURI;
     this.extensionContext = context;
 
-    // this.extensionContext.globalState.update(CONSTANTS.webview, this);
     this.extensionEventEmitter = extensionEventEmitter;
   }
 
@@ -105,9 +106,10 @@ export class RecommendationWebView implements WebviewViewProvider {
             this?._view?.webview?.postMessage(latestEvent);
           }
 
-          this.eventEmitterQueue = [];
           clearInterval(interval);
+          this.eventEmitterQueue = [];
         }, 500);
+        return;
       }
 
       this._view.webview.postMessage(event);
@@ -314,8 +316,17 @@ export class RecommendationWebView implements WebviewViewProvider {
     });
   }
 
-  postInitData(initData: CurrentQuestionState | undefined): void {
-    if (this._view === null || this._view === undefined || this._view.webview === undefined) {
+  postInitData(): void {
+    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
+    const currentEditor = window.activeTextEditor;
+
+    if (
+      this._view === null ||
+      this._view === undefined ||
+      this._view.webview === undefined ||
+      !currentEditor ||
+      this._view.visible === false
+    ) {
       return;
     }
 
@@ -325,14 +336,30 @@ export class RecommendationWebView implements WebviewViewProvider {
       hasWorkSpaceFolders?: boolean;
     } = {};
 
-    if (initData) {
-      initPayload.initData = initData;
+    if (getanalyzeState) {
+      initPayload.initData = { ...getanalyzeState };
     }
 
     initPayload.hasOpenTextDocuments = Util.hasOpenTextDocuments();
     initPayload.hasWorkSpaceFolders = Util.hasWorkspaceFolder();
 
-    debugChannel.appendLine(`init data: ${JSON.stringify({ ...initPayload })}`);
+    this.extensionEventEmitter.fire({
+      type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+      data: {
+        hasOpenTextDocuments: true,
+        hasWorkSpaceFolders: true,
+      },
+    });
+
+    this.extensionEventEmitter.fire({
+      type: 'Analysis_Completed',
+      data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...getanalyzeState },
+    });
+
+    this.extensionEventEmitter.fire({
+      type: 'CURRENT_FILE',
+      data: { ...currentEditor.document },
+    });
 
     this._view.webview
       .postMessage({
@@ -344,56 +371,79 @@ export class RecommendationWebView implements WebviewViewProvider {
       });
   }
 
-  handleApplyRecommendation(input: string, initData: CurrentQuestionState): void {
-    const editor = window.activeTextEditor;
-    if (!editor || !initData) {
+  async handleApplyRecommendation(input: string, initData: CurrentQuestionState) {
+    const documentMetadata = Util.getFileNameFromCurrentEditor();
+    if (!documentMetadata || !initData) {
       throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
+    }
+
+    const key = `${initData.path}@@${initData.id}`;
+    if (documentMetadata.fileName !== initData.path) {
+      throw new Error('handleApplyRecommendation: User editor changed');
     }
 
     const setAnalyzeState = new Analyze(this.extensionContext);
     const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
-
     if (!getanalyzeState) {
-      throw new Error('Analze is undefined');
+      throw new Error('handleApplyRecommendation: Analze is undefined');
     }
 
     const copyAnalyzeValue = { ...getanalyzeState };
-
-    const key = `${initData.path}@@${initData.id}`;
     copyAnalyzeValue[key].isDiscarded = true;
+    copyAnalyzeValue[key].isEndorsed = false;
+    copyAnalyzeValue[key].isViewed = true;
 
-    const results: AnalyseMetaData[] = [];
-
-    for (const [, value] of Object.entries(copyAnalyzeValue)) {
-      if (!value.isDiscarded) {
-        results.push(value);
-      }
+    const results: Problem[] | undefined = Util.getCurrentEditorProblems(
+      copyAnalyzeValue,
+      initData.path,
+    );
+    if (!results) {
+      throw new Error('handleApplyRecommendation: Results are undefined');
     }
 
-    setAnalyzeState.set({ ...copyAnalyzeValue }).then(() => {
-      const startLine = initData.vuln.startLine;
-      const endLine = initData.vuln.endLine;
-      const comment = `${input.replace('```', '')}`;
+    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(results, documentMetadata.editor)
 
-      const start = new Position(startLine - 1, 0); // convert line number to position
-      const end = new Position(endLine, 0); // convert line number to position
-      const range = new Range(start, end);
+    if (!isCurrentFileDecorated) {
+      throw new Error('handleApplyRecommendation: could not decorate current file');
+    }
 
-      const { decorations } = GenerateDecorations(results, editor);
-
-      editor.setDecorations(decorationType, []);
-      editor.setDecorations(decorationType, decorations);
-
-      editor.edit((editBuilder: TextEditorEdit) => {
-        editBuilder.replace(range, comment + '\n');
-      });
+    // Immediately replace suggested recommendation in the editor
+    const startLine = initData.vuln.startLine;
+    const endLine = initData.vuln.endLine;
+    const comment = `${input.replace('```', '')}`;
+    const start = new Position(startLine - 1, 0); // convert line number to position
+    const end = new Position(endLine, 0); // convert line number to position
+    const range = new Range(start, end);
+    documentMetadata.editor.edit((editBuilder: TextEditorEdit) => {
+      editBuilder.replace(range, comment + '\n');
     });
+    await setAnalyzeState.set({ ...copyAnalyzeValue });
   }
 
   async openExternalLink(url: string): Promise<void> {
     await env.openExternal(Uri.parse(url));
 
     return;
+  }
+
+  searchFileByName(fileName: string) {
+    const searchPattern = `**/${fileName}`;
+    return workspace.findFiles(searchPattern, '**/node_modules/**', 1);
+  }
+
+  async openFileInNewTab(fileName: string) {
+    const searchedFilePath = await this.searchFileByName(fileName);
+    const path: Uri | undefined = searchedFilePath[0];
+
+    if (!path) return;
+    // Use the `openTextDocument` method to open the document
+    workspace.openTextDocument(Uri.file(path.fsPath)).then(document => {
+      // Use the `showTextDocument` method to show the document in a new tab
+      window.showTextDocument(document, {
+        viewColumn: ViewColumn.One,
+        preserveFocus: true,
+      });
+    });
   }
 
   private activateWebviewMessageListener() {
@@ -409,6 +459,10 @@ export class RecommendationWebView implements WebviewViewProvider {
       }
       const data = message.data;
       switch (message.type) {
+        case 'OPEN_FILE_IN_NEW_TAB':
+          const { name: fileName } = data;
+          this.openFileInNewTab(fileName);
+          break;
         case 'analysis_current_file':
           this.clear();
           commands.executeCommand('metabob.analyzeDocument');
@@ -444,8 +498,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           break;
         }
         case 'getInitData': {
-          const state = this.getCurrentQuestionValue();
-          this.postInitData(state);
+          this.postInitData();
           break;
         }
         case 'initData:FixRecieved': {
@@ -516,8 +569,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           try {
             this.handleApplyRecommendation(input, initData);
           } catch (error: any) {
-            debugChannel.appendLine(`Metabob: Apply Recommendation Error ${JSON.stringify(error)}`);
-
+            window.showErrorMessage(`${CONSTANTS.applyRecommendationEror}`);
             this._view.webview.postMessage({
               type: 'applyRecommendation:Error',
               data: {},
@@ -571,10 +623,10 @@ export class RecommendationWebView implements WebviewViewProvider {
           };
           try {
             commands.executeCommand('metabob.discardSuggestion', payload);
-            this._view.webview.postMessage({
-              type: 'onDiscardSuggestionClicked:Success',
-              data: {},
-            });
+            // this._view.webview.postMessage({
+            //   type: 'onDiscardSuggestionClicked:Success',
+            //   data: {},
+            // });
           } catch {
             this._view.webview.postMessage({
               type: 'onDiscardSuggestionClicked:Error',
@@ -590,10 +642,6 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: Webview) {
-    debugChannel.appendLine('manifest: ' + this.extensionPath);
-
-    debugChannel.appendLine('manifest' + this.extensionPath);
-
     // https://stackoverflow.com/questions/34828722/how-can-i-make-webpack-skip-a-require
     // @ts-ignore
     const manifest = __non_webpack_require__(
@@ -604,8 +652,6 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     const scriptUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainScript));
     const styleUri = webview.asWebviewUri(Uri.joinPath(this.extensionURI, 'build', mainStyle));
-
-    debugChannel.appendLine('styleUri' + styleUri);
 
     // Use a nonce to whitelist which scripts can be run
     const nonce = Util.getNonce();
@@ -624,8 +670,8 @@ export class RecommendationWebView implements WebviewViewProvider {
               style-src vscode-resource: 'unsafe-inline' http: https: data:
         ;">
 				<base href="${Uri.file(path.join(this.extensionPath, 'build')).with({
-          scheme: 'vscode-resource',
-        })}/">
+      scheme: 'vscode-resource',
+    })}/">
 			</head>
 
 			<body>

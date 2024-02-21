@@ -10,7 +10,10 @@ export type AnalyseMetaData = {
   category: string
   summary: string
   description: string
+  severity: string
   isDiscarded?: boolean
+  isEndorsed?: boolean;
+  isViewed?: boolean
 }
 
 export type AnalyzeState = {

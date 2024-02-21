@@ -17,42 +17,51 @@ export function GenerateDecorations(
   decorationType: vscode.TextEditorDecorationType;
   decorations: vscode.DecorationOptions[];
 } {
-  const decorations: vscode.DecorationOptions[] = results.map(vulnerability => {
-    const { startLine, endLine, path, id } = vulnerability;
-    const range = new vscode.Range(
-      startLine - 1,
-      0,
-      endLine - 1,
-      editor.document.lineAt(vulnerability.endLine - 1).text.length,
-    );
+  const decorations: vscode.DecorationOptions[] = results
+    .filter(vulnerability => {
+      const { endLine, startLine } = vulnerability;
+      if ((endLine - 1) < 0 || (startLine - 1) < 0) {
+        return false;
+      }
+      return true;
+    })
+    .map(vulnerability => {
+      const { startLine, endLine, path, id } = vulnerability;
 
-    const payload: FixSuggestionCommandHandler = {
-      path,
-      id,
-      jobId,
-      vuln: vulnerability,
-    };
+      const range = new vscode.Range(
+        startLine - 1,
+        0,
+        endLine - 1,
+        editor.document.lineAt(endLine - 1).text.length,
+      );
 
-    const viewDescriptionURI = encodeURIComponent(JSON.stringify(payload));
+      const payload: FixSuggestionCommandHandler = {
+        path,
+        id,
+        jobId,
+        vuln: vulnerability,
+      };
 
-    const hoverFixMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI})**`;
-    const hoverViewDescriptionMessage = `**[More Details](command:metabob.showDetailSuggestion?${viewDescriptionURI})**`;
-    const hoverMessage = new vscode.MarkdownString(
-      `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverFixMessage} |\r${hoverViewDescriptionMessage}`,
-    );
-    hoverMessage.isTrusted = true;
+      const viewDescriptionURI = encodeURIComponent(JSON.stringify(payload));
 
-    return {
-      range,
-      hoverMessage,
-      renderOptions: {
-        after: {
-          contentText: '',
-          color: 'red',
+      const hoverFixMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI} "This action will display a comprehensive view of the issue along with a recommended solution.")**`;
+      const hoverViewDescriptionMessage = `**[More Details](command:metabob.showDetailSuggestion?${viewDescriptionURI} "This action will display a comprehensive view of the issue.")**`;
+      const hoverMessage = new vscode.MarkdownString(
+        `### **CATEGORY:** ${vulnerability.category}\n\n${vulnerability.summary}\n\n${hoverFixMessage} |\r${hoverViewDescriptionMessage}`,
+      );
+      hoverMessage.isTrusted = true;
+
+      return {
+        range,
+        hoverMessage,
+        renderOptions: {
+          after: {
+            contentText: '',
+            color: 'red',
+          },
         },
-      },
-    } satisfies vscode.DecorationOptions;
-  });
+      } satisfies vscode.DecorationOptions;
+    });
 
   return {
     decorationType,

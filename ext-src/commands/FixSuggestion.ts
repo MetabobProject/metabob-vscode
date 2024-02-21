@@ -37,7 +37,7 @@ export function activateFixSuggestionCommand(context: vscode.ExtensionContext): 
         },
       });
     } catch (error) {
-      debugChannel.appendLine(`Metabob: Error while `);
+      debugChannel.appendLine(`Metabob: Error while fixing suggestion ${JSON.stringify(error)}`);
     }
 
     vscode.commands.executeCommand('recommendation-panel-webview.focus');

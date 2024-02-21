@@ -1,38 +1,3 @@
-import { Dispatch, SetStateAction } from 'react';
-
-export interface AccountSettingTypes {
-  initialState: any;
-  suggestion: string;
-  setSuggestion: Dispatch<SetStateAction<string>>;
-  generate: string;
-  setGenerate: Dispatch<SetStateAction<string>>;
-  showSuggestionPaginatePanel: boolean;
-  showGeneratePaginatePanel: boolean;
-  discardSuggestionClicked: boolean;
-  endorseSuggestionClicked: boolean;
-  setDiscardSuggestionClicked: Dispatch<SetStateAction<boolean>>;
-  setEndorseSuggestionClicked: Dispatch<SetStateAction<boolean>>;
-  isgenerateClicked: boolean;
-  userQuestionAboutSuggestion: string;
-  setUserQuestionAboutSuggestion: Dispatch<SetStateAction<string>>;
-  isSuggestionClicked: boolean;
-  setSuggestionClicked: Dispatch<SetStateAction<boolean>>;
-  isGenerateWithoutQuestionLoading: boolean;
-  setIsGenerateWithoutQuestionLoading: Dispatch<SetStateAction<boolean>>;
-  userQuestionAboutRecommendation: string;
-  setUserQuestionAboutRecommendation: Dispatch<SetStateAction<string>>;
-  isRecommendationRegenerateLoading: boolean;
-  setIsRecommendationRegenerateLoading: Dispatch<SetStateAction<boolean>>;
-  isGenerateWithQuestionLoading: boolean;
-  setIsGenerateWithQuestionLoading: Dispatch<SetStateAction<boolean>>;
-  isSuggestionRegenerateLoading: boolean;
-  setIsSuggestionRegenerateLoading: Dispatch<SetStateAction<boolean>>;
-  suggestionPaginationRegenerate: Array<any>;
-  setSuggestionPaginationRegenerate: Dispatch<SetStateAction<Array<any>>>;
-  generatePaginationRegenerate: Array<string>;
-  setGeneratePaginationRegenerate: Dispatch<SetStateAction<Array<any>>>;
-}
-
 export interface MessageType {
   type: EventDataType;
   data: any;
@@ -56,6 +21,8 @@ export enum EventDataType {
   ANALYSIS_CALLED_ON_SAVE = 'Analysis_Called_On_Save',
   NO_EDITOR_DETECTED = 'No_Editor_Detected',
   FIX_SUGGESTION = 'FIX_SUGGESTION',
+  CURRENT_FILE = 'CURRENT_FILE',
+  INIT_DATA_UPON_NEW_FILE_OPEN = 'INIT_DATA_UPON_NEW_FILE_OPEN'
 }
 
 export enum ApplicationWebviewState {
@@ -86,15 +53,18 @@ export interface RecommendationPayload {
 }
 
 export type AnalyseMetaData = {
-  id: string;
-  path: string;
-  startLine: number;
-  endLine: number;
-  category: string;
-  summary: string;
-  description: string;
-  isDiscarded?: boolean;
-};
+  id: string
+  path: string
+  startLine: number
+  endLine: number
+  category: string
+  summary: string
+  description: string
+  severity: string
+  isDiscarded?: boolean
+  isEndorsed?: boolean;
+  isViewed?: boolean
+}
 
 export type AnalyzeState = {
   [filepathAndProblemId: string]: AnalyseMetaData;

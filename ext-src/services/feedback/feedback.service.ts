@@ -7,7 +7,7 @@ export interface FeedbackSuggestionPayload {
   endorsed: boolean
 }
 
-export interface FeedbackSuggestionResponse {}
+export interface FeedbackSuggestionResponse { }
 
 export function generateFeedbackSuggestionPayload(
   data: Pick<FeedbackSuggestionPayload, 'problemId'>,
@@ -26,6 +26,12 @@ class FeedbackService extends ApiServiceBase {
   async discardSuggestion(data: FeedbackSuggestionPayload, sessionToken: string) {
     const config: AxiosRequestConfig = this.getConfig(sessionToken)
     const response = await this.post<FeedbackSuggestionResponse>('/feedback/detection', data, config)
+    return response
+  }
+
+  async readSuggestion(data: FeedbackSuggestionPayload, sessionToken: string) {
+    const config: AxiosRequestConfig = this.getConfig(sessionToken)
+    const response = await this.post<FeedbackSuggestionResponse>('/feedback/read', data, config)
     return response
   }
 

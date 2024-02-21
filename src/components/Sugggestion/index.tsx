@@ -3,12 +3,8 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import * as State from '../../state';
 import { Feedback } from './Feedback';
 import { Header } from './Header';
-import { Box, Button, CircularProgress } from '@mui/material';
-import {
-  generateRecommendationButton,
-  feedbackContainer,
-  generateRecommendationButtonContainer,
-} from './styles';
+import { Box, Button, CircularProgress, SxProps } from '@mui/material';
+import { feedbackContainer, generateRecommendationButtonContainer } from './styles';
 import { Recommendation } from './Recommendation';
 import { RecommendationSkeletonLoader } from './Recommendation/Skeleton';
 import { RecommendationPagination } from './Pagination';
@@ -123,6 +119,20 @@ export const SuggestionPage = (): JSX.Element => {
     });
   }, [recommendationMemo, suggestion]);
 
+  const generateButtonSxProps = useMemo(() => {
+    if (!suggestion || isRecommendationLoading) {
+      return {
+        color: 'whitesmoke',
+        backgroundColor: `rgb(105,105,105) !important`,
+      } as SxProps;
+    }
+
+    return {
+      color: 'whitesmoke',
+      backgroundColor: `rgb(19, 96, 196)`,
+    } as SxProps;
+  }, [suggestion, isRecommendationLoading]);
+
   return (
     <>
       <Header category={categoryMemo} description={descriptionMemo} />
@@ -133,7 +143,7 @@ export const SuggestionPage = (): JSX.Element => {
         <Button
           size='large'
           variant='contained'
-          sx={generateRecommendationButton}
+          sx={generateButtonSxProps}
           onClick={handleGenerateRecommendation}
           disabled={!suggestion || isRecommendationLoading}
         >
@@ -166,7 +176,7 @@ export const SuggestionPage = (): JSX.Element => {
 
       {recommendationMemo && (
         <>
-          <Box width='100%' height='40%' overflow='scroll' marginTop='12px'>
+          <Box width='100%' marginTop='12px'>
             <Recommendation text={recommendationMemo} />
           </Box>
           <RecommendationPagination

@@ -5,16 +5,29 @@ import { IAnalyzeTextDocumentOnSave } from '../types';
 import Util from '../utils';
 import { handleDocumentAnalyze } from './HandleDocumentAnalyze';
 import CONSTANTS from '../constants';
+import { getExtensionEventEmitter } from '../events';
 
 export async function AnalyzeDocumentOnSave(
   _payload: IAnalyzeTextDocumentOnSave,
   context: vscode.ExtensionContext,
 ): Promise<void> {
   const sessionToken = new Session(context).get()?.value;
-  if (!sessionToken) return;
+  const extensionEventEmitter = getExtensionEventEmitter();
+
+  if (!sessionToken) {
+    extensionEventEmitter.fire({
+      type: 'Analysis_Error',
+      data: 'Editor is undefined',
+    });
+    return
+  };
 
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
+    extensionEventEmitter.fire({
+      type: 'Analysis_Error',
+      data: 'Editor is undefined',
+    });
     return;
   }
 
@@ -24,7 +37,7 @@ export async function AnalyzeDocumentOnSave(
   let isInQueue = false;
 
   const jobId = await Util.withProgress<SubmitRepresentationResponse>(
-    handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, undefined, true),
+    handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, undefined, true),
     CONSTANTS.analyzeCommandProgressMessage,
   ).then(response => {
     if (response.status === 'pending' || response.status === 'running') {
@@ -38,14 +51,23 @@ export async function AnalyzeDocumentOnSave(
 
   if (isInQueue) {
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, jobId, true),
+      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, jobId, true),
       CONSTANTS.analyzeCommandQueueMessage,
     ).then(response => {
       if (response.status === 'complete' || response.status === 'failed') {
         isInQueue = false;
       } else {
+        extensionEventEmitter.fire({
+          type: 'Analysis_Error',
+          data: 'Editor is undefined',
+        });
         isInQueue = true;
       }
+    });
+  } else {
+    extensionEventEmitter.fire({
+      type: 'Analysis_Error',
+      data: 'Editor is undefined',
     });
   }
 }

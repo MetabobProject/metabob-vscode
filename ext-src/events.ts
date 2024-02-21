@@ -2,11 +2,14 @@ import { EventEmitter } from 'vscode';
 
 export interface AnalysisEvents {
   type:
-    | 'Analysis_Error'
-    | 'Analysis_Completed'
-    | 'Analysis_Called_On_Save'
-    | 'No_Editor_Detected'
-    | 'FIX_SUGGESTION';
+  | 'Analysis_Error'
+  | 'Analysis_Completed'
+  | 'onDiscardSuggestionClicked:Success'
+  | 'Analysis_Called_On_Save'
+  | 'No_Editor_Detected'
+  | 'FIX_SUGGESTION'
+  | 'CURRENT_FILE'
+  | 'INIT_DATA_UPON_NEW_FILE_OPEN';
   data: any;
 }
 

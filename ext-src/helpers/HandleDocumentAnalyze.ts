@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Result } from 'rusty-result-ts';
 import { submitService, SubmitRepresentationResponse, ApiErrorBase } from '../services/';
 import { IDocumentMetaData } from '../types';
-import { AnalyzeState, Analyze } from '../state';
+import { AnalyzeState, Analyze, AnalyseMetaData } from '../state';
 import Util from '../utils';
 import CONSTANTS from '../constants';
 import { getExtensionEventEmitter } from '../events';
@@ -27,6 +27,7 @@ export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string,
   analyzeState: Analyze,
+  context: vscode.ExtensionContext,
   jobId?: string,
   suppressRateLimitErrors = false,
 ) => {
@@ -44,11 +45,11 @@ export const handleDocumentAnalyze = async (
     jobId !== undefined
       ? await submitService.getJobStatus(sessionToken, jobId)
       : await submitService.submitTextFile(
-          metaDataDocument.relativePath,
-          metaDataDocument.fileContent,
-          metaDataDocument.filePath,
-          sessionToken,
-        );
+        metaDataDocument.relativePath,
+        metaDataDocument.fileContent,
+        metaDataDocument.filePath,
+        sessionToken,
+      );
 
   const verifiedResponse = verifyResponseOfSubmit(response);
   if (!verifiedResponse || !verifiedResponse.results) {
@@ -76,30 +77,92 @@ export const handleDocumentAnalyze = async (
     return verifiedResponse;
   }
 
-  // collect all the problems and add them to the state as separate keys
-  const results: AnalyzeState = {};
+  const documentMetaData = Util.getFileNameFromCurrentEditor();
+  if (!documentMetaData) {
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
 
-  verifiedResponse.results.forEach(problem => {
-    const key = `${problem.path}@@${problem.id}`;
-    results[key] = {
-      ...problem,
-      isDiscarded: false,
-    };
-  });
+    return failedResponseReturn;
+  }
 
-  analyzeState.set(results);
+  let results: AnalyzeState = {};
+  const analyzeStateValue = new Analyze(context).get()?.value;
 
-  const decorationFromResponse = Util.transformResponseToDecorations(
-    verifiedResponse.results,
-    editor,
-    jobId,
+  if (analyzeStateValue) {
+    const aggregatedProblemsFilePaths = verifiedResponse.results.map(problem => {
+      return problem.path;
+    });
+
+    let buggerAnalyzeStateValue: AnalyzeState = {};
+
+    Object.keys(analyzeStateValue).forEach(key => {
+      const problem = analyzeStateValue[key];
+      if (!aggregatedProblemsFilePaths.includes(problem.path)) {
+        buggerAnalyzeStateValue[key] = { ...problem };
+      }
+    });
+    results = { ...buggerAnalyzeStateValue };
+  }
+
+  verifiedResponse.results
+    .filter(vulnerability => {
+      const { endLine, startLine } = vulnerability;
+      if (endLine - 1 < 0 || startLine - 1 < 0) {
+        return false;
+      }
+      return true;
+    })
+    .filter((vulnerability) => {
+      const { endLine, startLine } = vulnerability;
+      const range = new vscode.Range(
+        startLine - 1,
+        0,
+        endLine - 1,
+        documentMetaData.editor.document.lineAt(endLine - 1).text.length,
+      );
+
+      const text = documentMetaData.editor.document.getText(range).replace("\n", "").replace("\t", "")
+      if (text.length === 0 || text === '' || text === ' ') {
+        return false
+      }
+      return true
+    })
+    .forEach(problem => {
+      const key = `${problem.path}@@${problem.id}`;
+      const analyzeMetaData: AnalyseMetaData = {
+        ...problem,
+        startLine: problem.startLine < 0 ? problem.startLine * -1 : problem.startLine,
+        endLine: problem.endLine < 0 ? problem.endLine * -1 : problem.endLine,
+        isDiscarded: problem.discarded,
+        isEndorsed: problem.endorsed,
+        isViewed: false,
+      };
+      results[key] = { ...analyzeMetaData };
+    });
+
+  const problems = Util.getCurrentEditorProblems(results, documentMetaData.fileName);
+  if (!problems) {
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
+
+    return failedResponseReturn;
+  }
+
+  Util.decorateCurrentEditorWithHighlights(
+    problems,
+    documentMetaData.editor,
   );
-  editor.setDecorations(decorationFromResponse.decorationType, []);
-  editor.setDecorations(decorationFromResponse.decorationType, decorationFromResponse.decorations);
 
+  await analyzeState.set(results);
   getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
-    data: results,
+    data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...results },
   });
 
   return verifiedResponse;
