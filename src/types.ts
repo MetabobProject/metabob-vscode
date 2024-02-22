@@ -22,7 +22,8 @@ export enum EventDataType {
   NO_EDITOR_DETECTED = 'No_Editor_Detected',
   FIX_SUGGESTION = 'FIX_SUGGESTION',
   CURRENT_FILE = 'CURRENT_FILE',
-  INIT_DATA_UPON_NEW_FILE_OPEN = 'INIT_DATA_UPON_NEW_FILE_OPEN'
+  CURRENT_PROJECT = 'CURRENT_PROJECT',
+  INIT_DATA_UPON_NEW_FILE_OPEN = 'INIT_DATA_UPON_NEW_FILE_OPEN',
 }
 
 export enum ApplicationWebviewState {
@@ -53,18 +54,19 @@ export interface RecommendationPayload {
 }
 
 export type AnalyseMetaData = {
-  id: string
-  path: string
-  startLine: number
-  endLine: number
-  category: string
-  summary: string
-  description: string
-  severity: string
-  isDiscarded?: boolean
+  id: string;
+  path: string;
+  startLine: number;
+  endLine: number;
+  category: string;
+  summary: string;
+  description: string;
+  severity: string;
+  isDiscarded?: boolean;
   isEndorsed?: boolean;
-  isViewed?: boolean
-}
+  isViewed?: boolean;
+  fullFilePath?: string;
+};
 
 export type AnalyzeState = {
   [filepathAndProblemId: string]: AnalyseMetaData;

@@ -27,6 +27,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setIdentifiedProblems = useSetRecoilState(State.identifiedProblems);
   const setAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
   const setCurrentEditor = useSetRecoilState(State.currentEditor);
+  const setCurrentWorkSpaceProject = useSetRecoilState(State.currentWorkSpaceProject);
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
@@ -121,6 +122,12 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.ENDORSE_SUGGESTION_SUCCESS: {
           break;
         }
+        case EventDataType.CURRENT_PROJECT:
+          const { name } = payload;
+          if (name) {
+            setCurrentWorkSpaceProject(name);
+          }
+          break;
         case EventDataType.CURRENT_FILE:
           const filename: string | undefined = payload.fileName.split('/').pop();
           if (!filename) {
@@ -134,6 +141,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
       }
     },
     [
+      setCurrentWorkSpaceProject,
       setCurrentEditor,
       setApplicationState,
       setAnalysisLoading,

@@ -16,6 +16,7 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     vuln: Problem;
     jobId: string;
   }) => {
+    const currentWorkSpaceFolder = Utils.getRootFolderName();
     const key = `${args.path}@@${args.id}`;
     const setAnalyzeState = new Analyze(context);
     const analyzeStateValue = new Analyze(context).get()?.value;
@@ -77,6 +78,13 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
         data: { ...documentMetaData.editor.document },
+      });
+
+      getExtensionEventEmitter().fire({
+        type: 'CURRENT_PROJECT',
+        data: {
+          name: currentWorkSpaceFolder
+        },
       });
     }, 500);
 

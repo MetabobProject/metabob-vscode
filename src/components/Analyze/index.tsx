@@ -1,10 +1,10 @@
+import { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { Box, CircularProgress, SxProps, useTheme } from '@mui/material';
 import Button from '@mui/material/Button';
 import { ProblemList } from './ProblemList';
 import { AnalyzePageBodyContainer } from './styles';
 import * as State from '../../state';
-import { useMemo } from 'react';
 
 interface AnalyzeProps {
   hasWorkSpaceFolders: boolean;
@@ -23,6 +23,7 @@ export const AnalyzePage = ({
 
   const identifiedProblems = useRecoilValue(State.identifiedProblems);
   const currentEditor = useRecoilValue(State.currentEditor);
+  const currentWorkSpaceProject = useRecoilValue(State.currentWorkSpaceProject);
 
   const otherFileWithProblems: Array<{ name: string }> | undefined = useMemo(() => {
     if (!identifiedProblems) return undefined;
@@ -31,12 +32,36 @@ export const AnalyzePage = ({
 
     const results: Array<{ name: string }> = Object.keys(identifiedProblems)
       .filter(problemKey => {
+        const problem = identifiedProblems[problemKey];
+
+        if (problem.fullFilePath === undefined || currentWorkSpaceProject === undefined) {
+          return false;
+        }
+
+        if (problem.fullFilePath === currentWorkSpaceProject) {
+          return true;
+        }
+
+        return false;
+      })
+      .filter(problemKey => {
+        const problem = identifiedProblems[problemKey];
+        const splitString: string | undefined = problemKey.split('@@')[0];
+
+        if (splitString === undefined || problem.endLine - 1 < 0 || problem.startLine - 1 < 0) {
+          return false;
+        }
+
+        if (splitString !== currentEditor && problem.isDiscarded === false) {
+          return true;
+        }
+
+        return false;
+      })
+      .filter(problemKey => {
         const splitString: string | undefined = problemKey.split('@@')[0];
         if (splitString === undefined) return false;
-        const isViewed =
-          identifiedProblems[problemKey].isViewed ||
-          identifiedProblems[problemKey].isDiscarded ||
-          false;
+        const isViewed = identifiedProblems[problemKey].isViewed || false;
 
         if (splitString !== currentEditor && isViewed === false) {
           return true;
@@ -59,28 +84,41 @@ export const AnalyzePage = ({
         name,
       };
     });
-  }, [identifiedProblems, currentEditor]);
+  }, [identifiedProblems, currentEditor, currentWorkSpaceProject]);
 
   const detectedProblems = useMemo(() => {
     if (!identifiedProblems) return undefined;
 
     if (!currentEditor) return undefined;
 
-    return Object.keys(identifiedProblems).filter(problemKey => {
-      const problem = identifiedProblems[problemKey];
-      const splitString: string | undefined = problemKey.split('@@')[0];
+    return Object.keys(identifiedProblems)
+      .filter(problemKey => {
+        const problem = identifiedProblems[problemKey];
+        if (problem.fullFilePath === undefined || currentWorkSpaceProject === undefined) {
+          return false;
+        }
 
-      if (splitString === undefined || problem.endLine - 1 < 0 || problem.startLine - 1 < 0) {
+        if (problem.fullFilePath === currentWorkSpaceProject) {
+          return true;
+        }
+
         return false;
-      }
+      })
+      .filter(problemKey => {
+        const problem = identifiedProblems[problemKey];
+        const splitString: string | undefined = problemKey.split('@@')[0];
 
-      if (splitString === currentEditor && problem.isDiscarded === false) {
-        return true;
-      }
+        if (splitString === undefined || problem.endLine - 1 < 0 || problem.startLine - 1 < 0) {
+          return false;
+        }
 
-      return false;
-    }).length;
-  }, [identifiedProblems, currentEditor]);
+        if (splitString === currentEditor && problem.isDiscarded === false) {
+          return true;
+        }
+
+        return false;
+      }).length;
+  }, [identifiedProblems, currentEditor, currentWorkSpaceProject]);
 
   const analyzeButtonDisabledSxProps = useMemo(() => {
     if (isAnalysisLoading === true) {

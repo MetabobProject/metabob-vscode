@@ -52,17 +52,17 @@ export const ProblemList = ({
                     <ListItem key={index} sx={ListItemStyles}>
                       <Grid
                         container
-                        spacing={theme.spacing(2)}
+                        spacing={theme.spacing(0.1)}
                         direction='row'
                         justifyContent='space-evenly'
                         alignItems='center'
                       >
-                        <Grid item xs={8}>
-                          <Typography variant='body1' sx={ListItemTypography} noWrap>
+                        <Grid item xs={7}>
+                          <Typography variant='body2' sx={ListItemTypography} noWrap>
                             {item.name}
                           </Typography>
                         </Grid>
-                        <Grid item xs={4} sx={ButtonGrid}>
+                        <Grid item xs={5} sx={ButtonGrid}>
                           <Button
                             sx={ListItemButton}
                             size='small'

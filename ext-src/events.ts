@@ -9,6 +9,7 @@ export interface AnalysisEvents {
   | 'No_Editor_Detected'
   | 'FIX_SUGGESTION'
   | 'CURRENT_FILE'
+  | 'CURRENT_PROJECT'
   | 'INIT_DATA_UPON_NEW_FILE_OPEN';
   data: any;
 }
