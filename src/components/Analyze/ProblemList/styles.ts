@@ -2,13 +2,14 @@ import { SxProps, Theme } from '@mui/material';
 
 export const ListHeaderTypography: SxProps = {
   fontWeight: '600',
-  textAlign: 'left',
+  textAlign: 'center',
 };
 
 export const ListContainer: SxProps = {
   marginLeft: -2,
   height: "200px",
   overflowY: "scroll",
+  width: "120%"
 };
 
 export const ListItemStyles: SxProps = {
@@ -34,7 +35,7 @@ export const ProblemListContainer: (theme: Theme) => SxProps = theme => ({
 export const ProblemListHeading: (theme: Theme) => SxProps = theme => ({
   marginBottom: theme.spacing(10),
   fontWeight: '600',
-  textAlign: 'left',
+  textAlign: 'center',
 });
 
 export const ButtonGrid: SxProps = {

@@ -58,3 +58,8 @@ export const currentEditor = atom<string | undefined>({
   default: undefined,
   key: 'Metabob:currentEditor'
 })
+
+export const currentWorkSpaceProject = atom<string | undefined>({
+  default: undefined,
+  key: 'Metabob:currentWorkSpaceProject'
+})

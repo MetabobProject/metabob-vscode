@@ -13,7 +13,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.discardSuggestionCommand;
 
   const commandHandler = async (args: DiscardCommandHandler) => {
-    let isDecorationsApplied = false;
+    const currentWorkSpaceFolder = Utils.getRootFolderName();
     const analyzeState = new Analyze(context);
     const problems = analyzeState.get()?.value;
 
@@ -66,7 +66,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     }
 
     if (isUserOnProblemFile) {
-      isDecorationsApplied = Utils.decorateCurrentEditorWithHighlights(
+      Utils.decorateCurrentEditorWithHighlights(
         results,
         documentMetaData.editor,
       );
@@ -85,6 +85,13 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     extensionEventEmitter.fire({
       type: 'CURRENT_FILE',
       data: { ...documentMetaData.editor.document },
+    });
+
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder
+      },
     });
 
     await Promise.allSettled([

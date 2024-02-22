@@ -25,9 +25,8 @@ import {
 import { Analyze } from './state';
 import { Problem } from './types';
 
-let previousEditor: vscode.TextEditor | undefined = undefined;
-
 export function activate(context: vscode.ExtensionContext): void {
+  let previousEditor: vscode.TextEditor | undefined = undefined;
   bootstrapExtensionEventEmitter();
   debugChannel.show(true);
   debugChannel.appendLine('Activating Metabob Extension...');
@@ -129,6 +128,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(document => {
       let savedDocumentMetaData = Util.extractMetaDataFromDocument(document);
+      const currentWorkSpaceFolder = Util.getRootFolderName();
       if (!savedDocumentMetaData.fileName) return;
 
       let fileName: string = savedDocumentMetaData.fileName;
@@ -166,11 +166,19 @@ export function activate(context: vscode.ExtensionContext): void {
         type: 'CURRENT_FILE',
         data: { ...document },
       });
+
+      extensionEventEmitter.fire({
+        type: 'CURRENT_PROJECT',
+        data: {
+          name: currentWorkSpaceFolder,
+        },
+      });
     }),
   );
 
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument(() => {
+      const currentWorkSpaceFolder = Util.getRootFolderName();
       const editor = vscode.window.activeTextEditor;
       if (!editor || !editor.document) {
         extensionEventEmitter.fire({
@@ -196,24 +204,48 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'CURRENT_FILE',
           data: { ...editor.document },
         });
+        extensionEventEmitter.fire({
+          type: 'CURRENT_PROJECT',
+          data: {
+            name: currentWorkSpaceFolder,
+          },
+        });
       }
     }),
   );
 
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument((e: vscode.TextDocument) => {
+      const currentWorkSpaceFolder = Util.getRootFolderName();
       const documentMetaData = Util.extractMetaDataFromDocument(e);
-      if (!documentMetaData.fileName) return
+      if (!documentMetaData.fileName) {
+        debugChannel.appendLine(
+          'onDidOpenTextDocument: fileName  is undefined. ' +
+          '\n' +
+          documentMetaData.relativePath +
+          '\n' +
+          documentMetaData.filePath,
+        );
+        return;
+      }
 
       const analyzeState = new Analyze(context);
       const analyzeValue = analyzeState.get()?.value;
-      if (!analyzeValue) return;
+      if (!analyzeValue) {
+        debugChannel.appendLine('onDidOpenTextDocument: analyzeValue is undefined');
+
+        return;
+      }
 
       const results: Problem[] | undefined = Util.getCurrentEditorProblems(
         analyzeValue,
         documentMetaData.fileName,
       );
-      if (!results) return;
+      if (!results) {
+        debugChannel.appendLine('onDidOpenTextDocument: results is undefined');
+
+        return;
+      }
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
@@ -233,6 +265,17 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'CURRENT_FILE',
           data: { ...e },
         });
+
+        extensionEventEmitter.fire({
+          type: 'CURRENT_PROJECT',
+          data: {
+            name: currentWorkSpaceFolder,
+          },
+        });
+        debugChannel.appendLine(
+          'onDidOpenTextDocument: results have zero length. ' + documentMetaData.fileName,
+        );
+
         return;
       }
 
@@ -259,14 +302,29 @@ export function activate(context: vscode.ExtensionContext): void {
         type: 'Analysis_Completed',
         data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
+
+      extensionEventEmitter.fire({
+        type: 'CURRENT_PROJECT',
+        data: {
+          name: currentWorkSpaceFolder,
+        },
+      });
     }),
   );
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
-      if (!e) return;
+      if (!e) {
+        debugChannel.appendLine('onDidChangeActiveTextEditor: e is undefined');
+        return;
+      }
       const { fileName } = Util.extractMetaDataFromDocument(e.document);
-      if (!fileName) return;
+      if (!fileName) {
+        debugChannel.appendLine('onDidChangeActiveTextEditor: fileName is undefined');
+        return;
+      }
+
+      const currentWorkSpaceFolder = Util.getRootFolderName();
 
       if (previousEditor) {
         previousEditor.setDecorations(decorationType, []);
@@ -274,10 +332,16 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const analyzeState = new Analyze(context);
       const analyzeValue = analyzeState.get()?.value;
-      if (!analyzeValue) return;
+      if (!analyzeValue) {
+        debugChannel.appendLine('onDidChangeActiveTextEditor: analyzeValue is undefined');
+        return;
+      }
 
       const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, fileName);
-      if (!results) return;
+      if (!results) {
+        debugChannel.appendLine('onDidChangeActiveTextEditor: results is undefined');
+        return;
+      }
 
       if (results.length === 0) {
         extensionEventEmitter.fire({
@@ -296,6 +360,19 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'CURRENT_FILE',
           data: { ...e.document },
         });
+
+        extensionEventEmitter.fire({
+          type: 'CURRENT_PROJECT',
+          data: {
+            name: currentWorkSpaceFolder,
+          },
+        });
+
+        debugChannel.appendLine(
+          'onDidChangeActiveTextEditor: results array has zero length. ' + fileName,
+        );
+
+        previousEditor = e;
         return;
       }
 
@@ -316,6 +393,13 @@ export function activate(context: vscode.ExtensionContext): void {
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
         data: { ...e.document },
+      });
+
+      extensionEventEmitter.fire({
+        type: 'CURRENT_PROJECT',
+        data: {
+          name: currentWorkSpaceFolder,
+        },
       });
 
       previousEditor = e;
@@ -340,5 +424,4 @@ export function deactivate(): void {
   debugChannel.dispose();
   decorationType.dispose();
   disposeExtensionEventEmitter();
-  previousEditor = undefined;
 }

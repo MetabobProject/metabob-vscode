@@ -12,6 +12,7 @@ import {
 import { GenerateDecorations, decorationType } from './helpers';
 import CONSTANTS from './constants';
 import { AnalyzeState } from './state';
+import debugChannel from './debug';
 
 // Normal Utilities used shared across folders
 export default class Utils {
@@ -128,6 +129,17 @@ export default class Utils {
     return vscode.workspace.openTextDocument(uri).then(document => {
       return vscode.window.showTextDocument(document, vscode.ViewColumn.One);
     });
+  }
+
+  static getRootFolderName(): string | undefined {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+
+    if (workspaceFolders) {
+      const rootFolder = workspaceFolders[0];
+      return rootFolder.name;
+    }
+
+    return undefined; // No workspace folder
   }
 
   static getFileNameFromCurrentEditor(): {

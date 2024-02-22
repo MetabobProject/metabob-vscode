@@ -31,6 +31,7 @@ export const handleDocumentAnalyze = async (
   jobId?: string,
   suppressRateLimitErrors = false,
 ) => {
+  const currentWorkSpaceFolder = Util.getRootFolderName();
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.fileName !== metaDataDocument.filePath) {
     getExtensionEventEmitter().fire({
@@ -38,6 +39,12 @@ export const handleDocumentAnalyze = async (
       data: '',
     });
 
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder
+      },
+    });
     return failedResponseReturn;
   }
 
@@ -58,6 +65,12 @@ export const handleDocumentAnalyze = async (
         type: 'Analysis_Error',
         data: '',
       });
+      getExtensionEventEmitter().fire({
+        type: 'CURRENT_PROJECT',
+        data: {
+          name: currentWorkSpaceFolder
+        },
+      });
       vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage);
     }
 
@@ -66,6 +79,12 @@ export const handleDocumentAnalyze = async (
     getExtensionEventEmitter().fire({
       type: 'Analysis_Error',
       data: '',
+    });
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder
+      },
     });
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
 
@@ -82,6 +101,12 @@ export const handleDocumentAnalyze = async (
     getExtensionEventEmitter().fire({
       type: 'Analysis_Error',
       data: '',
+    });
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder
+      },
     });
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
 
@@ -115,7 +140,7 @@ export const handleDocumentAnalyze = async (
       }
       return true;
     })
-    .filter((vulnerability) => {
+    .filter(vulnerability => {
       const { endLine, startLine } = vulnerability;
       const range = new vscode.Range(
         startLine - 1,
@@ -124,11 +149,14 @@ export const handleDocumentAnalyze = async (
         documentMetaData.editor.document.lineAt(endLine - 1).text.length,
       );
 
-      const text = documentMetaData.editor.document.getText(range).replace("\n", "").replace("\t", "")
+      const text = documentMetaData.editor.document
+        .getText(range)
+        .replace('\n', '')
+        .replace('\t', '');
       if (text.length === 0 || text === '' || text === ' ') {
-        return false
+        return false;
       }
-      return true
+      return true;
     })
     .forEach(problem => {
       const key = `${problem.path}@@${problem.id}`;
@@ -139,6 +167,7 @@ export const handleDocumentAnalyze = async (
         isDiscarded: problem.discarded,
         isEndorsed: problem.endorsed,
         isViewed: false,
+        fullFilePath: currentWorkSpaceFolder,
       };
       results[key] = { ...analyzeMetaData };
     });
@@ -149,20 +178,35 @@ export const handleDocumentAnalyze = async (
       type: 'Analysis_Error',
       data: '',
     });
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder
+      },
+    });
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
 
     return failedResponseReturn;
   }
 
-  Util.decorateCurrentEditorWithHighlights(
-    problems,
-    documentMetaData.editor,
-  );
+  const path = problems.map(item => item.path);
+
+  const isUserOnValidEditor = path.includes(documentMetaData.fileName);
+  if (isUserOnValidEditor) {
+    Util.decorateCurrentEditorWithHighlights(problems, documentMetaData.editor);
+  }
 
   await analyzeState.set(results);
   getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
     data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...results },
+  });
+
+  getExtensionEventEmitter().fire({
+    type: 'CURRENT_PROJECT',
+    data: {
+      name: currentWorkSpaceFolder
+    },
   });
 
   return verifiedResponse;
