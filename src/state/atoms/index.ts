@@ -56,10 +56,10 @@ export const identifiedProblems = atom<AnalyzeState | undefined>({
 
 export const currentEditor = atom<string | undefined>({
   default: undefined,
-  key: 'Metabob:currentEditor'
+  key: 'Metabob:currentEditor',
 })
 
 export const currentWorkSpaceProject = atom<string | undefined>({
   default: undefined,
-  key: 'Metabob:currentWorkSpaceProject'
+  key: 'Metabob:currentWorkSpaceProject',
 })

@@ -129,7 +129,11 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
           break;
         case EventDataType.CURRENT_FILE:
-          const filename: string | undefined = payload.fileName.split('/').pop();
+          const filename: string | undefined = payload.fileName
+            .split('/')
+            .pop()
+            ?.replace('.git', '');
+
           if (!filename) {
             setCurrentEditor(undefined);
             break;

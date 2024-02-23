@@ -34,6 +34,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   private readonly extensionContext: ExtensionContext;
   private extensionEventEmitter: EventEmitter<AnalysisEvents>;
   private eventEmitterQueue: Array<AnalysisEvents> = [];
+  private interval: NodeJS.Timeout | undefined = undefined;
 
   constructor(
     extensionPath: string,
@@ -44,7 +45,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.extensionPath = extensionPath;
     this.extensionURI = extensionURI;
     this.extensionContext = context;
-
     this.extensionEventEmitter = extensionEventEmitter;
   }
 
@@ -76,9 +76,73 @@ export class RecommendationWebView implements WebviewViewProvider {
     this._view = webviewView;
     this.activateWebviewMessageListener();
     this.activateExtensionEventListener();
+    this.sendDefaultEvents();
+  }
+
+  sendDefaultEvents() {
+    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
+    if (!getanalyzeState) return;
+    const editor = window.activeTextEditor;
+    if (!editor) return;
+    const currentWorkSpaceFolder = Util.getWorkspacePath();
+
+    if (this._view?.visible === true) {
+      setTimeout(() => {
+        this.extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: {
+            shouldResetRecomendation: true,
+            shouldMoveToAnalyzePage: true,
+            ...getanalyzeState,
+          },
+        });
+
+        this.extensionEventEmitter.fire({
+          type: 'CURRENT_FILE',
+          data: { ...editor.document },
+        });
+
+        this.extensionEventEmitter.fire({
+          type: 'CURRENT_PROJECT',
+          data: {
+            name: currentWorkSpaceFolder,
+          },
+        });
+      }, 600);
+    }
+  }
+
+  intervalHandler() {
+    if (this?._view === null || this?._view === undefined || !this?._view.webview) {
+      return;
+    }
+
+    if (!this._view.visible) {
+      return;
+    }
+
+    for (let i = 0; i < this.eventEmitterQueue.length; i++) {
+      const event = this.eventEmitterQueue[i];
+      debugChannel.appendLine(
+        'Metabob webview is visible now. Sending events: ' + this.eventEmitterQueue.length,
+      );
+
+      if (event) {
+        this?._view?.webview?.postMessage(event);
+      }
+    }
+
+    this.eventEmitterQueue = [];
+    debugChannel.appendLine(
+      'Metabob webview is visible now. Cleanup Events: ' + this.eventEmitterQueue.length,
+    );
+    debugChannel.appendLine('this.intervals: ' + this.interval);
+
+    clearInterval(this.interval);
   }
 
   activateExtensionEventListener(): void {
+    const self = this;
     this.extensionEventEmitter.event(event => {
       if (this?._view === null || this?._view === undefined || !this?._view.webview) {
         debugChannel.appendLine(
@@ -88,30 +152,17 @@ export class RecommendationWebView implements WebviewViewProvider {
         return;
       }
 
-      let interval: NodeJS.Timeout | undefined = undefined;
-
-      if (!this._view.visible) {
+      if (this._view.visible === false) {
+        debugChannel.appendLine('Metabob webview is not visible. Starting event queue.');
         this.eventEmitterQueue.push(event);
-        interval = setInterval(() => {
-          if (this?._view === null || this?._view === undefined || !this?._view.webview) {
-            return;
-          }
-
-          if (!this._view.visible) {
-            return;
-          }
-
-          const latestEvent = this.eventEmitterQueue.pop();
-          if (latestEvent) {
-            this?._view?.webview?.postMessage(latestEvent);
-          }
-
-          clearInterval(interval);
-          this.eventEmitterQueue = [];
-        }, 500);
+        if (!this.interval) {
+          this.interval = setInterval(this.intervalHandler.bind(self), 300);
+        }
         return;
       }
 
+      this.eventEmitterQueue = [];
+      clearInterval(this.interval);
       this._view.webview.postMessage(event);
     });
   }
@@ -401,7 +452,10 @@ export class RecommendationWebView implements WebviewViewProvider {
       throw new Error('handleApplyRecommendation: Results are undefined');
     }
 
-    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(results, documentMetadata.editor)
+    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(
+      results,
+      documentMetadata.editor,
+    );
 
     if (!isCurrentFileDecorated) {
       throw new Error('handleApplyRecommendation: could not decorate current file');
