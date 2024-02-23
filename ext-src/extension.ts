@@ -26,7 +26,6 @@ import { Analyze } from './state';
 import { Problem } from './types';
 
 export function activate(context: vscode.ExtensionContext): void {
-  let isChangingSelection = false;
   let previousEditor: vscode.TextEditor | undefined = undefined;
   bootstrapExtensionEventEmitter();
   debugChannel.show(true);
@@ -197,7 +196,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const isValidEditor = Util.isValidDocument(editor.document);
 
       if (isValidEditor) {
-        getExtensionEventEmitter().fire({
+        extensionEventEmitter.fire({
           type: 'Analysis_Completed',
           data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
@@ -294,11 +293,6 @@ export function activate(context: vscode.ExtensionContext): void {
         });
 
         extensionEventEmitter.fire({
-          type: 'Analysis_Completed',
-          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-        });
-
-        extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
           data: { ...activeTextEditor.document },
         });
@@ -309,6 +303,17 @@ export function activate(context: vscode.ExtensionContext): void {
             name: currentWorkSpaceFolder,
           },
         });
+
+        extensionEventEmitter.fire({
+          type: 'onDiscardSuggestionClicked:Success',
+          data: {},
+        });
+
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
+        });
+
         debugChannel.appendLine(
           'onDidOpenTextDocument: results have zero length. ' + documentMetaData.fileName,
         );
@@ -331,9 +336,9 @@ export function activate(context: vscode.ExtensionContext): void {
         },
       });
 
-      getExtensionEventEmitter().fire({
-        type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
+      extensionEventEmitter.fire({
+        type: 'onDiscardSuggestionClicked:Success',
+        data: {},
       });
 
       extensionEventEmitter.fire({
@@ -341,6 +346,11 @@ export function activate(context: vscode.ExtensionContext): void {
         data: {
           name: currentWorkSpaceFolder,
         },
+      });
+
+      extensionEventEmitter.fire({
+        type: 'Analysis_Completed',
+        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
     }),
   );
@@ -384,10 +394,6 @@ export function activate(context: vscode.ExtensionContext): void {
             hasWorkSpaceFolders: true,
           },
         });
-        getExtensionEventEmitter().fire({
-          type: 'Analysis_Completed',
-          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-        });
 
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
@@ -399,6 +405,16 @@ export function activate(context: vscode.ExtensionContext): void {
           data: {
             name: currentWorkSpaceFolder,
           },
+        });
+
+        extensionEventEmitter.fire({
+          type: 'onDiscardSuggestionClicked:Success',
+          data: {},
+        });
+
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
 
         debugChannel.appendLine(
@@ -418,11 +434,6 @@ export function activate(context: vscode.ExtensionContext): void {
         },
       });
 
-      getExtensionEventEmitter().fire({
-        type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-      });
-
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
         data: { ...e.document },
@@ -433,6 +444,16 @@ export function activate(context: vscode.ExtensionContext): void {
         data: {
           name: currentWorkSpaceFolder,
         },
+      });
+
+      extensionEventEmitter.fire({
+        type: 'onDiscardSuggestionClicked:Success',
+        data: {},
+      });
+
+      extensionEventEmitter.fire({
+        type: 'Analysis_Completed',
+        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
 
       previousEditor = e;

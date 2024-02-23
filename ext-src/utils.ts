@@ -66,9 +66,19 @@ export default class Utils {
   static sleep = (ms: number): Promise<void> => new Promise(res => setTimeout(res, ms));
 
   static getWorkspacePath(): string | undefined {
-    const folders = workspace.workspaceFolders;
+    let folders = workspace.workspaceFolders;
+    let path = folders ? folders![0].uri.fsPath : undefined;
+    if (path === undefined) {
+      return undefined
+    }
 
-    return folders ? folders![0].uri.fsPath : undefined;
+    const splitPath: string | undefined = path.split('/').pop()?.replace('.git', '');
+
+    if (splitPath === undefined) {
+      return undefined
+    }
+
+    return splitPath
   }
 
   static getResource(rel: string): string {
