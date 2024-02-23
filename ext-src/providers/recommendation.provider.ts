@@ -108,7 +108,12 @@ export class RecommendationWebView implements WebviewViewProvider {
             name: currentWorkSpaceFolder,
           },
         });
-      }, 600);
+
+        this.extensionEventEmitter.fire({
+          type: 'onDiscardSuggestionClicked:Success',
+          data: {},
+        });
+      }, 500);
     }
   }
 
@@ -133,12 +138,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
 
     this.eventEmitterQueue = [];
-    debugChannel.appendLine(
-      'Metabob webview is visible now. Cleanup Events: ' + this.eventEmitterQueue.length,
-    );
-    debugChannel.appendLine('this.intervals: ' + this.interval);
-
-    clearInterval(this.interval);
   }
 
   activateExtensionEventListener(): void {
