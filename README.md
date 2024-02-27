@@ -11,7 +11,7 @@ Metabob is an AI-based code review tool that utilizes a combination of Graph Neu
 * Java
 
 # AI Code Review
-* Automatically detect prolbems, vulnerabilities, and code optimization opportunities
+* Automatically detect problems, vulnerabilities, and code optimization opportunities
 * View natural language explanations for the detected problems
 * Generate code recommendations to fix the detected problems
 * Give feedback on the detections to optimize model performance (discard, endorse)
