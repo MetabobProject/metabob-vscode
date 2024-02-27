@@ -196,7 +196,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const isValidEditor = Util.isValidDocument(editor.document);
 
       if (isValidEditor) {
-        getExtensionEventEmitter().fire({
+        extensionEventEmitter.fire({
           type: 'Analysis_Completed',
           data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
@@ -216,19 +216,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument((e: vscode.TextDocument) => {
-      const currentWorkSpaceFolder = Util.getRootFolderName();
-      const documentMetaData = Util.extractMetaDataFromDocument(e);
-      if (!documentMetaData.fileName) {
-        debugChannel.appendLine(
-          'onDidOpenTextDocument: fileName  is undefined. ' +
-          '\n' +
-          documentMetaData.relativePath +
-          '\n' +
-          documentMetaData.filePath,
-        );
-        return;
-      }
-
+      const bufferedEParam: vscode.TextDocument = {
+        ...e,
+        fileName: e.fileName.replace('.git', ''),
+      };
       const analyzeState = new Analyze(context);
       const analyzeValue = analyzeState.get()?.value;
       if (!analyzeValue) {
@@ -237,10 +228,55 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      const results: Problem[] | undefined = Util.getCurrentEditorProblems(
-        analyzeValue,
-        documentMetaData.fileName,
+      const activeTextEditor = vscode.window.activeTextEditor;
+      if (!activeTextEditor) {
+        debugChannel.appendLine('onDidOpenTextDocument: activeTextEditor is undefined ');
+
+        return;
+      }
+
+      if (activeTextEditor.document.fileName !== bufferedEParam.fileName) {
+        debugChannel.appendLine(
+          'onDidOpenTextDocument: activeTextEditor.document.fileName ' +
+          activeTextEditor.document.fileName +
+          ' e.fileName ' +
+          e.fileName,
+        );
+
+        return;
+      }
+
+      const currentWorkSpaceFolder = Util.getRootFolderName();
+      debugChannel.appendLine(
+        'onDidOpenTextDocument: currentWorkSpaceFolder ' + currentWorkSpaceFolder,
       );
+      const documentMetaData = Util.extractMetaDataFromDocument(bufferedEParam);
+      let fileName: string | undefined = undefined;
+
+      if (documentMetaData.fileName) {
+        debugChannel.appendLine(
+          'onDidOpenTextDocument: documentMetaData.fileName: ' + documentMetaData.fileName,
+        );
+        fileName = documentMetaData.fileName;
+      }
+
+      if (!fileName && documentMetaData.filePath) {
+        const splitKey: string | undefined = documentMetaData.filePath
+          .split('/')
+          .pop()
+          ?.replace('.git', '');
+        if (splitKey) {
+          fileName = splitKey;
+        }
+      }
+      debugChannel.appendLine('onDidOpenTextDocument: fileName: ' + fileName);
+
+      if (!fileName) {
+        debugChannel.appendLine('onDidOpenTextDocument: fileName is undefined. ' + fileName);
+        return;
+      }
+
+      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, fileName);
       if (!results) {
         debugChannel.appendLine('onDidOpenTextDocument: results is undefined');
 
@@ -256,14 +292,9 @@ export function activate(context: vscode.ExtensionContext): void {
           },
         });
 
-        getExtensionEventEmitter().fire({
-          type: 'Analysis_Completed',
-          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-        });
-
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...e },
+          data: { ...activeTextEditor.document },
         });
 
         extensionEventEmitter.fire({
@@ -272,6 +303,17 @@ export function activate(context: vscode.ExtensionContext): void {
             name: currentWorkSpaceFolder,
           },
         });
+
+        extensionEventEmitter.fire({
+          type: 'onDiscardSuggestionClicked:Success',
+          data: {},
+        });
+
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
+        });
+
         debugChannel.appendLine(
           'onDidOpenTextDocument: results have zero length. ' + documentMetaData.fileName,
         );
@@ -279,15 +321,11 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      const activeTextEditor = vscode.window.activeTextEditor;
-      if (!activeTextEditor) return;
-      if (activeTextEditor.document.fileName !== e.fileName) return;
-
       Util.decorateCurrentEditorWithHighlights(results, activeTextEditor);
 
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...e },
+        data: { ...activeTextEditor.document },
       });
 
       extensionEventEmitter.fire({
@@ -298,9 +336,9 @@ export function activate(context: vscode.ExtensionContext): void {
         },
       });
 
-      getExtensionEventEmitter().fire({
-        type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
+      extensionEventEmitter.fire({
+        type: 'onDiscardSuggestionClicked:Success',
+        data: {},
       });
 
       extensionEventEmitter.fire({
@@ -308,6 +346,11 @@ export function activate(context: vscode.ExtensionContext): void {
         data: {
           name: currentWorkSpaceFolder,
         },
+      });
+
+      extensionEventEmitter.fire({
+        type: 'Analysis_Completed',
+        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
     }),
   );
@@ -351,10 +394,6 @@ export function activate(context: vscode.ExtensionContext): void {
             hasWorkSpaceFolders: true,
           },
         });
-        getExtensionEventEmitter().fire({
-          type: 'Analysis_Completed',
-          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-        });
 
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
@@ -366,6 +405,16 @@ export function activate(context: vscode.ExtensionContext): void {
           data: {
             name: currentWorkSpaceFolder,
           },
+        });
+
+        extensionEventEmitter.fire({
+          type: 'onDiscardSuggestionClicked:Success',
+          data: {},
+        });
+
+        extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
 
         debugChannel.appendLine(
@@ -385,11 +434,6 @@ export function activate(context: vscode.ExtensionContext): void {
         },
       });
 
-      getExtensionEventEmitter().fire({
-        type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-      });
-
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
         data: { ...e.document },
@@ -400,6 +444,16 @@ export function activate(context: vscode.ExtensionContext): void {
         data: {
           name: currentWorkSpaceFolder,
         },
+      });
+
+      extensionEventEmitter.fire({
+        type: 'onDiscardSuggestionClicked:Success',
+        data: {},
+      });
+
+      extensionEventEmitter.fire({
+        type: 'Analysis_Completed',
+        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
       });
 
       previousEditor = e;

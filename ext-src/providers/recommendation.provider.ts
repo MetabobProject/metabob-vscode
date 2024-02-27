@@ -23,7 +23,6 @@ import { BackendService, GetChatGPTToken } from '../config';
 import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
-import debugChannel from '../debug';
 import { AnalysisEvents } from '../events';
 import { Problem } from '../types';
 
@@ -34,6 +33,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   private readonly extensionContext: ExtensionContext;
   private extensionEventEmitter: EventEmitter<AnalysisEvents>;
   private eventEmitterQueue: Array<AnalysisEvents> = [];
+  private interval: NodeJS.Timeout | undefined = undefined;
 
   constructor(
     extensionPath: string,
@@ -44,7 +44,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.extensionPath = extensionPath;
     this.extensionURI = extensionURI;
     this.extensionContext = context;
-
     this.extensionEventEmitter = extensionEventEmitter;
   }
 
@@ -76,42 +75,83 @@ export class RecommendationWebView implements WebviewViewProvider {
     this._view = webviewView;
     this.activateWebviewMessageListener();
     this.activateExtensionEventListener();
+    this.sendDefaultEvents();
+  }
+
+  sendDefaultEvents() {
+    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
+    if (!getanalyzeState) return;
+    const editor = window.activeTextEditor;
+    if (!editor) return;
+    const currentWorkSpaceFolder = Util.getRootFolderName();
+
+    if (this._view?.visible === true) {
+      setTimeout(() => {
+        this.extensionEventEmitter.fire({
+          type: 'CURRENT_FILE',
+          data: { ...editor.document },
+        });
+
+        this.extensionEventEmitter.fire({
+          type: 'CURRENT_PROJECT',
+          data: {
+            name: currentWorkSpaceFolder,
+          },
+        });
+
+        this.extensionEventEmitter.fire({
+          type: 'onDiscardSuggestionClicked:Success',
+          data: {},
+        });
+
+        this.extensionEventEmitter.fire({
+          type: 'Analysis_Completed',
+          data: {
+            shouldResetRecomendation: true,
+            shouldMoveToAnalyzePage: true,
+            ...getanalyzeState,
+          },
+        });
+      }, 500);
+    }
+  }
+
+  intervalHandler() {
+    if (this?._view === null || this?._view === undefined || !this?._view.webview) {
+      return;
+    }
+
+    if (!this._view.visible) {
+      return;
+    }
+
+    for (let i = 0; i < this.eventEmitterQueue.length; i++) {
+      const event = this.eventEmitterQueue[i];
+      if (event) {
+        this?._view?.webview?.postMessage(event);
+      }
+    }
+
+    clearInterval(this.interval);
   }
 
   activateExtensionEventListener(): void {
+    const self = this;
     this.extensionEventEmitter.event(event => {
       if (this?._view === null || this?._view === undefined || !this?._view.webview) {
-        debugChannel.appendLine(
-          `Metabob: this.view.webview is undefined and got event ${JSON.stringify(event)}`,
-        );
 
         return;
       }
 
-      let interval: NodeJS.Timeout | undefined = undefined;
-
-      if (!this._view.visible) {
+      if (this._view.visible === false) {
         this.eventEmitterQueue.push(event);
-        interval = setInterval(() => {
-          if (this?._view === null || this?._view === undefined || !this?._view.webview) {
-            return;
-          }
-
-          if (!this._view.visible) {
-            return;
-          }
-
-          const latestEvent = this.eventEmitterQueue.pop();
-          if (latestEvent) {
-            this?._view?.webview?.postMessage(latestEvent);
-          }
-
-          clearInterval(interval);
-          this.eventEmitterQueue = [];
-        }, 500);
+        if (this.interval !== undefined) {
+          this.interval = setInterval(this.intervalHandler.bind(self), 300);
+        }
         return;
       }
 
+      this.eventEmitterQueue = [];
       this._view.webview.postMessage(event);
     });
   }
@@ -319,13 +359,14 @@ export class RecommendationWebView implements WebviewViewProvider {
   postInitData(): void {
     const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
     const currentEditor = window.activeTextEditor;
+    const currentWorkSpaceFolder = Util.getRootFolderName();
 
     if (
       this._view === null ||
       this._view === undefined ||
       this._view.webview === undefined ||
-      !currentEditor ||
-      this._view.visible === false
+      currentEditor === undefined ||
+      currentWorkSpaceFolder === undefined
     ) {
       return;
     }
@@ -334,16 +375,30 @@ export class RecommendationWebView implements WebviewViewProvider {
       initData?: any;
       hasOpenTextDocuments?: boolean;
       hasWorkSpaceFolders?: boolean;
+      currentWorkSpaceFolder?: string
+      currentFile?: any
     } = {};
 
     if (getanalyzeState) {
       initPayload.initData = { ...getanalyzeState };
     }
 
+    if (currentWorkSpaceFolder) {
+      initPayload.currentWorkSpaceFolder = currentWorkSpaceFolder
+    }
+
+    if (currentEditor) {
+      initPayload.currentFile = { ...currentEditor.document }
+    }
+
     initPayload.hasOpenTextDocuments = Util.hasOpenTextDocuments();
     initPayload.hasWorkSpaceFolders = Util.hasWorkspaceFolder();
+    this._view.webview.postMessage({
+      type: 'initData',
+      data: { ...initPayload },
+    });
 
-    this.extensionEventEmitter.fire({
+    this._view.webview.postMessage({
       type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
       data: {
         hasOpenTextDocuments: true,
@@ -351,24 +406,22 @@ export class RecommendationWebView implements WebviewViewProvider {
       },
     });
 
-    this.extensionEventEmitter.fire({
-      type: 'Analysis_Completed',
-      data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...getanalyzeState },
+    this._view.webview.postMessage({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder,
+      },
     });
 
-    this.extensionEventEmitter.fire({
+    this._view.webview.postMessage({
       type: 'CURRENT_FILE',
       data: { ...currentEditor.document },
     });
 
-    this._view.webview
-      .postMessage({
-        type: 'initData',
-        data: { ...initPayload },
-      })
-      .then(undefined, err => {
-        window.showErrorMessage(err);
-      });
+    this._view.webview.postMessage({
+      type: 'Analysis_Completed',
+      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...getanalyzeState },
+    });
   }
 
   async handleApplyRecommendation(input: string, initData: CurrentQuestionState) {
@@ -401,7 +454,10 @@ export class RecommendationWebView implements WebviewViewProvider {
       throw new Error('handleApplyRecommendation: Results are undefined');
     }
 
-    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(results, documentMetadata.editor)
+    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(
+      results,
+      documentMetadata.editor,
+    );
 
     if (!isCurrentFileDecorated) {
       throw new Error('handleApplyRecommendation: could not decorate current file');

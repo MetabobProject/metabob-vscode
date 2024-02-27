@@ -33,6 +33,13 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     }
 
     if (!sessionToken || !analyzeStateValue) {
+      getExtensionEventEmitter().fire({
+        type: 'CURRENT_PROJECT',
+        data: {
+          name: currentWorkSpaceFolder
+        },
+      });
+
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
         data: { ...documentMetaData.editor.document },

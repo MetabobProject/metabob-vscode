@@ -53,7 +53,9 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           break;
         case EventDataType.ANALYSIS_COMPLETED:
           const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
-          setIdentifiedProblems(problem as AnalyzeState);
+          if (problem) {
+            setIdentifiedProblems(problem as AnalyzeState);
+          }
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
             setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
@@ -78,7 +80,17 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
           break;
         case EventDataType.INIT_DATA:
-          const { hasOpenTextDocuments, hasWorkSpaceFolders } = payload;
+          const {
+            hasOpenTextDocuments,
+            hasWorkSpaceFolders,
+            initData,
+            currentWorkSpaceFolder,
+            currentFile,
+          } = payload;
+
+          console.log('INIT_DATA: ', payload);
+
+          setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
 
           if (hasOpenTextDocuments) {
             setHasOpenTextDocuments(hasOpenTextDocuments);
@@ -86,6 +98,28 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
 
           if (hasWorkSpaceFolders) {
             setHasWorkSpaceFolders(hasWorkSpaceFolders);
+          }
+
+          if (initData) {
+            setIdentifiedProblems(initData as AnalyzeState);
+          }
+
+          if (currentWorkSpaceFolder) {
+            setCurrentWorkSpaceProject(currentWorkSpaceFolder);
+          }
+
+          if (currentFile) {
+            const filename: string | undefined = currentFile.fileName
+              .split('/')
+              .pop()
+              ?.replace('.git', '');
+
+            if (!filename) {
+              setCurrentEditor(undefined);
+
+              return;
+            }
+            setCurrentEditor(filename);
           }
           break;
         case EventDataType.GENERATE_CLICKED_GPT_RESPONSE:
@@ -129,10 +163,15 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
           break;
         case EventDataType.CURRENT_FILE:
-          const filename: string | undefined = payload.fileName.split('/').pop();
+          const filename: string | undefined = payload.fileName
+            .split('/')
+            .pop()
+            ?.replace('.git', '');
+
           if (!filename) {
             setCurrentEditor(undefined);
-            break;
+
+            return;
           }
           setCurrentEditor(filename);
           break;
