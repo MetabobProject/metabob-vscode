@@ -7,7 +7,7 @@ interface RecommendationProps {
   text: string;
 }
 export const Recommendation = ({ text }: RecommendationProps): JSX.Element => {
-  const markedDownText = `~~~python\n${text}~~~`;
+  const markedDownText = `~~~${text}~~~`;
 
   return (
     <>
