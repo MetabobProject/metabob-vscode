@@ -42,12 +42,12 @@ Metabob is an AI-based code review tool that utilizes a combination of Graph Neu
 Users can request Metabob to analyze the file they are currently working on by:
 * Using the "**ANALYZE**" -button on the Metabob extension side panel
 
-![analyze-document-sidepanel](v2-analyze-sidepanel.png)
+![analyze-document-sidepanel](docs/img/v2-analyze-sidepanel.png)
 
 
 * Opening the command palette and using the command "**Metabob: Analyze Document**"
 
-![analyze-document-commandpalette](v2-analyzedocument-commandpalette.png)
+![analyze-document-commandpalette](docs/img/v2-analyzedocument-commandpalette.png)
 
 
 * Saving the file (requires "**Analyze Document On Save**" to be enabled on the extension settings
@@ -55,19 +55,19 @@ Users can request Metabob to analyze the file they are currently working on by:
 
 Users can confirm that the Metabob Analysis is running by seeing a loading icon next to a text "Metabob: Analyzing Document" on the bottom left corner of the VS Code editor.
 
-![analysis-running](v2-analysis-running.png)
+![analysis-running](docs/img/v2-analysis-running.png)
 
 
 Once the analysis has finished, users can see problematic areas highlighted in red on the file they are currently viewing and requested analysis for from Metabob.
 
-![highlighted-problem](v2-problem-highlight.png)
+![highlighted-problem](docs/img/v2-problem-highlight.png)
 
 
 2. View problem details
 
 Users can view problem details by hovering over the red highlighted problem regions in their code and clicking "**More Details**"
 
-![more-details](v2-view-more-details.png)
+![more-details](docs/img/v2-view-more-details.png)
 ​
 
 3. Generate code recommendations to fix detected problems
@@ -75,27 +75,27 @@ Users can view problem details by hovering over the red highlighted problem regi
 Users can generate code recommendations to fix the detected problems by:
 * Hovering over the red highlighted problem regions in their and clicking "**Fix**"
 
-![fix-problem](v2-fix-and-details.png)
+![fix-problem](docs/img/v2-fix-and-details.png)
 
 
 * Clicking the "**GENERATE RECOMMENDATION**" -button on the Metabob extension side panel when viewing problem details
 
-![generate-recommendation](v2-generate-rec-sidepanel.png)
+![generate-recommendation](docs/img/v2-generate-rec-sidepanel.png)
 
 
 If users think that the generated code recommendation is not correct, they can generate another recommendation by using the "**REGENERATE**" -button
 
-![regenerate-recommendation](v2-regenerate-rec.png)
+![regenerate-recommendation](docs/img/v2-regenerate-rec.png)
 
 
 Users can view the different generated code recommendations they have asked to generate by using the arrows below the code generated code recommendation
 
-![view-recommendations](v2-recommendation-pagination.png)
+![view-recommendations](docs/img/v2-recommendation-pagination.png)
 
 
 Users can apply the generated code recommendations to their code by clicking the "APPLY" -button
 
-![apply-recommendation](v2-apply-recommendation.png)
+![apply-recommendation](docs/img/v2-apply-recommendation.png)
 ​
 
 
