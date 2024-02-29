@@ -38,9 +38,6 @@ export const AnalyzePage = ({
           return false;
         }
 
-        console.log('problem.fullFilePath: ', problem.fullFilePath);
-        console.log('currentWorkSpaceProject: ', currentWorkSpaceProject);
-
         if (problem.fullFilePath === currentWorkSpaceProject) {
           return true;
         }
@@ -54,9 +51,6 @@ export const AnalyzePage = ({
         if (splitString === undefined || problem.endLine - 1 < 0 || problem.startLine - 1 < 0) {
           return false;
         }
-
-        console.log('currentEditor: ', currentEditor);
-        console.log('splitString: ', splitString);
 
         if (splitString !== currentEditor && problem.isDiscarded === false) {
           return true;

@@ -88,8 +88,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             currentFile,
           } = payload;
 
-          console.log('INIT_DATA: ', payload);
-
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
 
           if (hasOpenTextDocuments) {
