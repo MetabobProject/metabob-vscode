@@ -1,68 +1,106 @@
-# Metabob: Generative AI for debugging & refactoring Python code
+# Metabob: Generative AI for debugging & refactoring code
 
-This extension allows you to analyze, debug, and refactor Python code. Metabob uses a graph-attention-based neural network to detect and classify problematic code and generates descriptions and code recommendations for the detected problems using an LLM of your choice.​ Supercharge your debugging with AI-powered code reviews!  
-
-Metabob analyzes all files of the project at once and automatically detects complex logical and contextual problems such as unhandled edge cases, memory leaks, and hundreds of other categories using its proprietary neural network. Additionally, you can generate code recommendations for fixes and refactorings as well as ask questions about detections using an integrated LLM of your choice, such as OpenAI’s GPT models.  
-
-Out of the box, Metabob uses a fine-tuned LLM model to generate problem descriptions and code recommendations for fixes and refactorings. If you’d like to change the integrated LLM, just go to settings and input an api key to switch to your preferred model.​​
+Metabob is an AI-based code review tool that utilizes a combination of Graph Neural Networks (GNNs) and Generative AI (LLMs).  Using the underlying techniques, Metabob can detect complex logical problems and vulnerabilities, as well as general opportunities for code quality improvements. Metabob explains its detections in natural language and can generate code recommendations to fix the detections using an integrated fine-tuned LLM. 
 ​
-# Features
-* Automatically detect and classify problems. 
-* View problem descriptions to understand the detected problems
-* Ask questions about the problem descriptions and pass in more context about your code to generate more accurate problem descriptions
+# Supported Languages
+* Python
+* JavaScript
+* TypeScript
+* C
+* C++
+* Java
+
+# AI Code Review
+* Automatically detect problems, vulnerabilities, and code optimization opportunities
+* View natural language explanations for the detected problems
 * Generate code recommendations to fix the detected problems
-* Ask questions about the code recommendations and/or pass in more context about your code to generate more context-sensitive code recommendations if needed
+* Give feedback on the detections to optimize model performance (discard, endorse)
+
+# Features
+* Problem, vulnerability & code optimization detection
+* Detection explanations
+* LLM interaction: generate code recommendations
 ​​
 # Settings​
 
 * To disable Metabob anlaysis from running every time code is saved, go to the extension settings and deselect the checkbox under the text "Metabob: **Analyze Document On Save**"  
+
 ![](docs/img/docs-analyze-on-save.png)
 ​
-* To change the backend LLM model Metabob uses to generate problem descriptions and code recommendations, select your preferred model from the "Metabob: **Backend Selection**" drop down menu  
+* To change the backend LLM model Metabob uses to generate problem descriptions and code recommendations, select your preferred model from the "Metabob: **Backend Selection**" drop down menu
+
 ![](docs/img/docs-backend-selection.png)
 ​
-* If you prefer to use one of the openai models, you need to authenticate by inputting your openai API key into the text field under "Metabob: ChatGPT Token" text field on Metabob's extension settings  
+* If you prefer to use one of the openai models, you need to authenticate by inputting your openai API key into the text field under "Metabob: ChatGPT Token" text field on Metabob's extension settings 
+
 ![](docs/img/docs-openai-token.png)
 
 # Usage​
 ​
-1. Request an analysis by either saving the file (Metabob by default performs an analysis when a file is saved, this can be changed in settings) or by opening the command palette and choosing **_"Metabob: Analyze Document"_**  
-![analyze-document](docs/img/docs-analyze-document.png)
+1. Request an analysis
+
+Users can request Metabob to analyze the file they are currently working on by:
+* Using the "**ANALYZE**" -button on the Metabob extension side panel
+
+![analyze-document-sidepanel](docs/img/v2-analyze-sidepanel.png)
+
+
+* Opening the command palette and using the command "**Metabob: Analyze Document**"
+
+![analyze-document-commandpalette](docs/img/v2-analyzedocument-commandpalette.png)
+
+
+* Saving the file (requires "**Analyze Document On Save**" to be enabled on the extension settings
+
+
+Users can confirm that the Metabob Analysis is running by seeing a loading icon next to a text "Metabob: Analyzing Document" on the bottom left corner of the VS Code editor.
+
+![analysis-running](docs/img/v2-analysis-running.png)
+
+
+Once the analysis has finished, users can see problematic areas highlighted in red on the file they are currently viewing and requested analysis for from Metabob.
+
+![highlighted-problem](docs/img/v2-problem-highlight.png)
+
+
+2. View problem details
+
+Users can view problem details by hovering over the red highlighted problem regions in their code and clicking "**More Details**"
+
+![more-details](docs/img/v2-view-more-details.png)
 ​
-2. Once the analysis is running, you can see a loading icon with a text "Metabob: Analyzing Document" on the bottom bar of VScode​  
-![loading-message](docs/img/docs-loading.png)
+
+3. Generate code recommendations to fix detected problems
+
+Users can generate code recommendations to fix the detected problems by:
+* Hovering over the red highlighted problem regions in their and clicking "**Fix**"
+
+![fix-problem](docs/img/v2-fix-and-details.png)
+
+
+* Clicking the "**GENERATE RECOMMENDATION**" -button on the Metabob extension side panel when viewing problem details
+
+![generate-recommendation](docs/img/v2-generate-rec-sidepanel.png)
+
+
+If users think that the generated code recommendation is not correct, they can generate another recommendation by using the "**REGENERATE**" -button
+
+![regenerate-recommendation](docs/img/v2-regenerate-rec.png)
+
+
+Users can view the different generated code recommendations they have asked to generate by using the arrows below the code generated code recommendation
+
+![view-recommendations](docs/img/v2-recommendation-pagination.png)
+
+
+Users can apply the generated code recommendations to their code by clicking the "APPLY" -button
+
+![apply-recommendation](docs/img/v2-apply-recommendation.png)
 ​
-3. Once the analysis has completed, you can see problematic code regions highlighted in red  
-![red-highlight](docs/img/docs-red-highlight.png)
-​
-4. Hover over the highlighted area to open Metabob's pop-up box with problem category, short description of the problem, and commands **_"Fix"_** and **_"More Details"_**  
-![problem-pop-up](docs/img/docs-pop-up.png)
-​
-5. On the pop-up box, click **_"Fix"_** to open Metabob's extension panel to view more details about the problem and automatically generate a code recommendation for a fix **OR** click **_"More Details"_** to open the extension panel to just view more details about the problem  
-![problem-pop-up-commands](docs/img/docs-popup-commands.png)
-​
-6. You can **_"discard"_** the problem if you think it is invalid or useless. You can **_"endorse"_** the problem if you think it is valid or useful  
-![discard-or-endorse](docs/img/docs-discard-endorse.png)
-​
-7. Ask questions about the problem description or pass in more context by using the text field below the problem description and clicking **_"ask"_** after  
-![problem-ask-question](docs/img/docs-probquestion.png)
-​
-8. After passing in more context, you can regenerate the problem description by clicking **_"regenerate"_**  
-![regenerate-description](docs/img/docs-desc-regenerate.png)
-​
-9. You can generate a code recommendation for a fix by clicking **_"generate"_** on the right side from **"Recommendation"**  
-![generate-recommendation](docs/img/docs-coderec-generate.png)
-​
-10. You can apply the code recommendation to your code by clicking **_"apply'_**  
-![apply-recommendation](docs/img/docs-coderec-apply.png)
-​
-11. You can ask questions and pass in more context for the code recommendation by using the text field below and clicking **_"ask"_**  
-![update-recommendation](docs/img/docs-coderec-ask.png)
-​
-12. After passing in more context and asking questions, you can regenerate the code recommendation by clicking **_"regenerate"_**  
-![regenerate-recommendation](docs/img/docs-coderec-regenerate.png)
+
 
 # Data Policy
 ​
 Metabob deletes all data from it's problem detection model one hour after the user has made their last API call. However, as Metabob integrates with third party LLMs to generate problem descriptions and code recommendations to perform fixes, Metabob has to pass data to these models and cannot control how the data is used by the companies hosting these LLMs. ​
 ​
+
