@@ -1,9 +1,9 @@
-name: Publish
+name: Pre-Release-Publish
 
 on:
   push:
     tags:
-      - '*.*.*'
+      - '*.*.*-pre'
     
 jobs:
   publish:    
@@ -23,4 +23,4 @@ jobs:
       - name: Package Extension
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx vsce publish
+        run: npx vsce publish --pre-release
