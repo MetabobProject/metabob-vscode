@@ -31,6 +31,9 @@ export const handleDocumentAnalyze = async (
   jobId?: string,
   suppressRateLimitErrors = false,
 ) => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
   const currentWorkSpaceFolder = Util.getRootFolderName();
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.fileName !== metaDataDocument.filePath) {
@@ -168,6 +171,7 @@ export const handleDocumentAnalyze = async (
         isEndorsed: problem.endorsed,
         isViewed: false,
         fullFilePath: currentWorkSpaceFolder,
+        expiration: tomorrow.toISOString(),
       };
       results[key] = { ...analyzeMetaData };
     });
