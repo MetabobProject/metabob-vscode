@@ -127,7 +127,7 @@
         "metabob.analyzeDocumentOnSave": {
           "description": "Analyze Document On Save",
           "type": "boolean",
-          "default": true,
+          "default": false,
           "category": "Metabob"
         },
         "metabob.backendSelection": {

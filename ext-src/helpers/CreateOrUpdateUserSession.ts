@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import { GetAPIConfig, GetRequestParamId } from '../config'
 import { sessionService, CreateSessionRequest } from '../services'
 import { Session } from '../state'
+import debugChannel from '../debug'
 
 export async function createOrUpdateUserSession(context: vscode.ExtensionContext): Promise<undefined> {
   const sessionState = new Session(context)
@@ -15,6 +16,39 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
   }
 
   const sessionToken = sessionState.get()?.value
+
+  const one_minute = 60_000;
+  const thirty_minutes = one_minute * 30;
+
+  // Periodically checking the session
+  setInterval(() => {
+    sessionService.getUserSession(sessionToken || '')
+      .then((response) => {
+        if (response.isOk()) {
+          // @ts-ignore
+          const status = response.value?.httpConfig?.status;
+          if (status === 200) {
+            debugChannel.appendLine("Metabob: Successfully checked the session of the user \n");
+          } else if (status === 404) {
+            debugChannel.appendLine("Metabob: Session of User does not exist. Recreating it again.. \n");
+            sessionService.createUserSession(payload)
+              .then((response) => {
+                if (response.isOk()) {
+                  if (response.value?.session) {
+                    sessionState.set(response.value?.session)
+                  }
+                }
+              })
+          }
+        }
+      })
+      .catch((error) => {
+        debugChannel.appendLine("Metabob: Error while activating sesstion \n" + JSON.stringify(error));
+      })
+
+  }, thirty_minutes);
+
+
   if (sessionToken) {
     payload['sessionToken'] = sessionToken
   }

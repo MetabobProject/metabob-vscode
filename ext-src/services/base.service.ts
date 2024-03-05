@@ -1,47 +1,50 @@
-import axios, { AxiosRequestConfig } from 'axios'
-import { err, ok, Result } from 'rusty-result-ts'
-import { GetAPIBaseURLConfig } from '../config'
-import { ApiErrorBase } from './base.error'
-import FormData from 'form-data'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { err, ok, Result } from 'rusty-result-ts';
+import { GetAPIBaseURLConfig } from '../config';
+import { ApiErrorBase } from './base.error';
+import FormData from 'form-data';
 
-const apiBase = GetAPIBaseURLConfig()
+const apiBase = GetAPIBaseURLConfig();
 
 export class ApiServiceBase {
-  protected urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase
+  protected urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase;
 
   /**
    * Creates a new service instance.
    * @param path A base path for all requests this service will make. Defaults to `/api`.
    */
   public constructor() {
-    this.urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase
+    this.urlBase = apiBase === undefined || apiBase === '' ? 'https://ide.metabob.com' : apiBase;
   }
 
   /**
    * Returns a new instance of the base config for all requests this service makes.
    * @protected
    */
-  protected getConfig(sessionToken?: string, formDataHeaders?: FormData.Headers): AxiosRequestConfig {
+  protected getConfig(
+    sessionToken?: string,
+    formDataHeaders?: FormData.Headers,
+  ): AxiosRequestConfig {
     const config: AxiosRequestConfig = {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
-    }
+        'Access-Control-Allow-Origin': '*',
+      },
+    };
 
     if (sessionToken && config.headers) {
-      config.headers.Authorization = `Bearer ${sessionToken}`
+      config.headers.Authorization = `Bearer ${sessionToken}`;
     }
 
     if (formDataHeaders && config.headers) {
       config.headers = {
         ...config.headers,
-        ...formDataHeaders
-      }
+        ...formDataHeaders,
+      };
     }
 
-    return config
+    return config;
   }
 
   /**
@@ -50,10 +53,13 @@ export class ApiServiceBase {
    * @param configOverrides A config object to merge onto the base config.
    * @protected
    */
-  protected async get<T>(path = '', configOverrides: AxiosRequestConfig): Promise<Result<T | null, ApiErrorBase>> {
+  protected async get<T>(
+    path = '',
+    configOverrides: AxiosRequestConfig,
+  ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.get(fullPath, config)
-    })
+      return axios.get(fullPath, config);
+    });
   }
 
   /**
@@ -66,11 +72,11 @@ export class ApiServiceBase {
   protected async post<T>(
     path = '',
     data: unknown = undefined,
-    configOverrides: AxiosRequestConfig
+    configOverrides: AxiosRequestConfig,
   ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.post(fullPath, data, config)
-    })
+      return axios.post(fullPath, data, config);
+    });
   }
 
   /**
@@ -83,11 +89,11 @@ export class ApiServiceBase {
   protected async put<T>(
     path = '',
     data: unknown = undefined,
-    configOverrides: AxiosRequestConfig
+    configOverrides: AxiosRequestConfig,
   ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.put(fullPath, data, config)
-    })
+      return axios.put(fullPath, data, config);
+    });
   }
 
   /**
@@ -100,11 +106,11 @@ export class ApiServiceBase {
   protected async patch<T>(
     path = '',
     data: unknown = undefined,
-    configOverrides: AxiosRequestConfig
+    configOverrides: AxiosRequestConfig,
   ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.patch(fullPath, data, config)
-    })
+      return axios.patch(fullPath, data, config);
+    });
   }
 
   /**
@@ -113,25 +119,38 @@ export class ApiServiceBase {
    * @param configOverrides A config object to merge onto the base config.
    * @protected
    */
-  protected async delete<T>(path = '', configOverrides: AxiosRequestConfig): Promise<Result<T | null, ApiErrorBase>> {
+  protected async delete<T>(
+    path = '',
+    configOverrides: AxiosRequestConfig,
+  ): Promise<Result<T | null, ApiErrorBase>> {
     return await this.requestResultWrapper<T>(path, configOverrides, (fullPath, config) => {
-      return axios.delete(fullPath, config)
-    })
+      return axios.delete(fullPath, config);
+    });
   }
 
   private async requestResultWrapper<T>(
     subPath: string,
     config: AxiosRequestConfig,
-    request: (fullPath: string, config: AxiosRequestConfig | undefined) => Promise<{ data: unknown } | null>
+    request: (
+      fullPath: string,
+      config: AxiosRequestConfig | undefined,
+    ) => Promise<AxiosResponse<T>>,
   ): Promise<Result<T | null, ApiErrorBase>> {
     if (subPath.length > 0 && subPath[0] !== '/') {
-      subPath = `/${subPath}`
+      subPath = `/${subPath}`;
     }
     try {
-      const responseData: T | null = ((await request(`${this.urlBase}${subPath}`, config))?.data as T) ?? null
-      return ok(responseData)
+      const response = (await request(`${this.urlBase}${subPath}`, config)) ?? null;
+      const status = response?.status;
+      const responseData = response.data as T;
+      return ok({
+        ...responseData,
+        httpConfig: {
+          status,
+        },
+      });
     } catch (e: unknown) {
-      return err(new ApiErrorBase(e))
+      return err(new ApiErrorBase(e));
     }
   }
 }
