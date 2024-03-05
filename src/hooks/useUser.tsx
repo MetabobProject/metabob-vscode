@@ -1,4 +1,4 @@
-import { useContext } from 'react'
-import { AccountSettingContext } from '../context/UserContext'
-
-export const useUser = () => useContext(AccountSettingContext)
+import { useContext } from 'react';
+import { AccountSettingContext } from '../context/UserContext';
+// @ts-ignore
+export const useUser = () => useContext(AccountSettingContext);

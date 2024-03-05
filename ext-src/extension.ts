@@ -56,8 +56,6 @@ export function activate(context: vscode.ExtensionContext): void {
       handleAnalyzeExpiration(context);
     }, thirty_minutes)
 
-
-
     // Create User Session, If already created get the refresh token
     // otherwise, ping server every 60 second to not destroy the token
     // if the user has not done any activity
