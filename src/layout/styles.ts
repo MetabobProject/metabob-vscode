@@ -9,7 +9,7 @@ export const LayoutContainer: SxProps = {
   flexDirection: 'column',
   alignItems: 'center',
   p: 2,
-  overflow: 'hidden',
+  overflowY: 'scroll',
   height: '100vh',
   width: '100vw'
 };

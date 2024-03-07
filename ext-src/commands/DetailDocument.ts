@@ -76,7 +76,7 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       getExtensionEventEmitter().fire({
         type: 'Analysis_Completed',
         data: {
-          shouldResetRecomendation: true,
+          shouldResetRecomendation: false,
           shouldMoveToAnalyzePage: false,
           ...copiedAnalyzeValue,
         },

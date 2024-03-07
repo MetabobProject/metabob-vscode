@@ -120,24 +120,48 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             setCurrentEditor(filename);
           }
           break;
-        case EventDataType.GENERATE_CLICKED_GPT_RESPONSE:
-          setIdentifiedRecommendation(prev => {
-            return [...(prev || []), { recommendation: payload.choices[0].message.content }];
-          });
-          setIsRecommendationLoading(false);
+        case EventDataType.GENERATE_CLICKED_GPT_RESPONSE: {
+          const { recommendation: recomendation_from_gpt, problemId } = payload;
 
-          break;
-        case EventDataType.GENERATE_CLICKED_RESPONSE:
-          const { recommendation } = payload;
-          const adjustedRecommendation: string = recommendation;
-          adjustedRecommendation.replace("'''", '');
-          if (adjustedRecommendation !== '') {
+          if (recomendation_from_gpt !== '') {
             setIdentifiedRecommendation(prev => {
-              return [...(prev || []), { recommendation: adjustedRecommendation }];
+              const prevRecommendation = prev?.[problemId] || [];
+              const newRecomendation = [
+                ...prevRecommendation,
+                { recommendation: recomendation_from_gpt },
+              ];
+
+              return {
+                ...prev,
+                [problemId]: newRecomendation,
+              };
             });
           }
           setIsRecommendationLoading(false);
           break;
+        }
+        case EventDataType.GENERATE_CLICKED_RESPONSE: {
+          const { recommendation, problemId } = payload;
+          const adjustedRecommendation: string = recommendation;
+          adjustedRecommendation.replace("'''", '');
+          if (adjustedRecommendation !== '') {
+            setIdentifiedRecommendation(prev => {
+              const prevRecommendation = prev?.[problemId] || [];
+              const newRecomendation = [
+                ...prevRecommendation,
+                { recommendation: adjustedRecommendation },
+              ];
+
+              return {
+                ...prev,
+                [problemId]: newRecomendation,
+              };
+            });
+          }
+          setIsRecommendationLoading(false);
+          break;
+        }
+
         case EventDataType.GENERATE_CLICKED_ERROR:
           setIsRecommendationLoading(false);
           break;
