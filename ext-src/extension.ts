@@ -177,7 +177,7 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.workspace.onDidCloseTextDocument(() => {
+    vscode.workspace.onDidCloseTextDocument(e => {
       const currentWorkSpaceFolder = Util.getRootFolderName();
       const editor = vscode.window.activeTextEditor;
       if (!editor || !editor.document) {
@@ -186,6 +186,10 @@ export function activate(context: vscode.ExtensionContext): void {
           data: {},
         });
 
+        return;
+      }
+
+      if (editor.document.uri.fsPath !== e.uri.fsPath) {
         return;
       }
 
