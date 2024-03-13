@@ -28,7 +28,7 @@ import { Problem } from './types';
 export function activate(context: vscode.ExtensionContext): void {
   let previousEditor: vscode.TextEditor | undefined = undefined;
   bootstrapExtensionEventEmitter();
-  debugChannel.show(true);
+  debugChannel.show(false);
   debugChannel.appendLine('Activating Metabob Extension...');
 
   initState(context);
