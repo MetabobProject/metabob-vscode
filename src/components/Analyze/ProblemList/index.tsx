@@ -46,10 +46,10 @@ export const ProblemList = ({
           <>
             <Typography sx={ListHeaderTypography}>Other files with problems</Typography>
             <List sx={ListContainer}>
-              {otherFileWithProblems.map((item, index) => {
+              {otherFileWithProblems.map(item => {
                 return (
                   <>
-                    <ListItem key={index} sx={ListItemStyles}>
+                    <ListItem key={item.name} sx={ListItemStyles}>
                       <Grid
                         container
                         spacing={theme.spacing(0.1)}

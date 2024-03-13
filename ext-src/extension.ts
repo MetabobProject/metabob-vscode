@@ -179,6 +179,16 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument(e => {
       const currentWorkSpaceFolder = Util.getRootFolderName();
+      const { fileName } = Util.extractMetaDataFromDocument(e);
+      if (!fileName) {
+        debugChannel.appendLine('onDidCloseTextDocument: fileName is undefined');
+        return;
+      }
+
+      if (fileName.includes("extension-output")) {
+        return
+      }
+
       const editor = vscode.window.activeTextEditor;
       if (!editor || !editor.document) {
         extensionEventEmitter.fire({
@@ -366,9 +376,14 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
       const { fileName } = Util.extractMetaDataFromDocument(e.document);
+
       if (!fileName) {
         debugChannel.appendLine('onDidChangeActiveTextEditor: fileName is undefined');
         return;
+      }
+
+      if (fileName.includes("extension-output")) {
+        return
       }
 
       const currentWorkSpaceFolder = Util.getRootFolderName();
@@ -418,7 +433,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
         extensionEventEmitter.fire({
           type: 'Analysis_Completed',
-          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
+          data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...analyzeValue },
         });
 
         debugChannel.appendLine(
@@ -457,7 +472,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
+        data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...analyzeValue },
       });
 
       previousEditor = e;

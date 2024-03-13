@@ -183,6 +183,7 @@ export const AnalyzePage = ({
 
       {hasWorkSpaceFolders && hasOpenTextDocuments && (
         <ProblemList
+          data-testid='problem-list'
           detectedProblems={detectedProblems}
           otherFileWithProblems={otherFileWithProblems}
         />
