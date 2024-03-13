@@ -1,6 +1,8 @@
 import { render, fireEvent } from '@testing-library/react';
 import { RecoilRoot } from 'recoil';
 import { AnalyzePage } from './index';
+import * as State from '../../state';
+import { IdentifiedProblems } from '../../__mocks__/identifiedProblems';
 
 describe('AnalyzePage component', () => {
   test('renders analyze button correctly when hasWorkSpaceFolders and hasOpenTextDocuments are true', () => {
@@ -69,7 +71,15 @@ describe('AnalyzePage component', () => {
 
   test('renders ProblemList component correctly when hasWorkSpaceFolders and hasOpenTextDocuments are true', () => {
     const { getByTestId } = render(
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={({ set }) => {
+          set(State.hasOpenTextDocuments, true);
+          set(State.hasOpenTextDocuments, true);
+          set(State.currentEditor, 'example.py');
+          set(State.identifiedProblems, IdentifiedProblems);
+          set(State.currentWorkSpaceProject, 'example');
+        }}
+      >
         <AnalyzePage
           hasWorkSpaceFolders={true}
           hasOpenTextDocuments={true}
@@ -80,6 +90,48 @@ describe('AnalyzePage component', () => {
     );
     const problemList = getByTestId('problem-list');
     expect(problemList).toBeDefined();
+  });
+
+  test('renders ProblemList component correctly and handle edge cases', () => {
+    const { getByTestId } = render(
+      <RecoilRoot
+        initializeState={({ set }) => {
+          set(State.hasOpenTextDocuments, true);
+          set(State.hasOpenTextDocuments, true);
+          set(State.currentEditor, undefined);
+          set(State.identifiedProblems, IdentifiedProblems);
+          set(State.currentWorkSpaceProject, 'example');
+        }}
+      >
+        <AnalyzePage
+          hasWorkSpaceFolders={true}
+          hasOpenTextDocuments={true}
+          isAnalysisLoading={false}
+          handleAnalyzeClick={jest.fn()}
+        />
+      </RecoilRoot>,
+    );
+    const problemList = getByTestId('problem-list');
+    expect(problemList).toBeDefined();
+  });
+
+  test('Render Circular Progress bar when isAnalysisLoading is true', () => {
+    const { getByTestId } = render(
+      <RecoilRoot
+        initializeState={({ set }) => {
+          set(State.isAnalysisLoading, true);
+        }}
+      >
+        <AnalyzePage
+          hasWorkSpaceFolders={true}
+          hasOpenTextDocuments={true}
+          isAnalysisLoading={true}
+          handleAnalyzeClick={jest.fn()}
+        />
+      </RecoilRoot>,
+    );
+    const progressBar = getByTestId('progress-bar');
+    expect(progressBar).toBeDefined();
   });
 
   test('triggers handleAnalyzeClick when Analyze button is clicked', () => {

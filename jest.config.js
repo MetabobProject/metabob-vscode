@@ -1,3 +1,29 @@
+const esModules = [
+  // Copy from here 👈
+  'react-markdown',
+  'vfile',
+  'unist-.+',
+  'unified',
+  'bail',
+  'is-plain-obj',
+  'trough',
+  'remark-.+',
+  'mdast-util-.+',
+  'micromark',
+  'parse-entities',
+  'character-entities',
+  'property-information',
+  'comma-separated-tokens',
+  'hast-util-whitespace',
+  'remark-.+',
+  'space-separated-tokens',
+  'decode-named-character-reference',
+  'ccount',
+  'escape-string-regexp',
+  'markdown-table',
+  'trim-lines',
+].join('|'); // To here 👈
+
 /**
  * For a detailed explanation regarding each configuration property, visit:
  * https://jestjs.io/docs/configuration
@@ -11,8 +37,7 @@ const config = {
   // Stop running tests after `n` failures
   // bail: 0,
 
-  // The directory where Jest should store its cached dependency information
-  // cacheDirectory: "/private/var/folders/g3/cwwy2qbd4_g_zkqv6n7b97dc0000gn/T/jest_dx",
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
 
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
@@ -77,16 +102,7 @@ const config = {
   // ],
 
   // An array of file extensions your modules use
-  // moduleFileExtensions: [
-  //   "js",
-  //   "mjs",
-  //   "cjs",
-  //   "jsx",
-  //   "ts",
-  //   "tsx",
-  //   "json",
-  //   "node"
-  // ],
+  moduleFileExtensions: ['js', 'mjs', 'cjs', 'jsx', 'ts', 'tsx', 'json', 'node'],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {
@@ -174,8 +190,7 @@ const config = {
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [
-  //   "/node_modules/",
-  //   "\\.pnp\\.[^\\/]+$"
+  //   `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx|mjs|cjs|ts|tsx)$`,
   // ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them

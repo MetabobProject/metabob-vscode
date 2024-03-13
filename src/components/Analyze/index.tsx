@@ -168,6 +168,7 @@ export const AnalyzePage = ({
             >
               {isAnalysisLoading && (
                 <CircularProgress
+                  data-testid='progress-bar'
                   size={15}
                   sx={{
                     marginRight: '10px',
