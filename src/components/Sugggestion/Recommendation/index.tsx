@@ -21,6 +21,7 @@ export const Recommendation = ({ text }: RecommendationProps): JSX.Element => {
 
             return !inline && match ? (
               <SyntaxHighlighter
+                data-testid='code-block'
                 {...props}
                 children={String(children).replace(/\n$/, '')}
                 style={dark}
@@ -28,7 +29,7 @@ export const Recommendation = ({ text }: RecommendationProps): JSX.Element => {
                 PreTag='div'
               />
             ) : (
-              <code {...props} className={className}>
+              <code data-testid='markdown-text' {...props} className={className}>
                 {children}
               </code>
             );
