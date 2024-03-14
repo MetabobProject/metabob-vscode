@@ -1,29 +1,3 @@
-const esModules = [
-  // Copy from here 👈
-  'react-markdown',
-  'vfile',
-  'unist-.+',
-  'unified',
-  'bail',
-  'is-plain-obj',
-  'trough',
-  'remark-.+',
-  'mdast-util-.+',
-  'micromark',
-  'parse-entities',
-  'character-entities',
-  'property-information',
-  'comma-separated-tokens',
-  'hast-util-whitespace',
-  'remark-.+',
-  'space-separated-tokens',
-  'decode-named-character-reference',
-  'ccount',
-  'escape-string-regexp',
-  'markdown-table',
-  'trim-lines',
-].join('|'); // To here 👈
-
 /**
  * For a detailed explanation regarding each configuration property, visit:
  * https://jestjs.io/docs/configuration
@@ -186,11 +160,13 @@ const config = {
   // testRunner: "jest-circus/runner",
 
   // A map from regular expressions to paths to transformers
-  // transform: undefined,
+  // transform: {
+  //   '\\.[jt]sx?$': 'babel-jest',
+  // },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [
-  //   `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx|mjs|cjs|ts|tsx)$`,
+  //   '[/\\\\]node_modules[/\\\\](?!(react-markdown|vfile|vfile-message|markdown-table|unist-.*|unified|bail|is-plain-obj|trough|remark-.*|rehype-.*|html-void-elements|hast-util-.*|zwitch|hast-to-hyperscript|hastscript|web-namespaces|mdast-util-.*|escape-string-regexp|micromark.*|decode-named-character-reference|character-entities|property-information|hast-util-whitespace|space-separated-tokens|comma-separated-tokens|pretty-bytes|ccount|mdast-util-gfm|gemoji)).+\\.(js|jsx|mjs|cjs|ts|tsx)$',
   // ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them

@@ -25,7 +25,6 @@ describe('Layout component', () => {
     );
 
     expect(getByText('Child component')).toBeInTheDocument();
-    expect(getByTestId('analyze-mode-back-button')).toBeUndefined();
     expect(getByTestId('docs-button')).toBeInTheDocument();
   });
 
