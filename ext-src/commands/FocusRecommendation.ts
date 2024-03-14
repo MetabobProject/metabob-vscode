@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { Problem } from '../types';
-import _debug from '../debug';
 import { getExtensionEventEmitter } from '../events';
 import { Analyze } from '../state';
 
@@ -11,7 +10,6 @@ export function activateFocusRecommendCommand(context: vscode.ExtensionContext):
   const commandHandler = async (args: FocusCommandHandler) => {
     const { id, vuln, path } = args;
     const key = `${path}@@${id}`;
-    _debug?.appendLine(`Current Detection Set for ${path} with Problem ${id} `);
 
     const analyzeState = new Analyze(context);
     const analyzeStateValue = analyzeState.get()?.value;

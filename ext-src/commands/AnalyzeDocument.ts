@@ -2,11 +2,9 @@ import * as vscode from 'vscode';
 import { SubmitRepresentationResponse } from '../services';
 import { handleDocumentAnalyze } from '../helpers';
 import { Analyze, Session } from '../state';
-import debugChannel from '../debug';
 import CONSTANTS from '../constants';
 import Util from '../utils';
 import { getExtensionEventEmitter } from '../events';
-
 
 export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
   const command = CONSTANTS.analyzeDocumentCommand;
@@ -53,9 +51,6 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
 
     const documentMetaData = Util.extractMetaDataFromDocument(editor.document);
 
-    debugChannel.appendLine(`Metabob: Starting Analysis for ${documentMetaData.filePath}`);
-
-
     Util.withProgress<SubmitRepresentationResponse>(
       handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context),
       CONSTANTS.analyzeCommandProgressMessage,
@@ -71,7 +66,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
     }
 
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, inflightJobId,),
+      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, inflightJobId),
       CONSTANTS.analyzeCommandQueueMessage,
     ).then(response => {
       switch (response.status) {

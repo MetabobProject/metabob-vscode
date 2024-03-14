@@ -2,7 +2,6 @@ import * as vscode from 'vscode'
 import { GetAPIConfig, GetRequestParamId } from '../config'
 import { sessionService, CreateSessionRequest } from '../services'
 import { Session } from '../state'
-import debugChannel from '../debug'
 
 export async function createOrUpdateUserSession(context: vscode.ExtensionContext): Promise<undefined> {
   const sessionState = new Session(context)
@@ -28,9 +27,8 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
           // @ts-ignore
           const status = response.value?.httpConfig?.status;
           if (status === 200) {
-            debugChannel.appendLine("Metabob: Successfully checked the session of the user \n");
+            return
           } else if (status === 404) {
-            debugChannel.appendLine("Metabob: Session of User does not exist. Recreating it again.. \n");
             sessionService.createUserSession(payload)
               .then((response) => {
                 if (response.isOk()) {
@@ -42,8 +40,9 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
           }
         }
       })
-      .catch((error) => {
-        debugChannel.appendLine("Metabob: Error while activating sesstion \n" + JSON.stringify(error));
+      .catch(() => {
+
+        return
       })
 
   }, thirty_minutes);
