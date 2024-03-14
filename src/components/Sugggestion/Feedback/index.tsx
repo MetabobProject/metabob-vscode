@@ -1,7 +1,7 @@
 import { Button, ButtonGroup } from '@mui/material';
 import React from 'react';
 
-interface FeedbackProps {
+export interface FeedbackProps {
   handleDiscardClick: React.MouseEventHandler<HTMLButtonElement>;
   handleEndorseClick: React.MouseEventHandler<HTMLButtonElement>;
 }
@@ -13,6 +13,7 @@ export const Feedback = ({
     <>
       <ButtonGroup variant='outlined' size='large' aria-label='large button group'>
         <Button
+          data-testid='discard-button'
           onClick={handleDiscardClick}
           variant='contained'
           color='primary'
@@ -21,6 +22,7 @@ export const Feedback = ({
           Discard
         </Button>
         <Button
+          data-testid='endorse-button'
           onClick={handleEndorseClick}
           variant='contained'
           color='primary'

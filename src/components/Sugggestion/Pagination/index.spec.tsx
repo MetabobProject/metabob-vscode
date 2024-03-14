@@ -89,4 +89,40 @@ describe('RecommendationPagination', () => {
     fireEvent.click(applyButton);
     expect(handleApplyRecommendationMock).toHaveBeenCalled();
   });
+
+  it('gotoNextPage Button is Disabled', () => {
+    const handleApplyRecommendationMock = jest.fn();
+    const props: RecommendationPaginationProps = {
+      gotoNextPage: jest.fn(),
+      gotoPreviousPage: jest.fn(),
+      handleApplyRecommendation: handleApplyRecommendationMock,
+      shouldRenderPagination: true,
+      currentPage: 5,
+      totalPages: 5,
+    };
+
+    const { getByTestId } = render(<RecommendationPagination {...props} />);
+
+    const gotoNextButton = getByTestId('goto-next-button');
+    expect(gotoNextButton).toBeInTheDocument();
+    expect(gotoNextButton).toHaveAttribute('disabled');
+  });
+
+  it('gotoPrevPage Button is Disabled', () => {
+    const handleApplyRecommendationMock = jest.fn();
+    const props: RecommendationPaginationProps = {
+      gotoNextPage: jest.fn(),
+      gotoPreviousPage: jest.fn(),
+      handleApplyRecommendation: handleApplyRecommendationMock,
+      shouldRenderPagination: true,
+      currentPage: 0,
+      totalPages: 5,
+    };
+
+    const { getByTestId } = render(<RecommendationPagination {...props} />);
+
+    const gotoPreviousButton = getByTestId('goto-previous-button');
+    expect(gotoPreviousButton).toBeInTheDocument();
+    expect(gotoPreviousButton).toHaveAttribute('disabled');
+  });
 });
