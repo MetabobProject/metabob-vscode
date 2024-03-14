@@ -148,6 +148,7 @@ export const SuggestionPage = (): JSX.Element => {
       </Box>
       <Box sx={generateRecommendationButtonContainer}>
         <Button
+          data-testid='generate-recommendation-button'
           size='large'
           variant='contained'
           sx={generateButtonSxProps}
@@ -157,6 +158,7 @@ export const SuggestionPage = (): JSX.Element => {
           {isRecommendationLoading && (
             <>
               <CircularProgress
+                data-testid='recommendation_loading_spinner'
                 size={15}
                 sx={{
                   marginRight: '10px',

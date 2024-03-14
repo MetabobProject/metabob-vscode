@@ -170,7 +170,8 @@
     "vscode:prepublish": "npm run build",
     "start": "react-scripts start",
     "build": "node ./scripts/build-non-split.js && webpack --mode production --devtool hidden-source-map",
-    "test": "NODE_ENV=test jest",
+    "test": "NODE_ENV=test jest --config jest.config.js",
+    "test-ext": "NODE_ENV=test jest --config jest.extension.config.js",
     "coverage": "NODE_ENV=test jest --coverage"
   },
   "devDependencies": {

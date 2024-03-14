@@ -33,7 +33,8 @@
 		"node_modules",
 		".vscode-test",
 		"app",
-		"out"
+		"out",
+		"ext-src"
 	],
 	"include": [
 		"src"
