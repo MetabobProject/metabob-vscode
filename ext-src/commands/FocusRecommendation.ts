@@ -21,7 +21,7 @@ export function activateFocusRecommendCommand(context: vscode.ExtensionContext):
     copyProblems[key].isEndorsed = false;
     copyProblems[key].isViewed = true;
 
-    await analyzeState.set({ ...copyProblems })
+    await analyzeState.set({ ...copyProblems });
     getExtensionEventEmitter().fire({
       type: 'FIX_SUGGESTION',
       data: {
