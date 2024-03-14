@@ -25,4 +25,5 @@ class Debug {
 }
 
 const debugChannel = new Debug()
+debugChannel.show(false)
 export default debugChannel

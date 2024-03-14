@@ -16,7 +16,6 @@ import {
   decorationType,
 } from './helpers';
 import Util from './utils';
-import debugChannel from './debug';
 import {
   bootstrapExtensionEventEmitter,
   disposeExtensionEventEmitter,
@@ -28,16 +27,10 @@ import { Problem } from './types';
 export function activate(context: vscode.ExtensionContext): void {
   let previousEditor: vscode.TextEditor | undefined = undefined;
   bootstrapExtensionEventEmitter();
-  debugChannel.show(false);
-  debugChannel.appendLine('Activating Metabob Extension...');
 
   initState(context);
 
   if (!context.extension || !context.extensionUri) {
-    debugChannel.appendLine(
-      'Error Activating Metabob Extension\nReason: context.extension or context.extensionUri is undefined',
-    );
-
     return;
   }
 
@@ -69,8 +62,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Whenever the user clicks the fix button
     activateFixSuggestionCommand(context);
-  } catch (error: any) {
-    debugChannel.appendLine(`Metabob: ${error}`);
+  } catch {
+    return;
   }
 
   // If the user changes the global config from CMD + Shift + P -> User Setting -> Metabob
@@ -181,12 +174,12 @@ export function activate(context: vscode.ExtensionContext): void {
       const currentWorkSpaceFolder = Util.getRootFolderName();
       const { fileName } = Util.extractMetaDataFromDocument(e);
       if (!fileName) {
-        debugChannel.appendLine('onDidCloseTextDocument: fileName is undefined');
+
         return;
       }
 
-      if (fileName.includes("extension-output")) {
-        return
+      if (fileName.includes('extension-output')) {
+        return;
       }
 
       const editor = vscode.window.activeTextEditor;
@@ -237,40 +230,23 @@ export function activate(context: vscode.ExtensionContext): void {
       const analyzeState = new Analyze(context);
       const analyzeValue = analyzeState.get()?.value;
       if (!analyzeValue) {
-        debugChannel.appendLine('onDidOpenTextDocument: analyzeValue is undefined');
-
         return;
       }
 
       const activeTextEditor = vscode.window.activeTextEditor;
       if (!activeTextEditor) {
-        debugChannel.appendLine('onDidOpenTextDocument: activeTextEditor is undefined ');
-
         return;
       }
 
       if (activeTextEditor.document.fileName !== bufferedEParam.fileName) {
-        debugChannel.appendLine(
-          'onDidOpenTextDocument: activeTextEditor.document.fileName ' +
-          activeTextEditor.document.fileName +
-          ' e.fileName ' +
-          e.fileName,
-        );
-
         return;
       }
 
       const currentWorkSpaceFolder = Util.getRootFolderName();
-      debugChannel.appendLine(
-        'onDidOpenTextDocument: currentWorkSpaceFolder ' + currentWorkSpaceFolder,
-      );
       const documentMetaData = Util.extractMetaDataFromDocument(bufferedEParam);
       let fileName: string | undefined = undefined;
 
       if (documentMetaData.fileName) {
-        debugChannel.appendLine(
-          'onDidOpenTextDocument: documentMetaData.fileName: ' + documentMetaData.fileName,
-        );
         fileName = documentMetaData.fileName;
       }
 
@@ -283,17 +259,13 @@ export function activate(context: vscode.ExtensionContext): void {
           fileName = splitKey;
         }
       }
-      debugChannel.appendLine('onDidOpenTextDocument: fileName: ' + fileName);
 
       if (!fileName) {
-        debugChannel.appendLine('onDidOpenTextDocument: fileName is undefined. ' + fileName);
         return;
       }
 
       const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, fileName);
       if (!results) {
-        debugChannel.appendLine('onDidOpenTextDocument: results is undefined');
-
         return;
       }
 
@@ -327,10 +299,6 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'Analysis_Completed',
           data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
         });
-
-        debugChannel.appendLine(
-          'onDidOpenTextDocument: results have zero length. ' + documentMetaData.fileName,
-        );
 
         return;
       }
@@ -372,18 +340,16 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
       if (!e) {
-        debugChannel.appendLine('onDidChangeActiveTextEditor: e is undefined');
         return;
       }
       const { fileName } = Util.extractMetaDataFromDocument(e.document);
 
       if (!fileName) {
-        debugChannel.appendLine('onDidChangeActiveTextEditor: fileName is undefined');
         return;
       }
 
-      if (fileName.includes("extension-output")) {
-        return
+      if (fileName.includes('extension-output')) {
+        return;
       }
 
       const currentWorkSpaceFolder = Util.getRootFolderName();
@@ -395,13 +361,11 @@ export function activate(context: vscode.ExtensionContext): void {
       const analyzeState = new Analyze(context);
       const analyzeValue = analyzeState.get()?.value;
       if (!analyzeValue) {
-        debugChannel.appendLine('onDidChangeActiveTextEditor: analyzeValue is undefined');
         return;
       }
 
       const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, fileName);
       if (!results) {
-        debugChannel.appendLine('onDidChangeActiveTextEditor: results is undefined');
         return;
       }
 
@@ -433,12 +397,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
         extensionEventEmitter.fire({
           type: 'Analysis_Completed',
-          data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...analyzeValue },
+          data: {
+            shouldResetRecomendation: false,
+            shouldMoveToAnalyzePage: false,
+            ...analyzeValue,
+          },
         });
-
-        debugChannel.appendLine(
-          'onDidChangeActiveTextEditor: results array has zero length. ' + fileName,
-        );
 
         previousEditor = e;
         return;
@@ -494,7 +458,6 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {
-  debugChannel.dispose();
   decorationType.dispose();
   disposeExtensionEventEmitter();
 }
