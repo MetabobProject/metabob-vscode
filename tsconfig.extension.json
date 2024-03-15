@@ -16,7 +16,6 @@
     "noUnusedParameters": true, /* Report errors on unused parameters. */
     "types": [
       "jest",
-      "node"
     ]
   },
   "include": [
