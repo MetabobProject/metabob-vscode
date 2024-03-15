@@ -107,9 +107,9 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
 
           if (currentFile) {
-            const filename: string | undefined = currentFile.fileName
-              .split('/')
-              .pop()
+            const filename: string | undefined = currentFile?.fileName
+              ?.split('/')
+              ?.pop()
               ?.replace('.git', '');
 
             if (!filename) {
@@ -123,7 +123,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.GENERATE_CLICKED_GPT_RESPONSE: {
           const { recommendation: recomendation_from_gpt, problemId } = payload;
 
-          if (recomendation_from_gpt !== '') {
+          if (recomendation_from_gpt && recomendation_from_gpt.length > 0 && problemId) {
             setIdentifiedRecommendation(prev => {
               const prevRecommendation = prev?.[problemId] || [];
               const newRecomendation = [
@@ -185,7 +185,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
           break;
         case EventDataType.CURRENT_FILE:
-          const filename: string | undefined = payload.fileName
+          const filename: string | undefined = payload?.fileName
             ?.split('/')
             ?.pop()
             ?.replace('.git', '');

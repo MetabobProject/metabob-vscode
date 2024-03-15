@@ -9,7 +9,6 @@ import vscode from '../__mocks__/vscode';
 import { RecoilRoot, useRecoilValue } from 'recoil';
 import { AccountSettingProvider } from './UserContext';
 import {
-  AnalyzeState,
   ApplicationWebviewState,
   EventDataType,
   FixSuggestionsPayload,
@@ -28,6 +27,7 @@ export const RecoilObserver = ({ node, onChange }) => {
 describe('AccountSettingProvider', () => {
   afterEach(() => {
     jest.clearAllMocks();
+    jest.resetModules();
   });
 
   it('should recieve Get_INIT_DATA event when the component renders', () => {
@@ -752,5 +752,218 @@ describe('AccountSettingProvider', () => {
     });
 
     expect(mockCurrentWorkSpaceProjectStateHandler).toHaveBeenCalledWith(undefined);
+  });
+
+  it('should update Recoil state correctly on INIT_DATA event with valid payload', () => {
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+    const mockApplicationStateHandler = jest.fn();
+    const mockHasOpenTextDocumentsStateHandler = jest.fn();
+    const mockHasWorkSpaceFoldersStateHandler = jest.fn();
+    const mockIdentifiedProblemsStateHandler = jest.fn();
+    const mockCurrentWorkSpaceProjectStateHandler = jest.fn();
+    const mockCurrentEditorStateHandler = jest.fn();
+
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
+          <RecoilObserver
+            node={State.hasOpenTextDocuments}
+            onChange={mockHasOpenTextDocumentsStateHandler}
+          />
+          <RecoilObserver
+            node={State.hasWorkSpaceFolders}
+            onChange={mockHasWorkSpaceFoldersStateHandler}
+          />
+          <RecoilObserver
+            node={State.identifiedProblems}
+            onChange={mockIdentifiedProblemsStateHandler}
+          />
+          <RecoilObserver
+            node={State.currentWorkSpaceProject}
+            onChange={mockCurrentWorkSpaceProjectStateHandler}
+          />
+          <RecoilObserver node={State.currentEditor} onChange={mockCurrentEditorStateHandler} />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const payload = {
+        hasOpenTextDocuments: true,
+        hasWorkSpaceFolders: true,
+        initData: {
+          ...IdentifiedProblems,
+        },
+        currentWorkSpaceFolder: 'exampleProject',
+        currentFile: { fileName: 'exampleFileName.git' },
+      };
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.INIT_DATA,
+          data: payload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
+    expect(mockHasOpenTextDocumentsStateHandler).toHaveBeenCalledWith(true);
+    expect(mockHasWorkSpaceFoldersStateHandler).toHaveBeenCalledWith(true);
+    expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
+    expect(mockCurrentWorkSpaceProjectStateHandler).toHaveBeenCalledWith('exampleProject');
+    expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith('exampleFileName');
+  });
+
+  it('should update Recoil state correctly on INIT_DATA event with valid payload with an edge case', () => {
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+    const mockApplicationStateHandler = jest.fn();
+    const mockHasOpenTextDocumentsStateHandler = jest.fn();
+    const mockHasWorkSpaceFoldersStateHandler = jest.fn();
+    const mockIdentifiedProblemsStateHandler = jest.fn();
+    const mockCurrentWorkSpaceProjectStateHandler = jest.fn();
+    const mockCurrentEditorStateHandler = jest.fn();
+
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
+          <RecoilObserver
+            node={State.hasOpenTextDocuments}
+            onChange={mockHasOpenTextDocumentsStateHandler}
+          />
+          <RecoilObserver
+            node={State.hasWorkSpaceFolders}
+            onChange={mockHasWorkSpaceFoldersStateHandler}
+          />
+          <RecoilObserver
+            node={State.identifiedProblems}
+            onChange={mockIdentifiedProblemsStateHandler}
+          />
+          <RecoilObserver
+            node={State.currentWorkSpaceProject}
+            onChange={mockCurrentWorkSpaceProjectStateHandler}
+          />
+          <RecoilObserver node={State.currentEditor} onChange={mockCurrentEditorStateHandler} />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const payload = {
+        hasOpenTextDocuments: true,
+        hasWorkSpaceFolders: true,
+        initData: {
+          ...IdentifiedProblems,
+        },
+        currentWorkSpaceFolder: 'exampleProject',
+        currentFile: {},
+      };
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.INIT_DATA,
+          data: payload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
+    expect(mockHasOpenTextDocumentsStateHandler).toHaveBeenCalledWith(true);
+    expect(mockHasWorkSpaceFoldersStateHandler).toHaveBeenCalledWith(true);
+    expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
+    expect(mockCurrentWorkSpaceProjectStateHandler).toHaveBeenCalledWith('exampleProject');
+    expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith(undefined);
+  });
+
+  it('should update Recoil state correctly on GENERATE_CLICKED_RESPONSE event with valid payload', () => {
+    const mockIdentifiedRecommendationStateHandler = jest.fn();
+    const mockIsRecommendationLoadingStateHandler = jest.fn();
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver
+            node={State.identifiedRecommendation}
+            onChange={mockIdentifiedRecommendationStateHandler}
+          />
+          <RecoilObserver
+            node={State.isRecommendationLoading}
+            onChange={mockIsRecommendationLoadingStateHandler}
+          />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const payload = {
+        recommendation: 'Some recommendation',
+        problemId: 'problem1',
+      };
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.GENERATE_CLICKED_RESPONSE,
+          data: payload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith({
+      problem1: [{ recommendation: 'Some recommendation' }],
+    });
+    expect(mockIsRecommendationLoadingStateHandler).toHaveBeenCalledWith(false);
+  });
+
+  it('should not update Recoil state on GENERATE_CLICKED_RESPONSE event with empty recommendation', () => {
+    const mockIdentifiedRecommendationStateHandler = jest.fn();
+    const mockIsRecommendationLoadingStateHandler = jest.fn();
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+    render(
+      <RecoilRoot
+        initializeState={({ set }) => {
+          set(State.identifiedRecommendation, undefined);
+        }}
+      >
+        <AccountSettingProvider>
+          <RecoilObserver
+            node={State.identifiedRecommendation}
+            onChange={mockIdentifiedRecommendationStateHandler}
+          />
+          <RecoilObserver
+            node={State.isRecommendationLoading}
+            onChange={mockIsRecommendationLoadingStateHandler}
+          />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const payload = {
+        recommendation: '', // Empty recommendation
+        problemId: 'problem2',
+      };
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.GENERATE_CLICKED_RESPONSE,
+          data: payload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    // Ensure Recoil state remains unchanged
+    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith({
+      problem1: [{ recommendation: 'Some recommendation' }],
+    });
+    expect(mockIsRecommendationLoadingStateHandler).toHaveBeenCalledWith(false);
   });
 });
