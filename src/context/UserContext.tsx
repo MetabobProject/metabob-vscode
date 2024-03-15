@@ -142,9 +142,9 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         }
         case EventDataType.GENERATE_CLICKED_RESPONSE: {
           const { recommendation, problemId } = payload;
-          const adjustedRecommendation: string = recommendation;
-          adjustedRecommendation.replace("'''", '');
-          if (adjustedRecommendation !== '') {
+          let adjustedRecommendation: string = recommendation;
+          adjustedRecommendation = adjustedRecommendation?.replace("'''", '');
+          if (adjustedRecommendation && adjustedRecommendation.length > 0 && problemId) {
             setIdentifiedRecommendation(prev => {
               const prevRecommendation = prev?.[problemId] || [];
               const newRecomendation = [

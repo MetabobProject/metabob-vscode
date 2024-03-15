@@ -30,7 +30,7 @@ describe('AccountSettingProvider', () => {
     jest.resetModules();
   });
 
-  it('should recieve Get_INIT_DATA event when the component renders', () => {
+  it('should receive Get_INIT_DATA event when the component renders', () => {
     const mockApplicationStateHandler = jest.fn();
     const mockHasWorkSpaceFoldersStateHandler = jest.fn();
     const mockHasOpenTextDocumentsStateHandler = jest.fn();
