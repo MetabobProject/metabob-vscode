@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { render, fireEvent, act } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import { RecoilRoot, useRecoilValue } from 'recoil';
 
 // Manually mock vscode

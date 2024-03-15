@@ -180,14 +180,14 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         }
         case EventDataType.CURRENT_PROJECT:
           const { name } = payload;
-          if (name) {
+          if (name && name !== '') {
             setCurrentWorkSpaceProject(name);
           }
           break;
         case EventDataType.CURRENT_FILE:
           const filename: string | undefined = payload.fileName
-            .split('/')
-            .pop()
+            ?.split('/')
+            ?.pop()
             ?.replace('.git', '');
 
           if (!filename) {
