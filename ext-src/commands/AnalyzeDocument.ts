@@ -42,6 +42,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
 
     // If the user session is not available then we can't request file analysis.
     if (!sessionToken) {
+      vscode.window.showErrorMessage(CONSTANTS.sessionTokenUndefined);
       extensionEventEmitter.fire({
         type: 'Analysis_Error',
         data: 'Session Token is undefined',

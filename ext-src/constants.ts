@@ -27,7 +27,10 @@ const CONSTANTS = {
   // Error Constants
   editorNotSelectorError: 'Metabob: kindly select an editor to perform this command',
   editorSelectedIsInvalid: 'Metabob: selected document is invalid',
-  generateConnectionError: 'Metabob: Looks like the server is overloaded, please try again later'
+  generateConnectionError: 'Metabob: Looks like the server is overloaded, please try again later',
+
+  // Session 
+  sessionTokenUndefined: 'Metabob: your session has timed out. Please reload your editor window'
 }
 
 export default CONSTANTS
