@@ -36,7 +36,7 @@ export const ProblemList = ({
   return (
     <>
       <Box data-testid='problem-list' sx={ProblemListContainer(theme)}>
-        {detectedProblems !== undefined && (
+        {detectedProblems !== undefined && detectedProblems !== 0 && (
           <Typography variant='h6' sx={ProblemListHeading(theme)}>
             {detectedProblems} Problems Detected
           </Typography>
