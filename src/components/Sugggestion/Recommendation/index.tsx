@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { dark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 interface RecommendationProps {
   text: string;
@@ -21,6 +21,7 @@ export const Recommendation = ({ text }: RecommendationProps): JSX.Element => {
 
             return !inline && match ? (
               <SyntaxHighlighter
+                data-testid='code-block'
                 {...props}
                 children={String(children).replace(/\n$/, '')}
                 style={dark}
@@ -28,7 +29,7 @@ export const Recommendation = ({ text }: RecommendationProps): JSX.Element => {
                 PreTag='div'
               />
             ) : (
-              <code {...props} className={className}>
+              <code data-testid='markdown-text' {...props} className={className}>
                 {children}
               </code>
             );

@@ -39,3 +39,5 @@ scripts/**
 nodemon.json
 commitlint.config.js
 lint-staged.config.js
+coverage
+jest.config.ts

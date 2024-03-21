@@ -1,7 +1,7 @@
 import { Box, Button, ButtonGroup, SxProps } from '@mui/material';
 import { useMemo } from 'react';
 
-interface RecommendationPaginationProps {
+export interface RecommendationPaginationProps {
   gotoNextPage: () => void;
   gotoPreviousPage: () => void;
   handleApplyRecommendation: () => void;
@@ -65,6 +65,7 @@ export const RecommendationPagination = ({
             }}
           >
             <Button
+              data-testid='goto-previous-button'
               color='primary'
               onClick={gotoPreviousPage}
               disabled={isLeftArrowDisabled}
@@ -84,6 +85,7 @@ export const RecommendationPagination = ({
               </svg>
             </Button>
             <Button
+              data-testid='goto-next-button'
               color='primary'
               onClick={gotoNextPage}
               disabled={isRightArrowDisabled}
@@ -106,6 +108,7 @@ export const RecommendationPagination = ({
         )}
 
         <Button
+          data-testid='apply-button'
           variant='contained'
           sx={{
             justifyContent: 'flex-end',

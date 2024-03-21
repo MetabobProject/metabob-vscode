@@ -1,4 +1,4 @@
-class Queue {
+export class Queue {
   private readonly queue: any[]
   private start: number
   private end: number
@@ -39,8 +39,8 @@ class Queue {
       next: () =>
         index < this.end
           ? {
-              value: this.queue[index++]
-            }
+            value: this.queue[index++]
+          }
           : { done: true }
     }
   }

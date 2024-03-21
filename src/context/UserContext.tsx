@@ -107,9 +107,9 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
 
           if (currentFile) {
-            const filename: string | undefined = currentFile.fileName
-              .split('/')
-              .pop()
+            const filename: string | undefined = currentFile?.fileName
+              ?.split('/')
+              ?.pop()
               ?.replace('.git', '');
 
             if (!filename) {
@@ -120,24 +120,48 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             setCurrentEditor(filename);
           }
           break;
-        case EventDataType.GENERATE_CLICKED_GPT_RESPONSE:
-          setIdentifiedRecommendation(prev => {
-            return [...(prev || []), { recommendation: payload.choices[0].message.content }];
-          });
-          setIsRecommendationLoading(false);
+        case EventDataType.GENERATE_CLICKED_GPT_RESPONSE: {
+          const { recommendation: recomendation_from_gpt, problemId } = payload;
 
-          break;
-        case EventDataType.GENERATE_CLICKED_RESPONSE:
-          const { recommendation } = payload;
-          const adjustedRecommendation: string = recommendation;
-          adjustedRecommendation.replace("'''", '');
-          if (adjustedRecommendation !== '') {
+          if (recomendation_from_gpt && recomendation_from_gpt.length > 0 && problemId) {
             setIdentifiedRecommendation(prev => {
-              return [...(prev || []), { recommendation: adjustedRecommendation }];
+              const prevRecommendation = prev?.[problemId] || [];
+              const newRecomendation = [
+                ...prevRecommendation,
+                { recommendation: recomendation_from_gpt },
+              ];
+
+              return {
+                ...prev,
+                [problemId]: newRecomendation,
+              };
             });
           }
           setIsRecommendationLoading(false);
           break;
+        }
+        case EventDataType.GENERATE_CLICKED_RESPONSE: {
+          const { recommendation, problemId } = payload;
+          let adjustedRecommendation: string = recommendation;
+          adjustedRecommendation = adjustedRecommendation?.replace("'''", '');
+          if (adjustedRecommendation && adjustedRecommendation.length > 0 && problemId) {
+            setIdentifiedRecommendation(prev => {
+              const prevRecommendation = prev?.[problemId] || [];
+              const newRecomendation = [
+                ...prevRecommendation,
+                { recommendation: adjustedRecommendation },
+              ];
+
+              return {
+                ...prev,
+                [problemId]: newRecomendation,
+              };
+            });
+          }
+          setIsRecommendationLoading(false);
+          break;
+        }
+
         case EventDataType.GENERATE_CLICKED_ERROR:
           setIsRecommendationLoading(false);
           break;
@@ -156,14 +180,14 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         }
         case EventDataType.CURRENT_PROJECT:
           const { name } = payload;
-          if (name) {
+          if (name && name !== '') {
             setCurrentWorkSpaceProject(name);
           }
           break;
         case EventDataType.CURRENT_FILE:
-          const filename: string | undefined = payload.fileName
-            .split('/')
-            .pop()
+          const filename: string | undefined = payload?.fileName
+            ?.split('/')
+            ?.pop()
             ?.replace('.git', '');
 
           if (!filename) {

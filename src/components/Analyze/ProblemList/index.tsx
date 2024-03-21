@@ -35,8 +35,8 @@ export const ProblemList = ({
 
   return (
     <>
-      <Box sx={ProblemListContainer(theme)}>
-        {detectedProblems !== undefined && (
+      <Box data-testid='problem-list' sx={ProblemListContainer(theme)}>
+        {detectedProblems !== undefined && detectedProblems !== 0 && (
           <Typography variant='h6' sx={ProblemListHeading(theme)}>
             {detectedProblems} Problems Detected
           </Typography>
@@ -46,36 +46,34 @@ export const ProblemList = ({
           <>
             <Typography sx={ListHeaderTypography}>Other files with problems</Typography>
             <List sx={ListContainer}>
-              {otherFileWithProblems.map((item, index) => {
+              {otherFileWithProblems.map(item => {
                 return (
-                  <>
-                    <ListItem key={index} sx={ListItemStyles}>
-                      <Grid
-                        container
-                        spacing={theme.spacing(0.1)}
-                        direction='row'
-                        justifyContent='space-evenly'
-                        alignItems='center'
-                      >
-                        <Grid item xs={7}>
-                          <Typography variant='body2' sx={ListItemTypography} noWrap>
-                            {item.name}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={5} sx={ButtonGrid}>
-                          <Button
-                            sx={ListItemButton}
-                            size='small'
-                            variant='contained'
-                            color='primary'
-                            onClick={handleOpenOtherFile(item.name)}
-                          >
-                            Open
-                          </Button>
-                        </Grid>
+                  <ListItem key={item.name} sx={ListItemStyles}>
+                    <Grid
+                      container
+                      spacing={theme.spacing(0.1)}
+                      direction='row'
+                      justifyContent='space-evenly'
+                      alignItems='center'
+                    >
+                      <Grid item xs={7}>
+                        <Typography variant='body2' sx={ListItemTypography} noWrap>
+                          {item.name}
+                        </Typography>
                       </Grid>
-                    </ListItem>
-                  </>
+                      <Grid item xs={5} sx={ButtonGrid}>
+                        <Button
+                          sx={ListItemButton}
+                          size='small'
+                          variant='contained'
+                          color='primary'
+                          onClick={handleOpenOtherFile(item.name)}
+                        >
+                          Open
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
                 );
               })}
             </List>

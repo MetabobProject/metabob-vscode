@@ -5,7 +5,6 @@ import { getExtensionEventEmitter } from '../events';
 import CONSTANTS from '../constants';
 import Utils from '../utils';
 import { Problem } from '../types';
-import _debug from '../debug';
 
 export type DiscardCommandHandler = { id: string; path: string };
 
@@ -18,7 +17,6 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     const problems = analyzeState.get()?.value;
 
     if (!problems) {
-      _debug?.appendLine('Metabob: Problems is undefined in Discard Suggestion');
       vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
       return;
     }
@@ -30,7 +28,6 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
 
     const session = new Session(context).get()?.value;
     if (!session) {
-      _debug?.appendLine('Metabob: Session is undefined in Discard Suggestion');
       vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
       return;
     }
@@ -66,10 +63,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     }
 
     if (isUserOnProblemFile) {
-      Utils.decorateCurrentEditorWithHighlights(
-        results,
-        documentMetaData.editor,
-      );
+      Utils.decorateCurrentEditorWithHighlights(results, documentMetaData.editor);
     }
 
     extensionEventEmitter.fire({
@@ -90,7 +84,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     getExtensionEventEmitter().fire({
       type: 'CURRENT_PROJECT',
       data: {
-        name: currentWorkSpaceFolder
+        name: currentWorkSpaceFolder,
       },
     });
 

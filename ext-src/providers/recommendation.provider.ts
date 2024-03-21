@@ -139,7 +139,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     const self = this;
     this.extensionEventEmitter.event(event => {
       if (this?._view === null || this?._view === undefined || !this?._view.webview) {
-
         return;
       }
 
@@ -308,6 +307,7 @@ export class RecommendationWebView implements WebviewViewProvider {
         this._view?.webview.postMessage({
           type: 'onGenerateClicked:Response',
           data: {
+            problemId: initData.id,
             recommendation: response.value.recommendation,
           },
         });
@@ -335,7 +335,7 @@ export class RecommendationWebView implements WebviewViewProvider {
       const chatresponse = await openai.createChatCompletion({ ...payload });
       this._view.webview.postMessage({
         type: 'onGenerateClickedGPT:Response',
-        data: { ...chatresponse.data },
+        data: { recommendation: chatresponse.data.choices[0].message?.content || '', problemId: initData.id },
       });
     } catch (error: any) {
       throw new Error(error);
@@ -375,8 +375,8 @@ export class RecommendationWebView implements WebviewViewProvider {
       initData?: any;
       hasOpenTextDocuments?: boolean;
       hasWorkSpaceFolders?: boolean;
-      currentWorkSpaceFolder?: string
-      currentFile?: any
+      currentWorkSpaceFolder?: string;
+      currentFile?: any;
     } = {};
 
     if (getanalyzeState) {
@@ -384,11 +384,11 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
 
     if (currentWorkSpaceFolder) {
-      initPayload.currentWorkSpaceFolder = currentWorkSpaceFolder
+      initPayload.currentWorkSpaceFolder = currentWorkSpaceFolder;
     }
 
     if (currentEditor) {
-      initPayload.currentFile = { ...currentEditor.document }
+      initPayload.currentFile = { ...currentEditor.document };
     }
 
     initPayload.hasOpenTextDocuments = Util.hasOpenTextDocuments();

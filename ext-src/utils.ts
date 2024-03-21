@@ -12,7 +12,6 @@ import {
 import { GenerateDecorations, decorationType } from './helpers';
 import CONSTANTS from './constants';
 import { AnalyzeState } from './state';
-import debugChannel from './debug';
 
 // Normal Utilities used shared across folders
 export default class Utils {

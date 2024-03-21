@@ -14,8 +14,15 @@ export const SuggestionPage = (): JSX.Element => {
   const suggestion = useRecoilValue(State.identifiedSuggestion);
   const recommendations = useRecoilValue(State.identifiedRecommendation);
 
+  const problemRecomendation = useMemo(() => {
+    if (!suggestion) return undefined;
+    if (!recommendations) return undefined;
+
+    return recommendations[suggestion.id];
+  }, [suggestion, recommendations]);
+
   const { goToNextPage, goToPrevPage, currentData, currentPage, totalPages } =
-    usePagination(recommendations);
+    usePagination(problemRecomendation);
 
   const [isRecommendationLoading, setIsRecommendationLoading] = useRecoilState(
     State.isRecommendationLoading,
@@ -98,16 +105,16 @@ export const SuggestionPage = (): JSX.Element => {
   }, [currentData]);
 
   const shouldRenderPagination = useMemo(() => {
-    if (!recommendations) return false;
+    if (!problemRecomendation) return false;
 
-    return recommendations.length > 1;
-  }, [recommendations]);
+    return problemRecomendation.length > 1;
+  }, [problemRecomendation]);
 
   const shouldConvertButtonText = useMemo(() => {
-    if (!recommendations) return false;
+    if (!problemRecomendation) return false;
 
-    return recommendations.length > 0;
-  }, [recommendations]);
+    return problemRecomendation.length > 0;
+  }, [problemRecomendation]);
 
   const handleApplyRecommendation = useCallback(() => {
     vscode.postMessage({
@@ -141,6 +148,7 @@ export const SuggestionPage = (): JSX.Element => {
       </Box>
       <Box sx={generateRecommendationButtonContainer}>
         <Button
+          data-testid='generate-recommendation-button'
           size='large'
           variant='contained'
           sx={generateButtonSxProps}
@@ -150,6 +158,7 @@ export const SuggestionPage = (): JSX.Element => {
           {isRecommendationLoading && (
             <>
               <CircularProgress
+                data-testid='recommendation_loading_spinner'
                 size={15}
                 sx={{
                   marginRight: '10px',

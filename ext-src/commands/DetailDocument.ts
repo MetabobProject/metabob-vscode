@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import CONSTANTS from '../constants';
-import _debug from '../debug';
-import { Analyze, CurrentQuestion, CurrentQuestionState, Session } from '../state';
+import { Analyze, Session } from '../state';
 import { Problem } from '../types';
 import { getExtensionEventEmitter } from '../events';
 import { FeedbackSuggestionPayload, feedbackService } from '../services';
@@ -23,20 +22,18 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     const sessionToken = new Session(context).get()?.value;
     const extensionEventEmitter = getExtensionEventEmitter();
 
-    _debug.appendLine(`Detail initiated for ${args.path} with Problem ${args.id} `);
-
     const documentMetaData = Utils.getFileNameFromCurrentEditor();
 
     if (!documentMetaData) {
       vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
-      return
+      return;
     }
 
     if (!sessionToken || !analyzeStateValue) {
       getExtensionEventEmitter().fire({
         type: 'CURRENT_PROJECT',
         data: {
-          name: currentWorkSpaceFolder
+          name: currentWorkSpaceFolder,
         },
       });
 
@@ -76,7 +73,7 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       getExtensionEventEmitter().fire({
         type: 'Analysis_Completed',
         data: {
-          shouldResetRecomendation: true,
+          shouldResetRecomendation: false,
           shouldMoveToAnalyzePage: false,
           ...copiedAnalyzeValue,
         },
@@ -90,16 +87,14 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       getExtensionEventEmitter().fire({
         type: 'CURRENT_PROJECT',
         data: {
-          name: currentWorkSpaceFolder
+          name: currentWorkSpaceFolder,
         },
       });
     }, 500);
 
     await setAnalyzeState.set(copiedAnalyzeValue);
 
-    await Promise.allSettled([
-      feedbackService.readSuggestion(readSuggestionPayload, sessionToken),
-    ]);
+    await Promise.allSettled([feedbackService.readSuggestion(readSuggestionPayload, sessionToken)]);
   };
 
   context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));

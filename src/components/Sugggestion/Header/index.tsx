@@ -9,7 +9,7 @@ export const Header = ({ category, description }: HeaderProps): JSX.Element => {
   return (
     <>
       {category && (
-        <Box width='100%'>
+        <Box width='100%' data-testid='category'>
           <Typography component='span' variant='subtitle1' color='whitesmoke' fontWeight={600}>
             Problem Category:
           </Typography>{' '}
@@ -20,7 +20,7 @@ export const Header = ({ category, description }: HeaderProps): JSX.Element => {
       )}
 
       {description && (
-        <Box width='100%'>
+        <Box width='100%' data-testid='description'>
           <Typography variant='subtitle1' component='span' fontWeight={600} color='whitesmoke'>
             Problem Description:
           </Typography>{' '}

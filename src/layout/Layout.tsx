@@ -4,8 +4,8 @@ import { Box, Button } from '@mui/material';
 import { ExtensionSVG } from '../components';
 import { LayoutContainer, AnalyzePageSvgContainer } from './styles';
 import { BackButtonSVG } from '../components/BackButtonSVG';
-import * as State from "../state";
-import { ApplicationWebviewState } from "../types";
+import * as State from '../state';
+import { ApplicationWebviewState } from '../types';
 
 export interface LayoutProps {
   children: React.ReactNode;
@@ -15,7 +15,7 @@ export const Layout = ({ children }: LayoutProps): JSX.Element => {
   const [applicationState, setApplicationState] = useRecoilState(State.applicationState);
   const setIdentifiedSuggestion = useSetRecoilState(State.identifiedSuggestion);
 
-  const handleDocsClick: MouseEventHandler<HTMLButtonElement> = useCallback(async e => {
+  const handleDocsClick: MouseEventHandler<HTMLButtonElement> = useCallback(e => {
     e.preventDefault();
     vscode.postMessage({
       type: 'open_external_link',
@@ -27,35 +27,44 @@ export const Layout = ({ children }: LayoutProps): JSX.Element => {
 
   const isAnalyzeMode = useMemo(() => {
     if (applicationState === ApplicationWebviewState.SUGGESTION_MODE) {
-      return true
+      return true;
     }
 
-    return false
+    return false;
   }, [applicationState]);
 
   const handleBackButton = useCallback(() => {
     setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
-    setIdentifiedSuggestion(undefined)
+    setIdentifiedSuggestion(undefined);
   }, [setApplicationState]);
 
   return (
     <Box sx={LayoutContainer}>
-      <Box display="flex" flexDirection='row' justifyContent={isAnalyzeMode ? 'space-between' : 'flex-end'} width='100%'>
-        {isAnalyzeMode && <>
-          <Button
-            variant='contained'
-            color='primary'
-            sx={{
-              alignSelf: 'flex-start'
-            }}
-            onClick={handleBackButton}
-          >
-            <BackButtonSVG />
-          </Button>
-        </>}
+      <Box
+        display='flex'
+        flexDirection='row'
+        justifyContent={isAnalyzeMode ? 'space-between' : 'flex-end'}
+        width='100%'
+      >
+        {isAnalyzeMode && (
+          <>
+            <Button
+              data-testid='analyze-mode-back-button'
+              variant='contained'
+              color='primary'
+              sx={{
+                alignSelf: 'flex-start',
+              }}
+              onClick={handleBackButton}
+            >
+              <BackButtonSVG />
+            </Button>
+          </>
+        )}
         <Button
+          data-testid='docs-button'
           sx={{
-            alignSelf: 'flex-end'
+            alignSelf: 'flex-end',
           }}
           variant='contained'
           color='primary'
@@ -64,7 +73,6 @@ export const Layout = ({ children }: LayoutProps): JSX.Element => {
           Docs
         </Button>
       </Box>
-
 
       <Box sx={AnalyzePageSvgContainer}>
         <ExtensionSVG />

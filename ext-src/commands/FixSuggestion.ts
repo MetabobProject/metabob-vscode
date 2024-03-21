@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import CONSTANTS from '../constants';
 import { Problem } from '../types';
 import { CurrentQuestion } from '../state';
-import debugChannel from '../debug';
 import { getExtensionEventEmitter } from '../events';
 
 export type FixSuggestionCommandHandler = {
@@ -36,9 +35,7 @@ export function activateFixSuggestionCommand(context: vscode.ExtensionContext): 
           isReset: false,
         },
       });
-    } catch (error) {
-      debugChannel.appendLine(`Metabob: Error while fixing suggestion ${JSON.stringify(error)}`);
-    }
+    } catch (error) { }
 
     vscode.commands.executeCommand('recommendation-panel-webview.focus');
   };
