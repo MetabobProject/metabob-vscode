@@ -17,7 +17,6 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
   const sessionToken = sessionState.get()?.value
 
   const one_minute = 60_000;
-  const thirty_minutes = one_minute * 30;
 
   // Periodically checking the session
   setInterval(() => {
@@ -45,7 +44,7 @@ export async function createOrUpdateUserSession(context: vscode.ExtensionContext
         return
       })
 
-  }, thirty_minutes);
+  }, one_minute);
 
 
   if (sessionToken) {
