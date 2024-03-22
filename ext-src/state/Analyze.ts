@@ -15,6 +15,7 @@ export type AnalyseMetaData = {
   isEndorsed?: boolean;
   isViewed?: boolean;
   fullFilePath?: string;
+  expiration?: string;
 };
 
 export type AnalyzeState = {

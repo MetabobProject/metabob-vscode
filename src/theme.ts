@@ -29,7 +29,7 @@ const shadows: ThemeOptions['shadows'] = [
   '0px 11px 15px -7px rgba(19, 17, 32, 0.2), 0px 24px 38px 3px rgba(19, 17, 32, 0.14), 0px 9px 46px 8px rgba(19, 17, 32, 0.12)',
 ];
 
-export const registerTheme = () => {
+export const registerTheme = (): ThemeOptions => {
   const vscodeTheme = getComputedStyle(document.documentElement);
   const mainColor = vscodeTheme.getPropertyValue('--vscode-input-foreground');
   const backgroundDefault = vscodeTheme.getPropertyValue('--vscode-input-background');

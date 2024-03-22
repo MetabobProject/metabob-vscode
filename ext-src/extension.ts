@@ -10,6 +10,7 @@ import {
   activateAnalyzeCommand,
 } from './commands';
 import {
+  handleAnalyzeExpiration,
   createOrUpdateUserSession,
   initState,
   AnalyzeDocumentOnSave,
@@ -24,6 +25,8 @@ import {
 import { Analyze } from './state';
 import { Problem } from './types';
 
+let expirationTimer: any = undefined;
+
 export function activate(context: vscode.ExtensionContext): void {
   let previousEditor: vscode.TextEditor | undefined = undefined;
   bootstrapExtensionEventEmitter();
@@ -37,6 +40,15 @@ export function activate(context: vscode.ExtensionContext): void {
   const analyzeDocumentOnSaveConfig = AnalyzeDocumentOnSaveConfig();
 
   try {
+    // handle Analyze State Expiration
+    handleAnalyzeExpiration(context);
+
+    const one_minute = 60_000;
+    const thirty_minutes = one_minute * 30;
+    expirationTimer = setInterval(() => {
+      handleAnalyzeExpiration(context);
+    }, thirty_minutes)
+
     // Create User Session, If already created get the refresh token
     // otherwise, ping server every 60 second to not destroy the token
     // if the user has not done any activity
@@ -460,4 +472,7 @@ export function activate(context: vscode.ExtensionContext): void {
 export function deactivate(): void {
   decorationType.dispose();
   disposeExtensionEventEmitter();
+  if (expirationTimer) {
+    clearInterval(expirationTimer);
+  }
 }
