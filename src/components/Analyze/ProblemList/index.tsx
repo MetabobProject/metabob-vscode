@@ -14,11 +14,13 @@ import { useCallback } from 'react';
 export interface ProblemsListProps {
   detectedProblems?: number;
   otherFileWithProblems?: Array<{ name: string }>;
+  isEmptyIdentifiedProblemDetected: boolean;
 }
 
 export const ProblemList = ({
   otherFileWithProblems,
   detectedProblems,
+  isEmptyIdentifiedProblemDetected,
 }: ProblemsListProps): JSX.Element => {
   const theme = useTheme();
 
@@ -39,6 +41,12 @@ export const ProblemList = ({
         {detectedProblems !== undefined && detectedProblems !== 0 && (
           <Typography variant='h6' sx={ProblemListHeading(theme)}>
             {detectedProblems} Problems Detected
+          </Typography>
+        )}
+
+        {isEmptyIdentifiedProblemDetected === true && (
+          <Typography variant='h6' sx={ProblemListHeading(theme)}>
+            No Problems Detected
           </Typography>
         )}
 

@@ -28,10 +28,14 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
   const setCurrentEditor = useSetRecoilState(State.currentEditor);
   const setCurrentWorkSpaceProject = useSetRecoilState(State.currentWorkSpaceProject);
+  const setIsEmptyIdentifiedProblemDetected = useSetRecoilState(
+    State.isEmptyIdentifiedProblemDetected,
+  );
 
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
+      console.log(payload);
       switch (event.data.type) {
         case EventDataType.NO_EDITOR_DETECTED:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
@@ -51,8 +55,25 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.ANALYSIS_ERROR:
           setIsAnalysisLoading(false);
           break;
+        case EventDataType.ANALYSIS_COMPLETED_EMPTY_PROBLEMS: {
+          const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
+          setIsEmptyIdentifiedProblemDetected(true);
+          if (problem) {
+            setIdentifiedProblems(problem as AnalyzeState);
+          }
+          if (shouldMoveToAnalyzePage) {
+            setIdentifiedSuggestion(undefined);
+            setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
+          }
+          if (shouldResetRecomendation) {
+            setIdentifiedRecommendation(undefined);
+          }
+          setIsAnalysisLoading(false);
+          break;
+        }
         case EventDataType.ANALYSIS_COMPLETED:
           const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
+          setIsEmptyIdentifiedProblemDetected(false);
           if (problem) {
             setIdentifiedProblems(problem as AnalyzeState);
           }

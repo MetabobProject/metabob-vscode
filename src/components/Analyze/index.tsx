@@ -24,6 +24,7 @@ export const AnalyzePage = ({
   const identifiedProblems = useRecoilValue(State.identifiedProblems);
   const currentEditor = useRecoilValue(State.currentEditor);
   const currentWorkSpaceProject = useRecoilValue(State.currentWorkSpaceProject);
+  const isEmptyIdentifiedProblemDetected = useRecoilValue(State.isEmptyIdentifiedProblemDetected);
 
   const otherFileWithProblems: Array<{ name: string }> | undefined = useMemo(() => {
     if (!identifiedProblems) return undefined;
@@ -186,6 +187,7 @@ export const AnalyzePage = ({
         <ProblemList
           detectedProblems={detectedProblems}
           otherFileWithProblems={otherFileWithProblems}
+          isEmptyIdentifiedProblemDetected={isEmptyIdentifiedProblemDetected}
         />
       )}
     </>

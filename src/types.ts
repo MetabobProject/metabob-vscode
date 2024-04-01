@@ -24,6 +24,7 @@ export enum EventDataType {
   CURRENT_FILE = 'CURRENT_FILE',
   CURRENT_PROJECT = 'CURRENT_PROJECT',
   INIT_DATA_UPON_NEW_FILE_OPEN = 'INIT_DATA_UPON_NEW_FILE_OPEN',
+  ANALYSIS_COMPLETED_EMPTY_PROBLEMS = 'Analysis_Completed_Empty_Problems'
 }
 
 export enum ApplicationWebviewState {

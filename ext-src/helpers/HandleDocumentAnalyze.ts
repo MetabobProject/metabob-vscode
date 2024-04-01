@@ -201,6 +201,24 @@ export const handleDocumentAnalyze = async (
   }
 
   await analyzeState.set(results);
+
+  if (problems.length === 0) {
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Completed_Empty_Problems',
+      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...results },
+    });
+
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder
+      },
+    });
+
+    return verifiedResponse
+  }
+
+
   getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
     data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...results },

@@ -10,7 +10,8 @@ export interface AnalysisEvents {
   | 'FIX_SUGGESTION'
   | 'CURRENT_FILE'
   | 'CURRENT_PROJECT'
-  | 'INIT_DATA_UPON_NEW_FILE_OPEN';
+  | 'INIT_DATA_UPON_NEW_FILE_OPEN'
+  | 'Analysis_Completed_Empty_Problems';
   data: any;
 }
 

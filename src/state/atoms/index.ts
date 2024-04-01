@@ -54,6 +54,11 @@ export const identifiedProblems = atom<AnalyzeState | undefined>({
   effects_UNSTABLE: [persistAtom]
 });
 
+export const isEmptyIdentifiedProblemDetected = atom<boolean>({
+  default: false,
+  key: "Metabob:isEmptyIdentifiedProblemDetected"
+})
+
 export const currentEditor = atom<string | undefined>({
   default: undefined,
   key: 'Metabob:currentEditor',
