@@ -35,7 +35,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
-      console.log(payload);
       switch (event.data.type) {
         case EventDataType.NO_EDITOR_DETECTED:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
