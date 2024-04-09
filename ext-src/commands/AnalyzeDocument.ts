@@ -6,7 +6,7 @@ import CONSTANTS from '../constants';
 import Util from '../utils';
 import { getExtensionEventEmitter } from '../events';
 
-export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
+export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?: vscode.OutputChannel): void {
   const command = CONSTANTS.analyzeDocumentCommand;
 
   const commandHandler = async () => {
@@ -17,6 +17,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
     const sessionToken = new Session(context).get()?.value;
 
     const editor = vscode.window.activeTextEditor;
+    _debug?.appendLine('AnalyzeDocument.ts: activateAnalyzeCommand: editor: ' + JSON.stringify(editor));
 
     // If the user has not opened any file then we can't perform any analysis.
     if (!editor) {
@@ -53,7 +54,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext): void {
     const documentMetaData = Util.extractMetaDataFromDocument(editor.document);
 
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context),
+      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, undefined, true, _debug),
       CONSTANTS.analyzeCommandProgressMessage,
     ).then(response => {
       if (response.status === 'pending' || response.status === 'running') {

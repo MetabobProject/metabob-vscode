@@ -13,6 +13,7 @@ export function GenerateDecorations(
   results: Problem[],
   editor: vscode.TextEditor,
   jobId?: string,
+  _debug?: vscode.OutputChannel,
 ): {
   decorationType: vscode.TextEditorDecorationType;
   decorations: vscode.DecorationOptions[];
@@ -23,6 +24,7 @@ export function GenerateDecorations(
       if ((endLine - 1) < 0 || (startLine - 1) < 0) {
         return false;
       }
+
       return true;
     })
     .map(vulnerability => {
@@ -43,7 +45,7 @@ export function GenerateDecorations(
       };
 
       const viewDescriptionURI = encodeURIComponent(JSON.stringify(payload));
-
+      _debug?.appendLine("Decoration: " + viewDescriptionURI);
       const hoverFixMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI} "This action will display a comprehensive view of the issue along with a recommended solution.")**`;
       const hoverViewDescriptionMessage = `**[More Details](command:metabob.showDetailSuggestion?${viewDescriptionURI} "This action will display a comprehensive view of the issue.")**`;
       const hoverMessage = new vscode.MarkdownString(
