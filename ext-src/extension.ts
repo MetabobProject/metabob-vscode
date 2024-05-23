@@ -29,6 +29,7 @@ let expirationTimer: any = undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
   let previousEditor: vscode.TextEditor | undefined = undefined;
+  const _debug = undefined; // vscode.window.createOutputChannel('Metabob');
   bootstrapExtensionEventEmitter();
 
   initState(context);
@@ -56,7 +57,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Analyze command that hit /analyze endpoint with current file content
     // then decorate current file with error
-    activateAnalyzeCommand(context);
+    activateAnalyzeCommand(context, _debug);
 
     // If the user Discard a suggestion, it would be removed from decoration
     // and the global state as well
@@ -129,14 +130,15 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   const extensionEventEmitter = getExtensionEventEmitter();
+
   // Analyze on Save functionality is only ran if the user enabled it.
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(document => {
-      let savedDocumentMetaData = Util.extractMetaDataFromDocument(document);
+      const savedDocumentMetaData = Util.extractMetaDataFromDocument(document);
       const currentWorkSpaceFolder = Util.getRootFolderName();
       if (!savedDocumentMetaData.fileName) return;
 
-      let fileName: string = savedDocumentMetaData.fileName;
+      const fileName: string = savedDocumentMetaData.fileName;
 
       // Will check if the current document is valid code file.
       if (!(analyzeDocumentOnSaveConfig && analyzeDocumentOnSaveConfig === true)) {
@@ -417,6 +419,7 @@ export function activate(context: vscode.ExtensionContext): void {
         });
 
         previousEditor = e;
+
         return;
       }
 

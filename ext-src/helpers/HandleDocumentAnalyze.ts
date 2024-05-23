@@ -30,6 +30,7 @@ export const handleDocumentAnalyze = async (
   context: vscode.ExtensionContext,
   jobId?: string,
   suppressRateLimitErrors = false,
+  _debug?: vscode.OutputChannel,
 ) => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -48,6 +49,7 @@ export const handleDocumentAnalyze = async (
         name: currentWorkSpaceFolder
       },
     });
+
     return failedResponseReturn;
   }
 
@@ -118,13 +120,14 @@ export const handleDocumentAnalyze = async (
 
   let results: AnalyzeState = {};
   const analyzeStateValue = new Analyze(context).get()?.value;
+  _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: analyzeStateValue: ' + JSON.stringify(analyzeStateValue));
 
   if (analyzeStateValue) {
     const aggregatedProblemsFilePaths = verifiedResponse.results.map(problem => {
       return problem.path;
     });
 
-    let buggerAnalyzeStateValue: AnalyzeState = {};
+    const buggerAnalyzeStateValue: AnalyzeState = {};
 
     Object.keys(analyzeStateValue).forEach(key => {
       const problem = analyzeStateValue[key];
@@ -141,6 +144,7 @@ export const handleDocumentAnalyze = async (
       if (endLine - 1 < 0 || startLine - 1 < 0) {
         return false;
       }
+
       return true;
     })
     .filter(vulnerability => {
@@ -159,6 +163,7 @@ export const handleDocumentAnalyze = async (
       if (text.length === 0 || text === '' || text === ' ') {
         return false;
       }
+
       return true;
     })
     .forEach(problem => {
@@ -177,6 +182,7 @@ export const handleDocumentAnalyze = async (
     });
 
   const problems = Util.getCurrentEditorProblems(results, documentMetaData.fileName);
+  _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: problems: ' + JSON.stringify(problems));
   if (!problems) {
     getExtensionEventEmitter().fire({
       type: 'Analysis_Error',
@@ -196,8 +202,9 @@ export const handleDocumentAnalyze = async (
   const path = problems.map(item => item.path);
 
   const isUserOnValidEditor = path.includes(documentMetaData.fileName);
+  _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: isUserOnValidEditor: ' + isUserOnValidEditor);
   if (isUserOnValidEditor) {
-    Util.decorateCurrentEditorWithHighlights(problems, documentMetaData.editor);
+    Util.decorateCurrentEditorWithHighlights(problems, documentMetaData.editor, _debug);
   }
 
   await analyzeState.set(results);

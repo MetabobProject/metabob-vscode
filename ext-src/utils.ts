@@ -65,8 +65,8 @@ export default class Utils {
   static sleep = (ms: number): Promise<void> => new Promise(res => setTimeout(res, ms));
 
   static getWorkspacePath(): string | undefined {
-    let folders = workspace.workspaceFolders;
-    let path = folders ? folders![0].uri.fsPath : undefined;
+    const folders = workspace.workspaceFolders;
+    const path = folders ? folders![0].uri.fsPath : undefined;
     if (path === undefined) {
       return undefined
     }
@@ -87,9 +87,9 @@ export default class Utils {
   }
 
   static extractMetaDataFromDocument(document: vscode.TextDocument): IDocumentMetaData {
-    const filePath = document.uri.fsPath;
+    const filePath = document.uri.path;
     const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
-    const relativePath = workspaceFolder ? path.relative(workspaceFolder.uri.fsPath, filePath) : '';
+    const relativePath = workspaceFolder ? path.relative(workspaceFolder.uri.path, filePath) : '';
     const splitKey: string | undefined = relativePath.split('/').pop();
     const fileContent = document.getText();
     const isTextDocument = Utils.isTextDocument(document);
@@ -145,6 +145,7 @@ export default class Utils {
 
     if (workspaceFolders) {
       const rootFolder = workspaceFolders[0];
+      
       return rootFolder.name;
     }
 
@@ -161,8 +162,8 @@ export default class Utils {
       return undefined;
     }
 
-    let documentMetaData = this.extractMetaDataFromDocument(editor.document);
-    let fileName: string | undefined = documentMetaData.fileName;
+    const documentMetaData = this.extractMetaDataFromDocument(editor.document);
+    const fileName: string | undefined = documentMetaData.fileName;
     if (!fileName) return undefined
 
     return {
@@ -195,7 +196,7 @@ export default class Utils {
     return results
   }
 
-  static decorateCurrentEditorWithHighlights(problems: Problem[], problemEditor: vscode.TextEditor): boolean {
+  static decorateCurrentEditorWithHighlights(problems: Problem[], problemEditor: vscode.TextEditor, _debug?: vscode.OutputChannel): boolean {
     const currentEditor = vscode.window.activeTextEditor;
     if (!currentEditor) return false;
 
@@ -204,6 +205,7 @@ export default class Utils {
     if (!isUserOnProblemEditor) return false;
 
     const { decorations } = GenerateDecorations(problems, currentEditor);
+    _debug?.appendLine('Decorations: ' + JSON.stringify(decorations));
     problemEditor.setDecorations(decorationType, []);
     problemEditor.setDecorations(decorationType, decorations);
 
