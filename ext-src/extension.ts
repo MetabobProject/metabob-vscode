@@ -14,7 +14,7 @@ import {
   createOrUpdateUserSession,
   initState,
   AnalyzeDocumentOnSave,
-  decorationType,
+  problemDecoration,
 } from './helpers';
 import Util from './utils';
 import {
@@ -155,7 +155,7 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      documentMetaData.editor.setDecorations(decorationType, []);
+      documentMetaData.editor.setDecorations(problemDecoration, []);
 
       AnalyzeDocumentOnSave(
         {
@@ -369,7 +369,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const currentWorkSpaceFolder = Util.getRootFolderName();
 
       if (previousEditor) {
-        previousEditor.setDecorations(decorationType, []);
+        previousEditor.setDecorations(problemDecoration, []);
       }
 
       const analyzeState = new Analyze(context);
@@ -473,7 +473,7 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {
-  decorationType.dispose();
+  problemDecoration.dispose();
   disposeExtensionEventEmitter();
   if (expirationTimer) {
     clearInterval(expirationTimer);

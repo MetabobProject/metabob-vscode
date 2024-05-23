@@ -9,7 +9,7 @@ import {
   ProgressLocation,
   ExtensionContext,
 } from 'vscode';
-import { GenerateDecorations, decorationType } from './helpers';
+import { GenerateDecorations, problemDecoration } from './helpers';
 import CONSTANTS from './constants';
 import { AnalyzeState } from './state';
 
@@ -206,8 +206,8 @@ export default class Utils {
 
     const { decorations } = GenerateDecorations(problems, currentEditor);
     _debug?.appendLine('Decorations: ' + JSON.stringify(decorations));
-    problemEditor.setDecorations(decorationType, []);
-    problemEditor.setDecorations(decorationType, decorations);
+    problemEditor.setDecorations(problemDecoration, []);
+    problemEditor.setDecorations(problemDecoration, decorations);
 
     return true
   }

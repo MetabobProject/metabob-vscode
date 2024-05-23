@@ -2,11 +2,21 @@ import * as vscode from 'vscode';
 import { Problem } from '../types';
 import { FixSuggestionCommandHandler } from '../commands';
 
-export const decorationType = vscode.window.createTextEditorDecorationType({
-  backgroundColor: new vscode.ThemeColor('diffEditor.removedTextBackground'),
+const removedTextBackgroundColor = new vscode.ThemeColor('diffEditor.removedTextBackground');
+const insertedTextBackgroundColor = new vscode.ThemeColor('diffEditor.insertedTextBackground');
+
+export const problemDecoration = vscode.window.createTextEditorDecorationType({
+  backgroundColor: removedTextBackgroundColor,
   isWholeLine: true,
   overviewRulerLane: 7,
-  overviewRulerColor: 'red',
+  overviewRulerColor: removedTextBackgroundColor,
+});
+
+export const suggestionDecoration = vscode.window.createTextEditorDecorationType({
+  backgroundColor: insertedTextBackgroundColor,
+  isWholeLine: true,
+  overviewRulerLane: 7,
+  overviewRulerColor: insertedTextBackgroundColor,
 });
 
 export function GenerateDecorations(
@@ -56,17 +66,11 @@ export function GenerateDecorations(
       return {
         range,
         hoverMessage,
-        renderOptions: {
-          after: {
-            contentText: '',
-            color: 'red',
-          },
-        },
       } satisfies vscode.DecorationOptions;
     });
 
   return {
-    decorationType,
+    decorationType: problemDecoration,
     decorations,
   };
 }
