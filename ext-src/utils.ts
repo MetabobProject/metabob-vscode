@@ -70,8 +70,7 @@ export default class Utils {
     if (path === undefined) {
       return undefined
     }
-
-    const splitPath: string | undefined = path.split('/').pop()?.replace('.git', '');
+    const splitPath: string | undefined = path.split(/\/|\\/g).pop()?.replace('.git', '');
 
     if (splitPath === undefined) {
       return undefined
@@ -80,17 +79,11 @@ export default class Utils {
     return splitPath
   }
 
-  static getResource(rel: string): string {
-    return path
-      .resolve(this.context.extensionPath, rel.replace(/\//g, path.sep))
-      .replace(/\\/g, '/');
-  }
-
   static extractMetaDataFromDocument(document: vscode.TextDocument): IDocumentMetaData {
-    const filePath = document.uri.path;
+    const filePath = document.uri.fsPath;
     const workspaceFolder = workspace.getWorkspaceFolder(document.uri);
-    const relativePath = workspaceFolder ? path.relative(workspaceFolder.uri.path, filePath) : '';
-    const splitKey: string | undefined = relativePath.split('/').pop();
+    const relativePath = workspaceFolder ? path.relative(workspaceFolder.uri.fsPath, filePath) : '';
+    const splitKey: string | undefined = relativePath.split(/\/|\\/g).pop();
     const fileContent = document.getText();
     const isTextDocument = Utils.isTextDocument(document);
     const languageId = document.languageId;
@@ -200,6 +193,7 @@ export default class Utils {
     const currentEditor = vscode.window.activeTextEditor;
     if (!currentEditor) return false;
 
+    _debug?.appendLine('problem file <> Editor file: ' + problemEditor.document.fileName + ' <> ' + currentEditor.document.fileName);
     const isUserOnProblemEditor = problemEditor.document.fileName === currentEditor.document.fileName
 
     if (!isUserOnProblemEditor) return false;
