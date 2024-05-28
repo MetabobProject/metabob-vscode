@@ -18,7 +18,7 @@ import {
 } from 'vscode';
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services';
-import { CurrentQuestion, CurrentQuestionState, Session, Analyze, AnalyseMetaData } from '../state';
+import { CurrentQuestion, CurrentQuestionState, Session, Analyze } from '../state';
 import { BackendService, GetChatGPTToken } from '../config';
 import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
