@@ -21,7 +21,6 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
 
     // If the user has not opened any file then we can't perform any analysis.
     if (!editor) {
-      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
       extensionEventEmitter.fire({
         type: 'Analysis_Error',
         data: 'Editor is undefined',
@@ -29,6 +28,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
       throw new Error('activateAnalyzeCommand: Editor is undefined');
     }
 
+    _debug?.appendLine('AnalyzeDocument.ts: activateAnalyzeCommand: editor.document: ' + JSON.stringify(editor.document));
     // If the user has not opened valid document i.e settings page or any other page
     // that is not a code file we will throw an error.
     if (!Util.isValidDocument(editor.document)) {
@@ -41,6 +41,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
       throw new Error('activateAnalyzeCommand: Selected Document is not valid');
     }
 
+    _debug?.appendLine('AnalyzeDocument.ts: activateAnalyzeCommand: Session Token: ' + sessionToken);
     // If the user session is not available then we can't request file analysis.
     if (!sessionToken) {
       vscode.window.showErrorMessage(CONSTANTS.sessionTokenUndefined);
@@ -52,6 +53,7 @@ export function activateAnalyzeCommand(context: vscode.ExtensionContext, _debug?
     }
 
     const documentMetaData = Util.extractMetaDataFromDocument(editor.document);
+    _debug?.appendLine('AnalyzeDocument.ts: activateAnalyzeCommand: documentMetaData: ' + JSON.stringify(documentMetaData));
 
     Util.withProgress<SubmitRepresentationResponse>(
       handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, undefined, true, _debug),

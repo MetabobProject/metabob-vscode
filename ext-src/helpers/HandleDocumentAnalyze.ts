@@ -181,6 +181,7 @@ export const handleDocumentAnalyze = async (
       results[key] = { ...analyzeMetaData };
     });
 
+  _debug?.appendLine('AnalyzeDocument.ts: Document File name' + documentMetaData.fileName);
   const problems = Util.getCurrentEditorProblems(results, documentMetaData.fileName);
   _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: problems: ' + JSON.stringify(problems));
   if (!problems) {
@@ -199,9 +200,9 @@ export const handleDocumentAnalyze = async (
     return failedResponseReturn;
   }
 
-  const path = problems.map(item => item.path);
+  const paths = problems.map(item => item.path);
 
-  const isUserOnValidEditor = path.includes(documentMetaData.fileName);
+  const isUserOnValidEditor = paths.includes(documentMetaData.fileName);
   _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: isUserOnValidEditor: ' + isUserOnValidEditor);
   if (isUserOnValidEditor) {
     Util.decorateCurrentEditorWithHighlights(problems, documentMetaData.editor, _debug);
