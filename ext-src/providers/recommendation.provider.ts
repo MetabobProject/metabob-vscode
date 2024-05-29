@@ -25,6 +25,7 @@ import CONSTANTS from '../constants';
 import Util from '../utils';
 import { AnalysisEvents } from '../events';
 import { Problem } from '../types';
+import { recommendationDecoration } from '../decorations';
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
@@ -303,40 +304,62 @@ export class RecommendationWebView implements WebviewViewProvider {
         throw new Error('handleRecommendationClick: Response value is null');
       }
 
-      if (!isChatConfigEnabled) {
+      let recommendation = '';
+
+      if (isChatConfigEnabled) {
+        const configuration = new Configuration({
+          apiKey: chatGPTToken,
+        });
+        const openai = new OpenAIApi(configuration);
+        const payload: CreateChatCompletionRequest = {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: response.value.prompt,
+            },
+            {
+              role: 'user',
+              content: input,
+            },
+          ],
+        };
+        const chatresponse = await openai.createChatCompletion({ ...payload });
+        recommendation = chatresponse.data.choices[0].message?.content || ''
+        this._view.webview.postMessage({
+          type: 'onGenerateClickedGPT:Response',
+          data: { recommendation: recommendation, problemId: initData.id },
+        });
+      } else {
+        recommendation = response.value.recommendation;
         this._view?.webview.postMessage({
           type: 'onGenerateClicked:Response',
           data: {
             problemId: initData.id,
-            recommendation: response.value.recommendation,
+            recommendation: recommendation,
           },
         });
-
-        return;
       }
 
-      const configuration = new Configuration({
-        apiKey: chatGPTToken,
+      // Show recommendation in the editor
+      const recommendationFormatted = `${recommendation.replace('```', '')}\n`;
+      const editor = window.activeTextEditor;
+      if (!editor) {
+        throw new Error('handleRecommendationClick: Editor is undefined');
+      }
+      const startLine = initData.vuln.startLine;
+      const start = new Position(startLine - 1, 0);
+      editor.edit((editBuilder: TextEditorEdit) => {
+        editBuilder.insert(start, recommendationFormatted);
       });
-      const openai = new OpenAIApi(configuration);
-      const payload: CreateChatCompletionRequest = {
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: response.value.prompt,
-          },
-          {
-            role: 'user',
-            content: input,
-          },
-        ],
-      };
-      const chatresponse = await openai.createChatCompletion({ ...payload });
-      this._view.webview.postMessage({
-        type: 'onGenerateClickedGPT:Response',
-        data: { recommendation: chatresponse.data.choices[0].message?.content || '', problemId: initData.id },
-      });
+      const recommendationLineCount = recommendationFormatted.split(/\n/).length - 1;
+      console.log('recommendation: ', JSON.stringify(recommendationFormatted))
+      console.log('setting decoration from ', start, 'to ', start.translate(recommendationLineCount))
+      editor.setDecorations(
+        recommendationDecoration,
+        [new Range(start, start.translate(recommendationLineCount - 1))]
+      );
+
     } catch (error: any) {
       throw new Error(error);
     }
