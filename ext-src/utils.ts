@@ -9,9 +9,10 @@ import {
   ProgressLocation,
   ExtensionContext,
 } from 'vscode';
-import { GenerateDecorations, problemDecoration } from './helpers';
+import { GenerateDecorations } from './helpers';
 import CONSTANTS from './constants';
 import { AnalyzeState } from './state';
+import { problemDecoration } from './decorations';
 
 // Normal Utilities used shared across folders
 export default class Utils {

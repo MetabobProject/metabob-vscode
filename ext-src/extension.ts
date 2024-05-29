@@ -14,7 +14,6 @@ import {
   createOrUpdateUserSession,
   initState,
   AnalyzeDocumentOnSave,
-  problemDecoration,
 } from './helpers';
 import Util from './utils';
 import {
@@ -24,6 +23,7 @@ import {
 } from './events';
 import { Analyze } from './state';
 import { Problem } from './types';
+import { problemDecoration } from './decorations';
 
 let expirationTimer: any = undefined;
 

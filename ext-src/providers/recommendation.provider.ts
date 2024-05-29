@@ -492,6 +492,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     const path: Uri | undefined = searchedFilePath[0];
 
     if (!path) return;
+
     // Use the `openTextDocument` method to open the document
     workspace.openTextDocument(Uri.file(path.fsPath)).then(document => {
       // Use the `showTextDocument` method to show the document in a new tab
