@@ -28,7 +28,6 @@ function handleFileChange(uri: vscode.Uri) {
     const readmeContent = fs.readFileSync(uri.fsPath, 'utf-8');
     const context = extractRelevantInformation(readmeContent); // Extract relevant information from the README content by calling the extractRelevantInformation function
     updateContext(context);
-    console.log(`Updated : ${JSON.stringify(globalContext)}`);
 }
 
 function handleFileDelete(uri: vscode.Uri) {

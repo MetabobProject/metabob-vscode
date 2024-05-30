@@ -33,7 +33,6 @@ export function activate(context: vscode.ExtensionContext): void {
   let previousEditor: vscode.TextEditor | undefined = undefined;
   const _debug = undefined; // vscode.window.createOutputChannel('Metabob');
   bootstrapExtensionEventEmitter();
-  console.log('Congratulations, your extension "metabob" is now active!');
   initState(context);
 
   if (!context.extension || !context.extensionUri) {
