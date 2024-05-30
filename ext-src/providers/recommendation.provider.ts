@@ -283,7 +283,7 @@ export class RecommendationWebView implements WebviewViewProvider {
       problemId: initData.id,
       prompt: input,
       description: initData.vuln.description,
-      context: '',
+      context: JSON.stringify(globalContext),
       recommendation: '',
     };
 
