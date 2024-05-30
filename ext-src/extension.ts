@@ -24,14 +24,16 @@ import {
 } from './events';
 import { Analyze } from './state';
 import { Problem } from './types';
+import { initializeFileWatcher } from './helpers/FileWatcher';
 
 let expirationTimer: any = undefined;
+let fileWatcher:vscode.FileSystemWatcher
 
 export function activate(context: vscode.ExtensionContext): void {
   let previousEditor: vscode.TextEditor | undefined = undefined;
   const _debug = undefined; // vscode.window.createOutputChannel('Metabob');
   bootstrapExtensionEventEmitter();
-
+  console.log('Congratulations, your extension "metabob" is now active!');
   initState(context);
 
   if (!context.extension || !context.extensionUri) {
@@ -129,7 +131,15 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  const extensionEventEmitter = getExtensionEventEmitter();
+  const workspaceFolders = vscode.workspace.workspaceFolders; //retrievee workspace folders -> An array of information aboout the folders
+    if (workspaceFolders) {
+        const repoPath = workspaceFolders[0].uri.fsPath;
+
+        // Initialize file watcher
+        initializeFileWatcher(repoPath, context);
+    }
+
+const extensionEventEmitter = getExtensionEventEmitter();
 
   // Analyze on Save functionality is only ran if the user enabled it.
   context.subscriptions.push(

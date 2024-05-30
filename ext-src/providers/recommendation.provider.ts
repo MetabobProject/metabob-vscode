@@ -25,6 +25,7 @@ import CONSTANTS from '../constants';
 import Util from '../utils';
 import { AnalysisEvents } from '../events';
 import { Problem } from '../types';
+import { globalContext } from '../helpers/ContextExtractor';
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
@@ -282,7 +283,7 @@ export class RecommendationWebView implements WebviewViewProvider {
       problemId: initData.id,
       prompt: input,
       description: initData.vuln.description,
-      context: '',
+      context: JSON.stringify(globalContext),
       recommendation: '',
     };
 
