@@ -31,10 +31,11 @@ let fileWatcher:vscode.FileSystemWatcher
 
 export function activate(context: vscode.ExtensionContext): void {
   let previousEditor: vscode.TextEditor | undefined = undefined;
-  const _debug = undefined; // vscode.window.createOutputChannel('Metabob');
+  const _debug =  vscode.window.createOutputChannel('Metabob');
   bootstrapExtensionEventEmitter();
   initState(context);
 
+  console.log('Congratulations, your extension "metabob" is now active!');
   if (!context.extension || !context.extensionUri) {
     return;
   }
@@ -75,7 +76,7 @@ export function activate(context: vscode.ExtensionContext): void {
     activateDetailSuggestionCommand(context);
 
     // Whenever the user clicks the fix button
-    activateFixSuggestionCommand(context);
+    activateFixSuggestionCommand(context, _debug);
   } catch {
     return;
   }
