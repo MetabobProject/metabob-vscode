@@ -425,7 +425,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   }
 
   async handleApplyRecommendation(input: string, initData: CurrentQuestionState) {
-    const documentMetadata = Util.getFileNameFromCurrentEditor();
+    const documentMetadata = Util.getCurrentFile();
     if (!documentMetadata || !initData) {
       throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
     }

@@ -22,7 +22,7 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     const sessionToken = new Session(context).get()?.value;
     const extensionEventEmitter = getExtensionEventEmitter();
 
-    const documentMetaData = Utils.getFileNameFromCurrentEditor();
+    const documentMetaData = Utils.getCurrentFile();
 
     if (!documentMetaData) {
       vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);

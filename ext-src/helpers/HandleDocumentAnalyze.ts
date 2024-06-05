@@ -6,6 +6,7 @@ import { AnalyzeState, Analyze, AnalyseMetaData } from '../state';
 import Util from '../utils';
 import CONSTANTS from '../constants';
 import { getExtensionEventEmitter } from '../events';
+import path from 'path'
 
 const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' };
 
@@ -101,8 +102,8 @@ export const handleDocumentAnalyze = async (
     return verifiedResponse;
   }
 
-  const documentMetaData = Util.getFileNameFromCurrentEditor();
-  if (!documentMetaData) {
+  const currFile = Util.getCurrentFile();
+  if (!currFile) {
     getExtensionEventEmitter().fire({
       type: 'Analysis_Error',
       data: '',
@@ -118,20 +119,24 @@ export const handleDocumentAnalyze = async (
     return failedResponseReturn;
   }
 
+  // normalize problem paths
+  verifiedResponse.results.forEach(result => {
+    result.path = path.normalize(result.path);
+  });
+
   let results: AnalyzeState = {};
   const analyzeStateValue = new Analyze(context).get()?.value;
   _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: analyzeStateValue: ' + JSON.stringify(analyzeStateValue));
 
   if (analyzeStateValue) {
-    const aggregatedProblemsFilePaths = verifiedResponse.results.map(problem => {
+    const responseProblemsFilePaths = verifiedResponse.results.map(problem => {
       return problem.path;
     });
 
     const buggerAnalyzeStateValue: AnalyzeState = {};
 
-    Object.keys(analyzeStateValue).forEach(key => {
-      const problem = analyzeStateValue[key];
-      if (!aggregatedProblemsFilePaths.includes(problem.path)) {
+    Object.entries(analyzeStateValue).forEach(([key, problem]) => {
+      if (!responseProblemsFilePaths.includes(problem.path)) {
         buggerAnalyzeStateValue[key] = { ...problem };
       }
     });
@@ -153,10 +158,10 @@ export const handleDocumentAnalyze = async (
         startLine - 1,
         0,
         endLine - 1,
-        documentMetaData.editor.document.lineAt(endLine - 1).text.length,
+        currFile.editor.document.lineAt(endLine - 1).text.length,
       );
 
-      const text = documentMetaData.editor.document
+      const text = currFile.editor.document
         .getText(range)
         .replace('\n', '')
         .replace('\t', '');
@@ -181,8 +186,8 @@ export const handleDocumentAnalyze = async (
       results[key] = { ...analyzeMetaData };
     });
 
-  _debug?.appendLine('AnalyzeDocument.ts: Document File name' + documentMetaData.fileName);
-  const problems = Util.getCurrentEditorProblems(results, documentMetaData.fileName);
+  _debug?.appendLine('AnalyzeDocument.ts: Document File path' + currFile.relativePath);
+  const problems = Util.getCurrentEditorProblems(results, currFile.relativePath);
   _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: problems: ' + JSON.stringify(problems));
   if (!problems) {
     getExtensionEventEmitter().fire({
@@ -202,10 +207,10 @@ export const handleDocumentAnalyze = async (
 
   const paths = problems.map(item => item.path);
 
-  const isUserOnValidEditor = paths.includes(documentMetaData.fileName);
+  const isUserOnValidEditor = paths.includes(currFile.relativePath);
   _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: isUserOnValidEditor: ' + isUserOnValidEditor);
   if (isUserOnValidEditor) {
-    Util.decorateCurrentEditorWithHighlights(problems, documentMetaData.editor, _debug);
+    Util.decorateCurrentEditorWithHighlights(problems, currFile.editor, _debug);
   }
 
   await analyzeState.set(results);
