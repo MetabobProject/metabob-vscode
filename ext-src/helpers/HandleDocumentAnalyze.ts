@@ -119,9 +119,11 @@ export const handleDocumentAnalyze = async (
     return failedResponseReturn;
   }
 
-  // normalize problem paths
+  // convert problem paths to absolute path and normalize them
+  const workspaceFolderPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+  if (!workspaceFolderPath) {return failedResponseReturn;}
   verifiedResponse.results.forEach(result => {
-    result.path = path.normalize(result.path);
+    result.path = path.join(workspaceFolderPath, result.path);
   });
 
   let results: AnalyzeState = {};
@@ -186,8 +188,8 @@ export const handleDocumentAnalyze = async (
       results[key] = { ...analyzeMetaData };
     });
 
-  _debug?.appendLine('AnalyzeDocument.ts: Document File path' + currFile.relativePath);
-  const problems = Util.getCurrentEditorProblems(results, currFile.relativePath);
+  _debug?.appendLine('AnalyzeDocument.ts: Document File path' + currFile.absPath);
+  const problems = Util.getCurrentEditorProblems(results, currFile.absPath);
   _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: problems: ' + JSON.stringify(problems));
   if (!problems) {
     getExtensionEventEmitter().fire({
@@ -207,7 +209,7 @@ export const handleDocumentAnalyze = async (
 
   const paths = problems.map(item => item.path);
 
-  const isUserOnValidEditor = paths.includes(currFile.relativePath);
+  const isUserOnValidEditor = paths.includes(currFile.absPath);
   _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: isUserOnValidEditor: ' + isUserOnValidEditor);
   if (isUserOnValidEditor) {
     Util.decorateCurrentEditorWithHighlights(problems, currFile.editor, _debug);

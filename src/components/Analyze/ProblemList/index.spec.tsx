@@ -37,7 +37,7 @@ describe('ProblemList component', () => {
   });
 
   test('renders correctly with otherFileWithProblems', () => {
-    const otherFileWithProblems = [{ name: 'file1.txt' }, { name: 'file2.txt' }];
+    const otherFileWithProblems = [{ name: 'file1.txt', path: 'path/to/file1.txt' }, { name: 'file2.txt', path: 'path/to/file2.txt' }];
     const { getByText, getAllByText } = render(
       <RecoilRoot>
         <ProblemList
@@ -55,7 +55,7 @@ describe('ProblemList component', () => {
   });
 
   test('handles opening other files correctly', () => {
-    const otherFileWithProblems = [{ name: 'file1.txt' }];
+    const otherFileWithProblems = [{ name: 'file1.txt', path: 'path/to/file1.txt' }];
     const { getByText } = render(
       <RecoilRoot>
         <ProblemList

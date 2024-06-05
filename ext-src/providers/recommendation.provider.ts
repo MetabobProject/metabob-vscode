@@ -484,16 +484,15 @@ export class RecommendationWebView implements WebviewViewProvider {
 
   searchFileByName(fileName: string) {
     const searchPattern = `**/${fileName}`;
+
     return workspace.findFiles(searchPattern, '**/node_modules/**', 1);
   }
 
-  async openFileInNewTab(fileName: string) {
-    const searchedFilePath = await this.searchFileByName(fileName);
-    const path: Uri | undefined = searchedFilePath[0];
+  async openFileInNewTab(filePath: string): Promise<void> {
+    if (!filePath) return;
 
-    if (!path) return;
     // Use the `openTextDocument` method to open the document
-    workspace.openTextDocument(Uri.file(path.fsPath)).then(document => {
+    workspace.openTextDocument(Uri.file(filePath)).then(document => {
       // Use the `showTextDocument` method to show the document in a new tab
       window.showTextDocument(document, {
         viewColumn: ViewColumn.One,
@@ -516,8 +515,8 @@ export class RecommendationWebView implements WebviewViewProvider {
       const data = message.data;
       switch (message.type) {
         case 'OPEN_FILE_IN_NEW_TAB':
-          const { name: fileName } = data;
-          this.openFileInNewTab(fileName);
+          const { path: filePath } = data;
+          this.openFileInNewTab(filePath);
           break;
         case 'analysis_current_file':
           this.clear();

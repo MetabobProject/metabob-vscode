@@ -147,7 +147,7 @@ export default class Utils {
 
   static getCurrentFile(): {
     fileName: string;
-    relativePath: string;
+    absPath: string;
     editor: vscode.TextEditor
   } | undefined {
     const editor = vscode.window.activeTextEditor
@@ -162,7 +162,7 @@ export default class Utils {
 
     return {
       fileName,
-      relativePath: documentMetaData.relativePath,
+      absPath: documentMetaData.filePath,
       editor
     }
   }

@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { AnalyzeDocumentOnSaveConfig } from './config';
 import { RecommendationWebView } from './providers/recommendation.provider';
 import {
@@ -264,15 +263,10 @@ export function activate(context: vscode.ExtensionContext): void {
       }
 
       const documentMetaData = Util.extractMetaDataFromDocument(bufferedEParam);
-      let filePath: string | undefined = undefined;
-
-      if (documentMetaData.relativePath) {
-        filePath = documentMetaData.relativePath;
+      if (!documentMetaData.filePath) {
+        return
       }
-
-      if (!filePath && documentMetaData.filePath) {
-        filePath = path.relative(currentWorkspacePath, documentMetaData.filePath).replace(/\.git$/, '');
-      }
+      const filePath: string = documentMetaData.filePath.replace(/\.git$/, '');
 
       if (!filePath) {
         return;

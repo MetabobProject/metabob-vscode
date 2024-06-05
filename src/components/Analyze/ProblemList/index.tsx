@@ -13,7 +13,7 @@ import { useCallback } from 'react';
 
 export interface ProblemsListProps {
   detectedProblems?: number;
-  otherFileWithProblems?: Array<{ name: string }>;
+  otherFileWithProblems?: Array<{ name: string, path: string }>;
   isEmptyIdentifiedProblemDetected: boolean;
 }
 
@@ -24,12 +24,12 @@ export const ProblemList = ({
 }: ProblemsListProps): JSX.Element => {
   const theme = useTheme();
 
-  const handleOpenOtherFile: (name: string) => React.MouseEventHandler = useCallback(
-    (name: string) => e => {
+  const handleOpenOtherFile: (path: string) => React.MouseEventHandler = useCallback(
+    (path: string) => e => {
       e.preventDefault();
       vscode.postMessage({
         type: 'OPEN_FILE_IN_NEW_TAB',
-        data: { name },
+        data: { path },
       });
     },
     [],
@@ -75,7 +75,7 @@ export const ProblemList = ({
                           size='small'
                           variant='contained'
                           color='primary'
-                          onClick={handleOpenOtherFile(item.name)}
+                          onClick={handleOpenOtherFile(item.path)}
                         >
                           Open
                         </Button>
