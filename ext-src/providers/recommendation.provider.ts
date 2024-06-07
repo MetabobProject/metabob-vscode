@@ -312,6 +312,8 @@ export class RecommendationWebView implements WebviewViewProvider {
           },
         });
 
+        commands.executeCommand('vscode.diff', window.activeTextEditor?.document.uri, Uri.from({scheme: 'metabob', path: window.activeTextEditor?.document.uri.path}))
+
         return;
       }
 
