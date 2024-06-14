@@ -24,6 +24,7 @@ import {
 } from './events';
 import { Analyze } from './state';
 import { Problem } from './types';
+import { RecommendationTextProvider } from './providers/RecommendationTextProvider';
 
 let expirationTimer: any = undefined;
 
@@ -50,16 +51,10 @@ export function activate(context: vscode.ExtensionContext): void {
       handleAnalyzeExpiration(context);
     }, thirty_minutes)
 
-    vscode.workspace.registerTextDocumentContentProvider(
+    context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider(
       'metabob',
-      new class implements vscode.TextDocumentContentProvider {
-        async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
-          const oldContent = (await vscode.workspace.openTextDocument(vscode.Uri.file(uri.path))).getText()
-
-          return 'hello\n' + oldContent
-        }
-      }
-    )
+      new RecommendationTextProvider()
+    ))
 
     // Create User Session, If already created get the refresh token
     // otherwise, ping server every 60 second to not destroy the token

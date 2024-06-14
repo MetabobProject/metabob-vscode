@@ -303,42 +303,61 @@ export class RecommendationWebView implements WebviewViewProvider {
         throw new Error('handleRecommendationClick: Response value is null');
       }
 
+      let recommendation: string;
+
       if (!isChatConfigEnabled) {
+        recommendation = response.value.recommendation;
         this._view?.webview.postMessage({
           type: 'onGenerateClicked:Response',
           data: {
             problemId: initData.id,
-            recommendation: response.value.recommendation,
+            recommendation: recommendation,
           },
         });
 
-        commands.executeCommand('vscode.diff', window.activeTextEditor?.document.uri, Uri.from({scheme: 'metabob', path: window.activeTextEditor?.document.uri.path}))
-
-        return;
+      } else {
+        const configuration = new Configuration({
+          apiKey: chatGPTToken,
+        });
+        const openai = new OpenAIApi(configuration);
+        const payload: CreateChatCompletionRequest = {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: response.value.prompt,
+            },
+            {
+              role: 'user',
+              content: input,
+            },
+          ],
+        };
+        const chatresponse = await openai.createChatCompletion({ ...payload });
+        recommendation = chatresponse.data.choices[0].message?.content || '';
+        this._view.webview.postMessage({
+          type: 'onGenerateClickedGPT:Response',
+          data: {
+            recommendation: recommendation,
+            problemId: initData.id
+          },
+        });
       }
 
-      const configuration = new Configuration({
-        apiKey: chatGPTToken,
-      });
-      const openai = new OpenAIApi(configuration);
-      const payload: CreateChatCompletionRequest = {
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: response.value.prompt,
-          },
-          {
-            role: 'user',
-            content: input,
-          },
-        ],
-      };
-      const chatresponse = await openai.createChatCompletion({ ...payload });
-      this._view.webview.postMessage({
-        type: 'onGenerateClickedGPT:Response',
-        data: { recommendation: chatresponse.data.choices[0].message?.content || '', problemId: initData.id },
-      });
+      commands.executeCommand(
+        'vscode.diff',
+        window.activeTextEditor?.document.uri,
+        Uri.from({
+          scheme: 'metabob',
+          path: window.activeTextEditor?.document.uri.path,
+          query: JSON.stringify({
+            recommendation: recommendation,
+            startLine: initData.vuln.startLine,
+            endLine: initData.vuln.endLine
+          })
+        })
+      )
+
     } catch (error: any) {
       throw new Error(error);
     }
@@ -433,14 +452,15 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
 
     const key = `${initData.path}@@${initData.id}`;
-    if (documentMetadata.fileName !== initData.path) {
+    console.log(documentMetadata.absPath, '===', initData.path)
+    if (documentMetadata.absPath !== initData.path) {
       throw new Error('handleApplyRecommendation: User editor changed');
     }
 
     const setAnalyzeState = new Analyze(this.extensionContext);
     const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
     if (!getanalyzeState) {
-      throw new Error('handleApplyRecommendation: Analze is undefined');
+      throw new Error('handleApplyRecommendation: Analyze is undefined');
     }
 
     const copyAnalyzeValue = { ...getanalyzeState };
