@@ -431,7 +431,7 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
 
     const key = `${initData.path}@@${initData.id}`;
-    if (documentMetadata.fileName !== initData.path) {
+    if (documentMetadata.absPath !== initData.path) {
       throw new Error('handleApplyRecommendation: User editor changed');
     }
 
