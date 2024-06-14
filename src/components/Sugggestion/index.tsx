@@ -116,16 +116,6 @@ export const SuggestionPage = (): JSX.Element => {
     return problemRecomendation.length > 0;
   }, [problemRecomendation]);
 
-  const handleApplyRecommendation = useCallback(() => {
-    vscode.postMessage({
-      type: 'applyRecommendation',
-      data: {
-        input: recommendationMemo,
-        initData: { ...suggestion },
-      },
-    });
-  }, [recommendationMemo, suggestion]);
-
   const generateButtonSxProps = useMemo(() => {
     if (!suggestion || isRecommendationLoading) {
       return {
@@ -192,7 +182,6 @@ export const SuggestionPage = (): JSX.Element => {
             gotoNextPage={goToNextPage}
             gotoPreviousPage={goToPrevPage}
             shouldRenderPagination={shouldRenderPagination}
-            handleApplyRecommendation={handleApplyRecommendation}
             currentPage={currentPage}
             totalPages={totalPages}
           />
