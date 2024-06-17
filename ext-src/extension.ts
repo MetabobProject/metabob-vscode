@@ -462,6 +462,7 @@ export function activate(context: vscode.ExtensionContext): void {
         context,
         extensionEventEmitter,
       ),
+      { webviewOptions: { retainContextWhenHidden: true } },
     ),
   );
 }

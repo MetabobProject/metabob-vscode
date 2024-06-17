@@ -76,6 +76,14 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.activateWebviewMessageListener();
     this.activateExtensionEventListener();
     this.sendDefaultEvents();
+    this._view.onDidChangeVisibility(() => {
+      if (this._view?.visible === false) {
+        this._view.webview.postMessage({
+          type: 'VISIBILITY_LOST',
+          data: {},
+        })
+      }
+    }, null, this.extensionContext.subscriptions);
   }
 
   sendDefaultEvents() {
@@ -116,42 +124,13 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
   }
 
-  intervalHandler() {
-    if (this?._view === null || this?._view === undefined || !this?._view.webview) {
-      return;
-    }
-
-    if (!this._view.visible) {
-      return;
-    }
-
-    for (let i = 0; i < this.eventEmitterQueue.length; i++) {
-      const event = this.eventEmitterQueue[i];
-      if (event) {
-        this?._view?.webview?.postMessage(event);
-      }
-    }
-
-    clearInterval(this.interval);
-  }
-
   activateExtensionEventListener(): void {
-    const self = this;
     this.extensionEventEmitter.event(event => {
       if (this?._view === null || this?._view === undefined || !this?._view.webview) {
         return;
       }
 
-      if (this._view.visible === false) {
-        this.eventEmitterQueue.push(event);
-        if (this.interval !== undefined) {
-          this.interval = setInterval(this.intervalHandler.bind(self), 300);
-        }
-        return;
-      }
-
-      this.eventEmitterQueue = [];
-      this._view.webview.postMessage(event);
+      this?._view?.webview?.postMessage(event);
     });
   }
 
@@ -420,7 +399,7 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     this._view.webview.postMessage({
       type: 'Analysis_Completed',
-      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...getanalyzeState },
+      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false, ...getanalyzeState },
     });
   }
 
