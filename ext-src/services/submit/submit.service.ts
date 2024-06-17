@@ -25,7 +25,7 @@ class SubmitService extends ApiServiceBase {
     const formData = new FormData()
     formData.append('type', 'text/plain')
     formData.append('filename', relativePath)
-    formData.append('upload', Buffer.from(fileContent, 'utf-8'), relativePath)
+    formData.append('upload', Buffer.from(fileContent, 'utf-8'), {filepath: relativePath})
     const config = this.getConfig(sessionToken, formData.getHeaders())
     const response = await this.post<SubmitRepresentationResponse>('/submit', formData, config)
     return response

@@ -26,12 +26,12 @@ export const AnalyzePage = ({
   const currentWorkSpaceProject = useRecoilValue(State.currentWorkSpaceProject);
   const isEmptyIdentifiedProblemDetected = useRecoilValue(State.isEmptyIdentifiedProblemDetected);
 
-  const otherFileWithProblems: Array<{ name: string }> | undefined = useMemo(() => {
+  const otherFileWithProblems: Array<{ name: string, path: string }> | undefined = useMemo(() => {
     if (!identifiedProblems) return undefined;
 
     if (!currentEditor) return undefined;
 
-    const results: Array<{ name: string }> = Object.keys(identifiedProblems)
+    const results: Array<{ path: string }> = Object.keys(identifiedProblems)
       .filter(problemKey => {
         const problem = identifiedProblems[problemKey];
 
@@ -74,15 +74,16 @@ export const AnalyzePage = ({
         const problem = identifiedProblems[problemKey];
 
         return {
-          name: problem.path,
+          path: problem.path,
         };
       });
 
-    const uniqueFiles = Array.from(new Set(results.map(item => item.name)));
+    const uniqueFiles = Array.from(new Set(results.map(item => item.path)));
 
-    return uniqueFiles.map(name => {
+    return uniqueFiles.map(file => {
       return {
-        name,
+        path: file,
+        name: file.split(/\/|\\/g).pop() || '',
       };
     });
   }, [identifiedProblems, currentEditor, currentWorkSpaceProject]);

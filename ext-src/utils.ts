@@ -145,8 +145,9 @@ export default class Utils {
     return undefined; // No workspace folder
   }
 
-  static getFileNameFromCurrentEditor(): {
+  static getCurrentFile(): {
     fileName: string;
+    absPath: string;
     editor: vscode.TextEditor
   } | undefined {
     const editor = vscode.window.activeTextEditor
@@ -161,19 +162,19 @@ export default class Utils {
 
     return {
       fileName,
+      absPath: documentMetaData.filePath,
       editor
     }
   }
 
-  static getCurrentEditorProblems(analyzeValue: AnalyzeState, problemFileName: string): Problem[] | undefined {
+  static getCurrentEditorProblems(analyzeValue: AnalyzeState, currentFilePath: string): Problem[] | undefined {
     const results: Problem[] = [];
 
-    for (const [key, value] of Object.entries(analyzeValue)) {
-      const fileNameFromKey: string | undefined = key.split('@@')[0];
-      if (fileNameFromKey === undefined) continue;
+    for (const value of Object.values(analyzeValue)) {
+      if (value.path === undefined) continue;
 
       // verifying that we only show current opened file decorations that are not discarded.
-      if (fileNameFromKey === problemFileName && value.isDiscarded === false) {
+      if (value.path === currentFilePath && value.isDiscarded === false) {
         const problem: Problem = {
           ...value,
           startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,

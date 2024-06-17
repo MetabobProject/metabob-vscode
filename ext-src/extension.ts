@@ -145,7 +145,7 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      const documentMetaData = Util.getFileNameFromCurrentEditor();
+      const documentMetaData = Util.getCurrentFile();
 
       if (!documentMetaData) {
         return;
@@ -257,28 +257,22 @@ export function activate(context: vscode.ExtensionContext): void {
       }
 
       const currentWorkSpaceFolder = Util.getRootFolderName();
-      const documentMetaData = Util.extractMetaDataFromDocument(bufferedEParam);
-      let fileName: string | undefined = undefined;
-
-      if (documentMetaData.fileName) {
-        fileName = documentMetaData.fileName;
-      }
-
-      if (!fileName && documentMetaData.filePath) {
-        const splitKey: string | undefined = documentMetaData.filePath
-          .split('/')
-          .pop()
-          ?.replace('.git', '');
-        if (splitKey) {
-          fileName = splitKey;
-        }
-      }
-
-      if (!fileName) {
+      const currentWorkspacePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+      if (currentWorkspacePath === undefined) {
         return;
       }
 
-      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, fileName);
+      const documentMetaData = Util.extractMetaDataFromDocument(bufferedEParam);
+      if (!documentMetaData.filePath) {
+        return
+      }
+      const filePath: string = documentMetaData.filePath.replace(/\.git$/, '');
+
+      if (!filePath) {
+        return;
+      }
+
+      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, filePath);
       if (!results) {
         return;
       }

@@ -33,13 +33,13 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     }
 
     // verifying that in-fact user viewing problem.path file.
-    const documentMetaData = Utils.getFileNameFromCurrentEditor();
+    const documentMetaData = Utils.getCurrentFile();
     if (!documentMetaData) {
       vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
       return;
     }
 
-    const filename: string | undefined = documentMetaData.fileName;
+    const filename: string | undefined = documentMetaData.absPath;
     const isUserOnProblemFile: boolean = filename === path;
 
     const copyProblems = { ...problems };
