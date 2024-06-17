@@ -422,61 +422,6 @@ export class RecommendationWebView implements WebviewViewProvider {
     });
   }
 
-<<<<<<< HEAD
-=======
-  async handleApplyRecommendation(input: string, initData: CurrentQuestionState) {
-    const documentMetadata = Util.getCurrentFile();
-    if (!documentMetadata || !initData) {
-      throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
-    }
-
-    const key = `${initData.path}@@${initData.id}`;
-    if (documentMetadata.absPath !== initData.path) {
-      throw new Error('handleApplyRecommendation: User editor changed');
-    }
-
-    const setAnalyzeState = new Analyze(this.extensionContext);
-    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
-    if (!getanalyzeState) {
-      throw new Error('handleApplyRecommendation: Analze is undefined');
-    }
-
-    const copyAnalyzeValue = { ...getanalyzeState };
-    copyAnalyzeValue[key].isDiscarded = true;
-    copyAnalyzeValue[key].isEndorsed = false;
-    copyAnalyzeValue[key].isViewed = true;
-
-    const results: Problem[] | undefined = Util.getCurrentEditorProblems(
-      copyAnalyzeValue,
-      initData.path,
-    );
-    if (!results) {
-      throw new Error('handleApplyRecommendation: Results are undefined');
-    }
-
-    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(
-      results,
-      documentMetadata.editor,
-    );
-
-    if (!isCurrentFileDecorated) {
-      throw new Error('handleApplyRecommendation: could not decorate current file');
-    }
-
-    // Immediately replace suggested recommendation in the editor
-    const startLine = initData.vuln.startLine;
-    const endLine = initData.vuln.endLine;
-    const comment = `${input.replace('```', '')}`;
-    const start = new Position(startLine - 1, 0); // convert line number to position
-    const end = new Position(endLine, 0); // convert line number to position
-    const range = new Range(start, end);
-    documentMetadata.editor.edit((editBuilder: TextEditorEdit) => {
-      editBuilder.replace(range, comment + '\n');
-    });
-    await setAnalyzeState.set({ ...copyAnalyzeValue });
-  }
-
->>>>>>> main
   async openExternalLink(url: string): Promise<void> {
     await env.openExternal(Uri.parse(url));
 
