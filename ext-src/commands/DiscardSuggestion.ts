@@ -39,7 +39,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       return;
     }
 
-    const filename: string | undefined = documentMetaData.fileName;
+    const filename: string | undefined = documentMetaData.absPath;
     const isUserOnProblemFile: boolean = filename === path;
 
     const copyProblems = { ...problems };

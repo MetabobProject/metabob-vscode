@@ -74,6 +74,14 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.activateWebviewMessageListener();
     this.activateExtensionEventListener();
     this.sendDefaultEvents();
+    this._view.onDidChangeVisibility(() => {
+      if (this._view?.visible === false) {
+        this._view.webview.postMessage({
+          type: 'VISIBILITY_LOST',
+          data: {},
+        })
+      }
+    }, null, this.extensionContext.subscriptions);
   }
 
   sendDefaultEvents() {
@@ -114,42 +122,13 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
   }
 
-  intervalHandler() {
-    if (this?._view === null || this?._view === undefined || !this?._view.webview) {
-      return;
-    }
-
-    if (!this._view.visible) {
-      return;
-    }
-
-    for (let i = 0; i < this.eventEmitterQueue.length; i++) {
-      const event = this.eventEmitterQueue[i];
-      if (event) {
-        this?._view?.webview?.postMessage(event);
-      }
-    }
-
-    clearInterval(this.interval);
-  }
-
   activateExtensionEventListener(): void {
-    const self = this;
     this.extensionEventEmitter.event(event => {
       if (this?._view === null || this?._view === undefined || !this?._view.webview) {
         return;
       }
 
-      if (this._view.visible === false) {
-        this.eventEmitterQueue.push(event);
-        if (this.interval !== undefined) {
-          this.interval = setInterval(this.intervalHandler.bind(self), 300);
-        }
-        return;
-      }
-
-      this.eventEmitterQueue = [];
-      this._view.webview.postMessage(event);
+      this?._view?.webview?.postMessage(event);
     });
   }
 
@@ -439,10 +418,65 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     this._view.webview.postMessage({
       type: 'Analysis_Completed',
-      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...getanalyzeState },
+      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false, ...getanalyzeState },
     });
   }
 
+<<<<<<< HEAD
+=======
+  async handleApplyRecommendation(input: string, initData: CurrentQuestionState) {
+    const documentMetadata = Util.getCurrentFile();
+    if (!documentMetadata || !initData) {
+      throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
+    }
+
+    const key = `${initData.path}@@${initData.id}`;
+    if (documentMetadata.absPath !== initData.path) {
+      throw new Error('handleApplyRecommendation: User editor changed');
+    }
+
+    const setAnalyzeState = new Analyze(this.extensionContext);
+    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
+    if (!getanalyzeState) {
+      throw new Error('handleApplyRecommendation: Analze is undefined');
+    }
+
+    const copyAnalyzeValue = { ...getanalyzeState };
+    copyAnalyzeValue[key].isDiscarded = true;
+    copyAnalyzeValue[key].isEndorsed = false;
+    copyAnalyzeValue[key].isViewed = true;
+
+    const results: Problem[] | undefined = Util.getCurrentEditorProblems(
+      copyAnalyzeValue,
+      initData.path,
+    );
+    if (!results) {
+      throw new Error('handleApplyRecommendation: Results are undefined');
+    }
+
+    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(
+      results,
+      documentMetadata.editor,
+    );
+
+    if (!isCurrentFileDecorated) {
+      throw new Error('handleApplyRecommendation: could not decorate current file');
+    }
+
+    // Immediately replace suggested recommendation in the editor
+    const startLine = initData.vuln.startLine;
+    const endLine = initData.vuln.endLine;
+    const comment = `${input.replace('```', '')}`;
+    const start = new Position(startLine - 1, 0); // convert line number to position
+    const end = new Position(endLine, 0); // convert line number to position
+    const range = new Range(start, end);
+    documentMetadata.editor.edit((editBuilder: TextEditorEdit) => {
+      editBuilder.replace(range, comment + '\n');
+    });
+    await setAnalyzeState.set({ ...copyAnalyzeValue });
+  }
+
+>>>>>>> main
   async openExternalLink(url: string): Promise<void> {
     await env.openExternal(Uri.parse(url));
 

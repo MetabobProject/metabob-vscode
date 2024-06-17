@@ -58,39 +58,37 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       endorsed: copiedAnalyzeValue[key].isEndorsed || false,
     };
 
-    setTimeout(() => {
-      getExtensionEventEmitter().fire({
-        type: 'FIX_SUGGESTION',
-        data: {
-          path: args.path,
-          id: args.id,
-          vuln: args.vuln,
-          isFix: false,
-          isReset: false,
-        },
-      });
+    getExtensionEventEmitter().fire({
+      type: 'FIX_SUGGESTION',
+      data: {
+        path: args.path,
+        id: args.id,
+        vuln: args.vuln,
+        isFix: false,
+        isReset: false,
+      },
+    });
 
-      getExtensionEventEmitter().fire({
-        type: 'Analysis_Completed',
-        data: {
-          shouldResetRecomendation: false,
-          shouldMoveToAnalyzePage: false,
-          ...copiedAnalyzeValue,
-        },
-      });
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Completed',
+      data: {
+        shouldResetRecomendation: false,
+        shouldMoveToAnalyzePage: false,
+        ...copiedAnalyzeValue,
+      },
+    });
 
-      extensionEventEmitter.fire({
-        type: 'CURRENT_FILE',
-        data: { ...documentMetaData.editor.document },
-      });
+    extensionEventEmitter.fire({
+      type: 'CURRENT_FILE',
+      data: { ...documentMetaData.editor.document },
+    });
 
-      getExtensionEventEmitter().fire({
-        type: 'CURRENT_PROJECT',
-        data: {
-          name: currentWorkSpaceFolder,
-        },
-      });
-    }, 500);
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder,
+      },
+    });
 
     await setAnalyzeState.set(copiedAnalyzeValue);
 

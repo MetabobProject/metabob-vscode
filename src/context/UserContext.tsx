@@ -108,7 +108,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             currentFile,
           } = payload;
 
-          setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
 
           if (hasOpenTextDocuments) {
             setHasOpenTextDocuments(hasOpenTextDocuments);
@@ -216,6 +215,9 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             return;
           }
           setCurrentEditor(filename);
+          break;
+        case EventDataType.VISIBILITY_LOST:
+          setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           break;
         default:
           break;

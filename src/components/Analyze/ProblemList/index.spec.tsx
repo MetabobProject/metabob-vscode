@@ -69,7 +69,7 @@ describe('ProblemList component', () => {
     fireEvent.click(getByText('Open'));
     expect(vscode.postMessage).toHaveBeenCalledWith({
       type: 'OPEN_FILE_IN_NEW_TAB',
-      data: { name: 'file1.txt' },
+      data: { path: 'path/to/file1.txt' },
     });
   });
 });
