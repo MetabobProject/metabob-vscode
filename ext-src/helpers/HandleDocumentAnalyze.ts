@@ -58,27 +58,27 @@ export const handleDocumentAnalyze = async (
     jobId !== undefined
       ? await submitService.getJobStatus(sessionToken, jobId)
       : await submitService.submitTextFile(
-        metaDataDocument.relativePath,
-        metaDataDocument.fileContent,
-        metaDataDocument.filePath,
-        sessionToken,
-      );
+          metaDataDocument.relativePath,
+          metaDataDocument.fileContent,
+          metaDataDocument.filePath,
+          sessionToken,
+        );
 
   const verifiedResponse = verifyResponseOfSubmit(response);
   if (!verifiedResponse || !verifiedResponse.results) {
     if (!suppressRateLimitErrors) {
-      getExtensionEventEmitter().fire({
-        type: 'Analysis_Error',
-        data: '',
-      });
-      getExtensionEventEmitter().fire({
-        type: 'CURRENT_PROJECT',
-        data: {
-        name: currentWorkSpaceFolder,
-        },
-      });
       vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage);
     }
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder,
+      },
+    });
 
     return failedResponseReturn;
   } else if (verifiedResponse.status === 'failed') {
@@ -121,7 +121,20 @@ export const handleDocumentAnalyze = async (
 
   // convert problem paths to absolute path and normalize them
   const workspaceFolderPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-  if (!workspaceFolderPath) {return failedResponseReturn;}
+  if (!workspaceFolderPath) {
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder,
+      },
+    });
+
+    return failedResponseReturn;
+  }
   verifiedResponse.results.forEach(result => {
     result.path = path.join(workspaceFolderPath, result.path);
   });
