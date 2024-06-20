@@ -33,8 +33,8 @@ export const handleDocumentAnalyze = async (
   suppressRateLimitErrors = false,
   _debug?: vscode.OutputChannel,
 ) => {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const thirty_minutes = new Date();
+  thirty_minutes.setHours(thirty_minutes.getHours() + 0.5);
 
   const currentWorkSpaceFolder = Util.getRootFolderName();
   const editor = vscode.window.activeTextEditor;
@@ -196,7 +196,7 @@ export const handleDocumentAnalyze = async (
         isEndorsed: problem.endorsed,
         isViewed: false,
         fullFilePath: currentWorkSpaceFolder,
-        expiration: tomorrow.toISOString(),
+        expiration: thirty_minutes.toISOString(),
       };
       results[key] = { ...analyzeMetaData };
     });
