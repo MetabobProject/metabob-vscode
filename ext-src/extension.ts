@@ -350,7 +350,11 @@ export function activate(context: vscode.ExtensionContext): void {
       if (!e) {
         return;
       }
-      const { fileName } = Util.extractMetaDataFromDocument(e.document);
+      const { filePath, fileName } = Util.extractMetaDataFromDocument(e.document);
+
+      if (!filePath) {
+        return;
+      }
 
       if (!fileName) {
         return;
@@ -372,7 +376,7 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, fileName);
+      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, filePath);
       if (!results) {
         return;
       }
