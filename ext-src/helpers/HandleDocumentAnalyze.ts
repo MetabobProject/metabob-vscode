@@ -6,7 +6,7 @@ import { AnalyzeState, Analyze, AnalyseMetaData } from '../state';
 import Util from '../utils';
 import CONSTANTS from '../constants';
 import { getExtensionEventEmitter } from '../events';
-import path from 'path'
+import path from 'path';
 
 const failedResponseReturn: SubmitRepresentationResponse = { jobId: '', status: 'failed' };
 
@@ -47,7 +47,7 @@ export const handleDocumentAnalyze = async (
     getExtensionEventEmitter().fire({
       type: 'CURRENT_PROJECT',
       data: {
-        name: currentWorkSpaceFolder
+        name: currentWorkSpaceFolder,
       },
     });
 
@@ -58,27 +58,27 @@ export const handleDocumentAnalyze = async (
     jobId !== undefined
       ? await submitService.getJobStatus(sessionToken, jobId)
       : await submitService.submitTextFile(
-        metaDataDocument.relativePath,
-        metaDataDocument.fileContent,
-        metaDataDocument.filePath,
-        sessionToken,
-      );
+          metaDataDocument.relativePath,
+          metaDataDocument.fileContent,
+          metaDataDocument.filePath,
+          sessionToken,
+        );
 
   const verifiedResponse = verifyResponseOfSubmit(response);
   if (!verifiedResponse || !verifiedResponse.results) {
     if (!suppressRateLimitErrors) {
-      getExtensionEventEmitter().fire({
-        type: 'Analysis_Error',
-        data: '',
-      });
-      getExtensionEventEmitter().fire({
-        type: 'CURRENT_PROJECT',
-        data: {
-          name: currentWorkSpaceFolder
-        },
-      });
       vscode.window.showErrorMessage(CONSTANTS.analyzeCommandTimeoutMessage);
     }
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder,
+      },
+    });
 
     return failedResponseReturn;
   } else if (verifiedResponse.status === 'failed') {
@@ -89,7 +89,7 @@ export const handleDocumentAnalyze = async (
     getExtensionEventEmitter().fire({
       type: 'CURRENT_PROJECT',
       data: {
-        name: currentWorkSpaceFolder
+        name: currentWorkSpaceFolder,
       },
     });
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
@@ -111,7 +111,7 @@ export const handleDocumentAnalyze = async (
     getExtensionEventEmitter().fire({
       type: 'CURRENT_PROJECT',
       data: {
-        name: currentWorkSpaceFolder
+        name: currentWorkSpaceFolder,
       },
     });
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
@@ -121,14 +121,30 @@ export const handleDocumentAnalyze = async (
 
   // convert problem paths to absolute path and normalize them
   const workspaceFolderPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-  if (!workspaceFolderPath) {return failedResponseReturn;}
+  if (!workspaceFolderPath) {
+    getExtensionEventEmitter().fire({
+      type: 'Analysis_Error',
+      data: '',
+    });
+    getExtensionEventEmitter().fire({
+      type: 'CURRENT_PROJECT',
+      data: {
+        name: currentWorkSpaceFolder,
+      },
+    });
+
+    return failedResponseReturn;
+  }
   verifiedResponse.results.forEach(result => {
     result.path = path.join(workspaceFolderPath, result.path);
   });
 
   let results: AnalyzeState = {};
   const analyzeStateValue = new Analyze(context).get()?.value;
-  _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: analyzeStateValue: ' + JSON.stringify(analyzeStateValue));
+  _debug?.appendLine(
+    'AnalyzeDocument.ts: handleDocumentAnalyze: analyzeStateValue: ' +
+      JSON.stringify(analyzeStateValue),
+  );
 
   if (analyzeStateValue) {
     const responseProblemsFilePaths = verifiedResponse.results.map(problem => {
@@ -163,10 +179,7 @@ export const handleDocumentAnalyze = async (
         currFile.editor.document.lineAt(endLine - 1).text.length,
       );
 
-      const text = currFile.editor.document
-        .getText(range)
-        .replace('\n', '')
-        .replace('\t', '');
+      const text = currFile.editor.document.getText(range).replace('\n', '').replace('\t', '');
       if (text.length === 0 || text === '' || text === ' ') {
         return false;
       }
@@ -190,7 +203,9 @@ export const handleDocumentAnalyze = async (
 
   _debug?.appendLine('AnalyzeDocument.ts: Document File path' + currFile.absPath);
   const problems = Util.getCurrentEditorProblems(results, currFile.absPath);
-  _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: problems: ' + JSON.stringify(problems));
+  _debug?.appendLine(
+    'AnalyzeDocument.ts: handleDocumentAnalyze: problems: ' + JSON.stringify(problems),
+  );
   if (!problems) {
     getExtensionEventEmitter().fire({
       type: 'Analysis_Error',
@@ -199,7 +214,7 @@ export const handleDocumentAnalyze = async (
     getExtensionEventEmitter().fire({
       type: 'CURRENT_PROJECT',
       data: {
-        name: currentWorkSpaceFolder
+        name: currentWorkSpaceFolder,
       },
     });
     vscode.window.showErrorMessage(CONSTANTS.analyzeCommandErrorMessage);
@@ -210,7 +225,9 @@ export const handleDocumentAnalyze = async (
   const paths = problems.map(item => item.path);
 
   const isUserOnValidEditor = paths.includes(currFile.absPath);
-  _debug?.appendLine('AnalyzeDocument.ts: handleDocumentAnalyze: isUserOnValidEditor: ' + isUserOnValidEditor);
+  _debug?.appendLine(
+    'AnalyzeDocument.ts: handleDocumentAnalyze: isUserOnValidEditor: ' + isUserOnValidEditor,
+  );
   if (isUserOnValidEditor) {
     Util.decorateCurrentEditorWithHighlights(problems, currFile.editor, _debug);
   }
@@ -226,13 +243,12 @@ export const handleDocumentAnalyze = async (
     getExtensionEventEmitter().fire({
       type: 'CURRENT_PROJECT',
       data: {
-        name: currentWorkSpaceFolder
+        name: currentWorkSpaceFolder,
       },
     });
 
-    return verifiedResponse
+    return verifiedResponse;
   }
-
 
   getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
@@ -242,7 +258,7 @@ export const handleDocumentAnalyze = async (
   getExtensionEventEmitter().fire({
     type: 'CURRENT_PROJECT',
     data: {
-      name: currentWorkSpaceFolder
+      name: currentWorkSpaceFolder,
     },
   });
 
