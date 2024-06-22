@@ -126,7 +126,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
 
           if (currentFile) {
-            const filename: string | undefined = payload?.uri?.fsPath;
+            const filename: string | undefined = currentFile?.uri?.fsPath;
 
             if (!filename) {
               setCurrentEditor(undefined);

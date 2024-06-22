@@ -201,7 +201,7 @@ export const handleDocumentAnalyze = async (
       results[key] = { ...analyzeMetaData };
     });
 
-  _debug?.appendLine('AnalyzeDocument.ts: Document File path' + currFile.absPath);
+  _debug?.appendLine('AnalyzeDocument.ts: Document File path: ' + currFile.absPath);
   const problems = Util.getCurrentEditorProblems(results, currFile.absPath);
   _debug?.appendLine(
     'AnalyzeDocument.ts: handleDocumentAnalyze: problems: ' + JSON.stringify(problems),
