@@ -6,7 +6,6 @@ describe('RecommendationPagination', () => {
     const props: RecommendationPaginationProps = {
       gotoNextPage: jest.fn(),
       gotoPreviousPage: jest.fn(),
-      handleApplyRecommendation: jest.fn(),
       shouldRenderPagination: true,
       currentPage: 1,
       totalPages: 5,
@@ -25,7 +24,6 @@ describe('RecommendationPagination', () => {
     const props: RecommendationPaginationProps = {
       gotoNextPage: jest.fn(),
       gotoPreviousPage: jest.fn(),
-      handleApplyRecommendation: jest.fn(),
       shouldRenderPagination: false,
       currentPage: 1,
       totalPages: 5,
@@ -43,7 +41,6 @@ describe('RecommendationPagination', () => {
     const props: RecommendationPaginationProps = {
       gotoNextPage: gotoNextPageMock,
       gotoPreviousPage: jest.fn(),
-      handleApplyRecommendation: jest.fn(),
       shouldRenderPagination: true,
       currentPage: 1,
       totalPages: 5,
@@ -60,7 +57,6 @@ describe('RecommendationPagination', () => {
     const props: RecommendationPaginationProps = {
       gotoNextPage: jest.fn(),
       gotoPreviousPage: gotoPreviousPageMock,
-      handleApplyRecommendation: jest.fn(),
       shouldRenderPagination: true,
       currentPage: 1,
       totalPages: 5,
@@ -77,7 +73,6 @@ describe('RecommendationPagination', () => {
     const props: RecommendationPaginationProps = {
       gotoNextPage: jest.fn(),
       gotoPreviousPage: jest.fn(),
-      handleApplyRecommendation: handleApplyRecommendationMock,
       shouldRenderPagination: true,
       currentPage: 1,
       totalPages: 5,
@@ -91,11 +86,9 @@ describe('RecommendationPagination', () => {
   });
 
   it('gotoNextPage Button is Disabled', () => {
-    const handleApplyRecommendationMock = jest.fn();
     const props: RecommendationPaginationProps = {
       gotoNextPage: jest.fn(),
       gotoPreviousPage: jest.fn(),
-      handleApplyRecommendation: handleApplyRecommendationMock,
       shouldRenderPagination: true,
       currentPage: 5,
       totalPages: 5,
@@ -109,11 +102,9 @@ describe('RecommendationPagination', () => {
   });
 
   it('gotoPrevPage Button is Disabled', () => {
-    const handleApplyRecommendationMock = jest.fn();
     const props: RecommendationPaginationProps = {
       gotoNextPage: jest.fn(),
       gotoPreviousPage: jest.fn(),
-      handleApplyRecommendation: handleApplyRecommendationMock,
       shouldRenderPagination: true,
       currentPage: 0,
       totalPages: 5,

@@ -10,7 +10,6 @@ import {
   ExtensionContext,
   TextEditorEdit,
   Position,
-  Range,
   commands,
   env,
   workspace,
@@ -24,7 +23,6 @@ import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
 import { AnalysisEvents } from '../events';
-import { Problem } from '../types';
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
@@ -282,40 +280,61 @@ export class RecommendationWebView implements WebviewViewProvider {
         throw new Error('handleRecommendationClick: Response value is null');
       }
 
+      let recommendation: string;
+
       if (!isChatConfigEnabled) {
+        recommendation = response.value.recommendation;
         this._view?.webview.postMessage({
           type: 'onGenerateClicked:Response',
           data: {
             problemId: initData.id,
-            recommendation: response.value.recommendation,
+            recommendation: recommendation,
           },
         });
 
-        return;
+      } else {
+        const configuration = new Configuration({
+          apiKey: chatGPTToken,
+        });
+        const openai = new OpenAIApi(configuration);
+        const payload: CreateChatCompletionRequest = {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: response.value.prompt,
+            },
+            {
+              role: 'user',
+              content: input,
+            },
+          ],
+        };
+        const chatresponse = await openai.createChatCompletion({ ...payload });
+        recommendation = chatresponse.data.choices[0].message?.content || '';
+        this._view.webview.postMessage({
+          type: 'onGenerateClickedGPT:Response',
+          data: {
+            recommendation: recommendation,
+            problemId: initData.id
+          },
+        });
       }
 
-      const configuration = new Configuration({
-        apiKey: chatGPTToken,
-      });
-      const openai = new OpenAIApi(configuration);
-      const payload: CreateChatCompletionRequest = {
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: response.value.prompt,
-          },
-          {
-            role: 'user',
-            content: input,
-          },
-        ],
-      };
-      const chatresponse = await openai.createChatCompletion({ ...payload });
-      this._view.webview.postMessage({
-        type: 'onGenerateClickedGPT:Response',
-        data: { recommendation: chatresponse.data.choices[0].message?.content || '', problemId: initData.id },
-      });
+      commands.executeCommand(
+        'vscode.diff',
+        window.activeTextEditor?.document.uri,
+        Uri.from({
+          scheme: 'metabob',
+          path: window.activeTextEditor?.document.uri.path,
+          query: JSON.stringify({
+            recommendation: recommendation,
+            startLine: initData.vuln.startLine,
+            endLine: initData.vuln.endLine
+          })
+        })
+      )
+
     } catch (error: any) {
       throw new Error(error);
     }
@@ -401,58 +420,6 @@ export class RecommendationWebView implements WebviewViewProvider {
       type: 'Analysis_Completed',
       data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false, ...getanalyzeState },
     });
-  }
-
-  async handleApplyRecommendation(input: string, initData: CurrentQuestionState) {
-    const documentMetadata = Util.getCurrentFile();
-    if (!documentMetadata || !initData) {
-      throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
-    }
-
-    const key = `${initData.path}@@${initData.id}`;
-    if (documentMetadata.absPath !== initData.path) {
-      throw new Error('handleApplyRecommendation: User editor changed');
-    }
-
-    const setAnalyzeState = new Analyze(this.extensionContext);
-    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
-    if (!getanalyzeState) {
-      throw new Error('handleApplyRecommendation: Analze is undefined');
-    }
-
-    const copyAnalyzeValue = { ...getanalyzeState };
-    copyAnalyzeValue[key].isDiscarded = true;
-    copyAnalyzeValue[key].isEndorsed = false;
-    copyAnalyzeValue[key].isViewed = true;
-
-    const results: Problem[] | undefined = Util.getCurrentEditorProblems(
-      copyAnalyzeValue,
-      initData.path,
-    );
-    if (!results) {
-      throw new Error('handleApplyRecommendation: Results are undefined');
-    }
-
-    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(
-      results,
-      documentMetadata.editor,
-    );
-
-    if (!isCurrentFileDecorated) {
-      throw new Error('handleApplyRecommendation: could not decorate current file');
-    }
-
-    // Immediately replace suggested recommendation in the editor
-    const startLine = initData.vuln.startLine;
-    const endLine = initData.vuln.endLine;
-    const comment = `${input.replace('```', '')}`;
-    const start = new Position(startLine - 1, 0); // convert line number to position
-    const end = new Position(endLine, 0); // convert line number to position
-    const range = new Range(start, end);
-    documentMetadata.editor.edit((editBuilder: TextEditorEdit) => {
-      editBuilder.replace(range, comment + '\n');
-    });
-    await setAnalyzeState.set({ ...copyAnalyzeValue });
   }
 
   async openExternalLink(url: string): Promise<void> {
@@ -587,28 +554,6 @@ export class RecommendationWebView implements WebviewViewProvider {
             });
           }
 
-          break;
-        }
-        case 'applyRecommendation': {
-          const input = data?.input;
-          const initData = data?.initData;
-          if (initData === null || !initData) {
-            window.showErrorMessage('Metabob: Init Data is null');
-            this._view.webview.postMessage({
-              type: 'applyRecommendation:Error',
-              data: {},
-            });
-            break;
-          }
-          try {
-            this.handleApplyRecommendation(input, initData);
-          } catch (error: any) {
-            window.showErrorMessage(`${CONSTANTS.applyRecommendationEror}`);
-            this._view.webview.postMessage({
-              type: 'applyRecommendation:Error',
-              data: {},
-            });
-          }
           break;
         }
         case 'onEndorseSuggestionClicked': {
