@@ -7,9 +7,9 @@ export const ListHeaderTypography: SxProps = {
 
 export const ListContainer: SxProps = {
   marginLeft: -2,
-  height: "200px",
-  overflowY: "scroll",
-  width: "120%"
+  height: '200px',
+  overflowY: 'scroll',
+  width: '120%',
 };
 
 export const ListItemStyles: SxProps = {

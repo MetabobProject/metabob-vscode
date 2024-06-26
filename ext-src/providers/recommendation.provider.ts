@@ -76,14 +76,18 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.activateWebviewMessageListener();
     this.activateExtensionEventListener();
     this.sendDefaultEvents();
-    this._view.onDidChangeVisibility(() => {
-      if (this._view?.visible === false) {
-        this._view.webview.postMessage({
-          type: 'VISIBILITY_LOST',
-          data: {},
-        })
-      }
-    }, null, this.extensionContext.subscriptions);
+    this._view.onDidChangeVisibility(
+      () => {
+        if (this._view?.visible === false) {
+          this._view.webview.postMessage({
+            type: 'VISIBILITY_LOST',
+            data: {},
+          });
+        }
+      },
+      null,
+      this.extensionContext.subscriptions,
+    );
   }
 
   sendDefaultEvents() {
@@ -314,7 +318,10 @@ export class RecommendationWebView implements WebviewViewProvider {
       const chatresponse = await openai.createChatCompletion({ ...payload });
       this._view.webview.postMessage({
         type: 'onGenerateClickedGPT:Response',
-        data: { recommendation: chatresponse.data.choices[0].message?.content || '', problemId: initData.id },
+        data: {
+          recommendation: chatresponse.data.choices[0].message?.content || '',
+          problemId: initData.id,
+        },
       });
     } catch (error: any) {
       throw new Error(error);
@@ -704,8 +711,8 @@ export class RecommendationWebView implements WebviewViewProvider {
               style-src vscode-resource: 'unsafe-inline' http: https: data:
         ;">
 				<base href="${Uri.file(path.join(this.extensionPath, 'build')).with({
-      scheme: 'vscode-resource',
-    })}/">
+          scheme: 'vscode-resource',
+        })}/">
 			</head>
 
 			<body>

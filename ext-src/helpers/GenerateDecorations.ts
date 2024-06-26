@@ -21,7 +21,7 @@ export function GenerateDecorations(
   const decorations: vscode.DecorationOptions[] = results
     .filter(vulnerability => {
       const { endLine, startLine } = vulnerability;
-      if ((endLine - 1) < 0 || (startLine - 1) < 0) {
+      if (endLine - 1 < 0 || startLine - 1 < 0) {
         return false;
       }
 
@@ -45,7 +45,7 @@ export function GenerateDecorations(
       };
 
       const viewDescriptionURI = encodeURIComponent(JSON.stringify(payload));
-      _debug?.appendLine("Decoration: " + viewDescriptionURI);
+      _debug?.appendLine('Decoration: ' + viewDescriptionURI);
       const hoverFixMessage = `**[Fix](command:metabob.fixSuggestion?${viewDescriptionURI} "This action will display a comprehensive view of the issue along with a recommended solution.")**`;
       const hoverViewDescriptionMessage = `**[More Details](command:metabob.showDetailSuggestion?${viewDescriptionURI} "This action will display a comprehensive view of the issue.")**`;
       const hoverMessage = new vscode.MarkdownString(

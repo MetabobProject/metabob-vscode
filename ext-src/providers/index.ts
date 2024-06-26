@@ -1,1 +1,1 @@
-export * from './recommendation.provider'
+export * from './recommendation.provider';

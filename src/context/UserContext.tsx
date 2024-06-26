@@ -108,7 +108,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
             currentFile,
           } = payload;
 
-
           if (hasOpenTextDocuments) {
             setHasOpenTextDocuments(hasOpenTextDocuments);
           }
