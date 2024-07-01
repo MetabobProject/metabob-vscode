@@ -126,10 +126,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
 
           if (currentFile) {
-            const filename: string | undefined = currentFile?.fileName
-              ?.split('/')
-              ?.pop()
-              ?.replace('.git', '');
+            const filename: string | undefined = currentFile?.uri?.fsPath;
 
             if (!filename) {
               setCurrentEditor(undefined);
@@ -204,10 +201,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
           break;
         case EventDataType.CURRENT_FILE:
-          const filename: string | undefined = payload?.fileName
-            ?.split('/')
-            ?.pop()
-            ?.replace('.git', '');
+          const filename: string | undefined = payload?.uri?.fsPath;
 
           if (!filename) {
             setCurrentEditor(undefined);

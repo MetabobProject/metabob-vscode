@@ -555,7 +555,7 @@ describe('AccountSettingProvider', () => {
     const mockMessageEvent = (event: MessageEvent<MessageType>) => {
       window.dispatchEvent(event);
     };
-    const payload = { fileName: '/path/to/exampleFile.git' };
+    const payload = { uri: {fsPath: '/path/to/exampleFile.git'} };
 
     render(
       <RecoilRoot>
@@ -575,7 +575,7 @@ describe('AccountSettingProvider', () => {
       mockMessageEvent(messageEvent);
     });
 
-    const expectedFilename = payload.fileName.split('/').pop()?.replace('.git', '') ?? undefined;
+    const expectedFilename = payload.uri.fsPath ?? undefined;
 
     expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith(expectedFilename);
   });
@@ -596,7 +596,7 @@ describe('AccountSettingProvider', () => {
     );
 
     act(() => {
-      const payload = { fileName: '/path/to/invalidFile' };
+      const payload = { uri: {fsPath: '/path/to/invalidFile'} };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
           type: EventDataType.CURRENT_FILE,
@@ -624,7 +624,7 @@ describe('AccountSettingProvider', () => {
     );
 
     act(() => {
-      const payload = { fileName: '' };
+      const payload = { uri: {fsPath: ''} };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
           type: EventDataType.CURRENT_FILE,
@@ -798,7 +798,7 @@ describe('AccountSettingProvider', () => {
           ...IdentifiedProblems,
         },
         currentWorkSpaceFolder: 'exampleProject',
-        currentFile: { fileName: 'exampleFileName.git' },
+        currentFile: { uri: {fsPath: 'exampleProject/exampleFileName.git'} },
       };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
@@ -814,7 +814,7 @@ describe('AccountSettingProvider', () => {
     expect(mockHasWorkSpaceFoldersStateHandler).toHaveBeenCalledWith(true);
     expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
     expect(mockCurrentWorkSpaceProjectStateHandler).toHaveBeenCalledWith('exampleProject');
-    expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith('exampleFileName');
+    expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith('exampleProject/exampleFileName.git');
   });
 
   it('should update Recoil state correctly on INIT_DATA event with valid payload with an edge case', () => {
