@@ -68,15 +68,15 @@ export default class Utils {
     const folders = workspace.workspaceFolders;
     const path = folders ? folders![0].uri.fsPath : undefined;
     if (path === undefined) {
-      return undefined
+      return undefined;
     }
     const splitPath: string | undefined = path.split(/\/|\\/g).pop()?.replace('.git', '');
 
     if (splitPath === undefined) {
-      return undefined
+      return undefined;
     }
 
-    return splitPath
+    return splitPath;
   }
 
   static extractMetaDataFromDocument(document: vscode.TextDocument): IDocumentMetaData {
@@ -96,7 +96,7 @@ export default class Utils {
       isTextDocument,
       languageId,
       endLine,
-      fileName: splitKey
+      fileName: splitKey,
     };
   }
   static async withProgress<T>(task: Promise<T>, title: string): Promise<T> {
@@ -138,19 +138,21 @@ export default class Utils {
 
     if (workspaceFolders) {
       const rootFolder = workspaceFolders[0];
-      
+
       return rootFolder.name;
     }
 
     return undefined; // No workspace folder
   }
 
-  static getCurrentFile(): {
-    fileName: string;
-    absPath: string;
-    editor: vscode.TextEditor
-  } | undefined {
-    const editor = vscode.window.activeTextEditor
+  static getCurrentFile():
+    | {
+        fileName: string;
+        absPath: string;
+        editor: vscode.TextEditor;
+      }
+    | undefined {
+    const editor = vscode.window.activeTextEditor;
     if (!editor) return undefined;
     if (!this.isValidDocument(editor.document)) {
       return undefined;
@@ -158,16 +160,19 @@ export default class Utils {
 
     const documentMetaData = this.extractMetaDataFromDocument(editor.document);
     const fileName: string | undefined = documentMetaData.fileName;
-    if (!fileName) return undefined
+    if (!fileName) return undefined;
 
     return {
       fileName,
       absPath: documentMetaData.filePath,
-      editor
-    }
+      editor,
+    };
   }
 
-  static getCurrentEditorProblems(analyzeValue: AnalyzeState, currentFilePath: string): Problem[] | undefined {
+  static getCurrentEditorProblems(
+    analyzeValue: AnalyzeState,
+    currentFilePath: string,
+  ): Problem[] | undefined {
     const results: Problem[] = [];
 
     for (const value of Object.values(analyzeValue)) {
@@ -187,15 +192,25 @@ export default class Utils {
       }
     }
 
-    return results
+    return results;
   }
 
-  static decorateCurrentEditorWithHighlights(problems: Problem[], problemEditor: vscode.TextEditor, _debug?: vscode.OutputChannel): boolean {
+  static decorateCurrentEditorWithHighlights(
+    problems: Problem[],
+    problemEditor: vscode.TextEditor,
+    _debug?: vscode.OutputChannel,
+  ): boolean {
     const currentEditor = vscode.window.activeTextEditor;
     if (!currentEditor) return false;
 
-    _debug?.appendLine('problem file <> Editor file: ' + problemEditor.document.fileName + ' <> ' + currentEditor.document.fileName);
-    const isUserOnProblemEditor = problemEditor.document.fileName === currentEditor.document.fileName
+    _debug?.appendLine(
+      'problem file <> Editor file: ' +
+        problemEditor.document.fileName +
+        ' <> ' +
+        currentEditor.document.fileName,
+    );
+    const isUserOnProblemEditor =
+      problemEditor.document.fileName === currentEditor.document.fileName;
 
     if (!isUserOnProblemEditor) return false;
 
@@ -204,6 +219,6 @@ export default class Utils {
     problemEditor.setDecorations(decorationType, []);
     problemEditor.setDecorations(decorationType, decorations);
 
-    return true
+    return true;
   }
 }

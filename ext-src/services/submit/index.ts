@@ -1,1 +1,1 @@
-export * from './submit.service'
+export * from './submit.service';

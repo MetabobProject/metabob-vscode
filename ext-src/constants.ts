@@ -21,7 +21,8 @@ const CONSTANTS = {
   analyzeCommandProgressMessage: 'Metabob: Analyzing Document',
   analyzeCommandQueueMessage: 'Metabob: Document is Queued',
   analyzeCommandErrorMessage: 'Metabob: Error Analyzing the Document',
-  analyzeCommandTimeoutMessage: 'Metabob: your session has timed out. Please reload your editor window',
+  analyzeCommandTimeoutMessage:
+    'Metabob: your session has timed out. Please reload your editor window',
   applyRecommendationEror: 'Metabob: Could not apply recommendation to file',
 
   // Error Constants
@@ -29,8 +30,8 @@ const CONSTANTS = {
   editorSelectedIsInvalid: 'Metabob: selected document is invalid',
   generateConnectionError: 'Metabob: Looks like the server is overloaded, please try again later',
 
-  // Session 
-  sessionTokenUndefined: 'Metabob: your session has timed out. Please reload your editor window'
-}
+  // Session
+  sessionTokenUndefined: 'Metabob: your session has timed out. Please reload your editor window',
+};
 
-export default CONSTANTS
+export default CONSTANTS;

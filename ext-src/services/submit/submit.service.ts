@@ -1,18 +1,18 @@
-import { ApiServiceBase } from '../base.service'
-import FormData from 'form-data'
-import { Edge, Identity, Problem, Node } from '../../types'
+import { ApiServiceBase } from '../base.service';
+import FormData from 'form-data';
+import { Edge, Identity, Problem, Node } from '../../types';
 
 export interface SubmitRepresentationResponse {
-  jobId: string
-  status: 'complete' | 'pending' | 'running' | 'failed'
-  results?: Problem[]
+  jobId: string;
+  status: 'complete' | 'pending' | 'running' | 'failed';
+  results?: Problem[];
 }
 
 export interface SubmitCodeRepresentationPayload {
-  format: 'full' | 'partial'
-  identities: Identity
-  nodes: Node
-  edges: Edge
+  format: 'full' | 'partial';
+  identities: Identity;
+  nodes: Node;
+  edges: Edge;
 }
 
 class SubmitService extends ApiServiceBase {
@@ -21,14 +21,19 @@ class SubmitService extends ApiServiceBase {
    * @param fileContent Buffer Contents of the txt file
    * @param filePath Path of the file
    */
-  async submitTextFile(relativePath: string, fileContent: any, _filePath: string, sessionToken: string) {
-    const formData = new FormData()
-    formData.append('type', 'text/plain')
-    formData.append('filename', relativePath)
-    formData.append('upload', Buffer.from(fileContent, 'utf-8'), {filepath: relativePath})
-    const config = this.getConfig(sessionToken, formData.getHeaders())
-    const response = await this.post<SubmitRepresentationResponse>('/submit', formData, config)
-    return response
+  async submitTextFile(
+    relativePath: string,
+    fileContent: any,
+    _filePath: string,
+    sessionToken: string,
+  ) {
+    const formData = new FormData();
+    formData.append('type', 'text/plain');
+    formData.append('filename', relativePath);
+    formData.append('upload', Buffer.from(fileContent, 'utf-8'), { filepath: relativePath });
+    const config = this.getConfig(sessionToken, formData.getHeaders());
+    const response = await this.post<SubmitRepresentationResponse>('/submit', formData, config);
+    return response;
   }
 
   /**
@@ -36,14 +41,14 @@ class SubmitService extends ApiServiceBase {
    * @deprecated Not used in Vscode Extension
    */
   async submitCodeFile(codeRepresentation: SubmitCodeRepresentationPayload, sessionToken: string) {
-    const config = this.getConfig(sessionToken)
+    const config = this.getConfig(sessionToken);
     const payload = {
       body: {
-        upload: codeRepresentation
-      }
-    }
-    const response = await this.post<SubmitRepresentationResponse>('/submit', payload, config)
-    return response
+        upload: codeRepresentation,
+      },
+    };
+    const response = await this.post<SubmitRepresentationResponse>('/submit', payload, config);
+    return response;
   }
 
   /**
@@ -53,15 +58,15 @@ class SubmitService extends ApiServiceBase {
    * @param jobId The Job Id of the submission
    */
   async getJobStatus(sessionToken: string, jobId?: string) {
-    let jobParameters = ''
+    let jobParameters = '';
     if (jobId) {
-      jobParameters = `job=${jobId}`
+      jobParameters = `job=${jobId}`;
     }
-    const endpoint = jobParameters === '' ? '/analysis' : `/analysis?${jobParameters}`
-    const config = this.getConfig(sessionToken)
-    const response = this.post<SubmitRepresentationResponse>(endpoint, undefined, config)
-    return response
+    const endpoint = jobParameters === '' ? '/analysis' : `/analysis?${jobParameters}`;
+    const config = this.getConfig(sessionToken);
+    const response = this.post<SubmitRepresentationResponse>(endpoint, undefined, config);
+    return response;
   }
 }
 
-export const submitService = new SubmitService()
+export const submitService = new SubmitService();

@@ -11,7 +11,7 @@ export const LayoutContainer: SxProps = {
   p: 2,
   overflowY: 'scroll',
   height: '100vh',
-  width: '100vw'
+  width: '100vw',
 };
 
 export const AnalyzePageSvgContainer: SxProps = {

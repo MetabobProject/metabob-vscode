@@ -1,2 +1,1 @@
-
-export const defaultProvider = {}
+export const defaultProvider = {};

@@ -48,7 +48,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const thirty_minutes = one_minute * 30;
     expirationTimer = setInterval(() => {
       handleAnalyzeExpiration(context);
-    }, thirty_minutes)
+    }, thirty_minutes);
 
     // Create User Session, If already created get the refresh token
     // otherwise, ping server every 60 second to not destroy the token
@@ -188,7 +188,6 @@ export function activate(context: vscode.ExtensionContext): void {
       const currentWorkSpaceFolder = Util.getRootFolderName();
       const { fileName } = Util.extractMetaDataFromDocument(e);
       if (!fileName) {
-
         return;
       }
 
@@ -264,7 +263,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const documentMetaData = Util.extractMetaDataFromDocument(bufferedEParam);
       if (!documentMetaData.filePath) {
-        return
+        return;
       }
       const filePath: string = documentMetaData.filePath.replace(/\.git$/, '');
 
