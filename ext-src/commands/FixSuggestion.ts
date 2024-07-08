@@ -35,7 +35,7 @@ export function activateFixSuggestionCommand(context: vscode.ExtensionContext): 
           isReset: false,
         },
       });
-    } catch (error) { }
+    } catch (error) {}
 
     vscode.commands.executeCommand('recommendation-panel-webview.focus');
   };

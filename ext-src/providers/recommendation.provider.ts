@@ -74,14 +74,18 @@ export class RecommendationWebView implements WebviewViewProvider {
     this.activateWebviewMessageListener();
     this.activateExtensionEventListener();
     this.sendDefaultEvents();
-    this._view.onDidChangeVisibility(() => {
-      if (this._view?.visible === false) {
-        this._view.webview.postMessage({
-          type: 'VISIBILITY_LOST',
-          data: {},
-        })
-      }
-    }, null, this.extensionContext.subscriptions);
+    this._view.onDidChangeVisibility(
+      () => {
+        if (this._view?.visible === false) {
+          this._view.webview.postMessage({
+            type: 'VISIBILITY_LOST',
+            data: {},
+          });
+        }
+      },
+      null,
+      this.extensionContext.subscriptions,
+    );
   }
 
   sendDefaultEvents() {
@@ -291,7 +295,6 @@ export class RecommendationWebView implements WebviewViewProvider {
             recommendation: recommendation,
           },
         });
-
       } else {
         const configuration = new Configuration({
           apiKey: chatGPTToken,
@@ -316,7 +319,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           type: 'onGenerateClickedGPT:Response',
           data: {
             recommendation: recommendation,
-            problemId: initData.id
+            problemId: initData.id,
           },
         });
       }
@@ -330,11 +333,10 @@ export class RecommendationWebView implements WebviewViewProvider {
           query: JSON.stringify({
             recommendation: recommendation,
             startLine: initData.vuln.startLine,
-            endLine: initData.vuln.endLine
-          })
-        })
-      )
-
+            endLine: initData.vuln.endLine,
+          }),
+        }),
+      );
     } catch (error: any) {
       throw new Error(error);
     }
@@ -649,8 +651,8 @@ export class RecommendationWebView implements WebviewViewProvider {
               style-src vscode-resource: 'unsafe-inline' http: https: data:
         ;">
 				<base href="${Uri.file(path.join(this.extensionPath, 'build')).with({
-      scheme: 'vscode-resource',
-    })}/">
+          scheme: 'vscode-resource',
+        })}/">
 			</head>
 
 			<body>

@@ -13,7 +13,7 @@ import { useCallback } from 'react';
 
 export interface ProblemsListProps {
   detectedProblems?: number;
-  otherFileWithProblems?: Array<{ name: string, path: string }>;
+  otherFileWithProblems?: Array<{ name: string; path: string }>;
   isEmptyIdentifiedProblemDetected: boolean;
 }
 

@@ -19,8 +19,8 @@ export async function AnalyzeDocumentOnSave(
       type: 'Analysis_Error',
       data: 'Editor is undefined',
     });
-    return
-  };
+    return;
+  }
 
   const editor = vscode.window.activeTextEditor;
   if (!editor) {

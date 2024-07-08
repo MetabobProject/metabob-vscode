@@ -46,11 +46,11 @@ export const registerTheme = (): ThemeOptions => {
             //   minHeight: 24,
             //   border: "3px solid #2b2b2b",
             // },
-            "&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner": {
+            '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
               backgroundColor: backgroundDefault,
             },
-          }
-        }
+          },
+        },
       },
       MuiButton: {
         styleOverrides: {

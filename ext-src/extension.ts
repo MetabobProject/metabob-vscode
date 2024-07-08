@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const thirty_minutes = one_minute * 30;
     expirationTimer = setInterval(() => {
       handleAnalyzeExpiration(context);
-    }, thirty_minutes)
+    }, thirty_minutes);
 
     context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider(
       'metabob',
@@ -194,7 +194,6 @@ export function activate(context: vscode.ExtensionContext): void {
       const currentWorkSpaceFolder = Util.getRootFolderName();
       const { fileName } = Util.extractMetaDataFromDocument(e);
       if (!fileName) {
-
         return;
       }
 
@@ -270,7 +269,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const documentMetaData = Util.extractMetaDataFromDocument(bufferedEParam);
       if (!documentMetaData.filePath) {
-        return
+        return;
       }
       const filePath: string = documentMetaData.filePath.replace(/\.git$/, '');
 
