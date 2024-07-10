@@ -29,8 +29,11 @@ export class Analyze extends ExtensionState<AnalyzeState> {
     super(context, CONSTANTS.analyze);
   }
 
-  get(): ExtensionStateValue<AnalyzeState> | undefined {
-    return this.context.globalState.get<ExtensionStateValue<AnalyzeState>>(this.key);
+  get(): ExtensionStateValue<AnalyzeState> {
+    return this.context.globalState.get<ExtensionStateValue<AnalyzeState>>(this.key, {
+      key: this.key,
+      value: {},
+    });
   }
 
   set(value: AnalyzeState): Thenable<void> {

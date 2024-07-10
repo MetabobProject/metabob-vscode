@@ -169,10 +169,7 @@ export default class Utils {
     };
   }
 
-  static getCurrentEditorProblems(
-    analyzeValue: AnalyzeState,
-    currentFilePath: string,
-  ): Problem[] | undefined {
+  static getCurrentEditorProblems(analyzeValue: AnalyzeState, currentFilePath: string): Problem[] {
     const results: Problem[] = [];
 
     for (const value of Object.values(analyzeValue)) {
