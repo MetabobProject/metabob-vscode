@@ -328,7 +328,7 @@ export class RecommendationWebView implements WebviewViewProvider {
         'vscode.diff',
         window.activeTextEditor?.document.uri,
         Uri.from({
-          scheme: 'metabob',
+          scheme: CONSTANTS.recommendationDocumentProviderScheme,
           path: window.activeTextEditor?.document.uri.path,
           query: JSON.stringify({
             recommendation: recommendation,

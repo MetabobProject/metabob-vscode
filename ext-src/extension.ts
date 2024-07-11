@@ -25,11 +25,12 @@ import {
 import { Analyze } from './state';
 import { Problem } from './types';
 import { RecommendationTextProvider } from './providers/RecommendationTextProvider';
+import CONSTANTS from './constants';
 
 let expirationTimer: any = undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
-  let prevTabInput: vscode.TabInputText | undefined = undefined;
+  let prevTab: vscode.Tab | undefined = undefined;
   const _debug = undefined; // vscode.window.createOutputChannel('Metabob');
   bootstrapExtensionEventEmitter();
 
@@ -53,7 +54,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     context.subscriptions.push(
       vscode.workspace.registerTextDocumentContentProvider(
-        'metabob',
+        CONSTANTS.recommendationDocumentProviderScheme,
         new RecommendationTextProvider(),
       ),
     );
@@ -85,9 +86,10 @@ export function activate(context: vscode.ExtensionContext): void {
     activateFixSuggestionCommand(context);
 
     // Setup opened file
-    const activeEditor = vscode.window.activeTextEditor;
-    if (activeEditor && activeEditor.document.uri.scheme === 'file') {
+    const tab = vscode.window.tabGroups.activeTabGroup.activeTab;
+    if (tab && tab.input instanceof vscode.TabInputText && tab.input.uri.scheme === 'file') {
       // Valid document for analysis
+      const activeEditor = vscode.window.activeTextEditor!;
       const analyzeState = new Analyze(context);
       const analyzeValue = analyzeState.get()?.value;
       if (analyzeValue) {
@@ -99,6 +101,7 @@ export function activate(context: vscode.ExtensionContext): void {
           Util.decorateCurrentEditorWithHighlights(results, activeEditor);
         }
       }
+      prevTab = tab;
     }
   } catch {
     return;
@@ -213,7 +216,17 @@ export function activate(context: vscode.ExtensionContext): void {
       // onDidChangeActiveTextEditor fires twice when the user changes from one text file to another
       // The first sets the activeTextEditor to undefined and the second sets it to the new text editor
       const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
-      if (activeTab === prevTabInput) {
+
+      if (activeTab?.input === prevTab?.input) {
+        return;
+      } else if (
+        activeTab?.input instanceof vscode.TabInputTextDiff &&
+        activeTab.input.modified.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+        prevTab?.input instanceof vscode.TabInputText &&
+        activeTab.input.original.fsPath === prevTab.input.uri.fsPath
+      ) {
+        prevTab = activeTab;
+
         return;
       } else if (
         !activeTab ||
@@ -224,7 +237,22 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'No_Editor_Detected',
           data: {},
         });
-        prevTabInput = undefined;
+        prevTab = undefined;
+      } else if (
+        e &&
+        prevTab?.input instanceof vscode.TabInputTextDiff &&
+        prevTab.input.modified.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+        prevTab.input.original.fsPath === activeTab.input.uri.fsPath
+      ) {
+        const { filePath } = Util.extractMetaDataFromDocument(e.document);
+        const analyzeState = new Analyze(context);
+        const analyzeValue = analyzeState.get().value;
+        const results = Util.getCurrentEditorProblems(analyzeValue, filePath);
+        Util.decorateCurrentEditorWithHighlights(results, e);
+
+        prevTab = activeTab;
+
+        return;
       } else if (e) {
         const { filePath } = Util.extractMetaDataFromDocument(e.document);
 
@@ -277,7 +305,7 @@ export function activate(context: vscode.ExtensionContext): void {
             },
           });
 
-          prevTabInput = activeTab.input;
+          prevTab = activeTab;
 
           return;
         }
@@ -317,7 +345,7 @@ export function activate(context: vscode.ExtensionContext): void {
           },
         });
 
-        prevTabInput = activeTab.input;
+        prevTab = activeTab;
       }
     }),
   );
