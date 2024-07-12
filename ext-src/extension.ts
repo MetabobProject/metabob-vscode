@@ -31,7 +31,7 @@ let expirationTimer: any = undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
   let prevTab: vscode.Tab | undefined = undefined;
-  const _debug = undefined; // vscode.window.createOutputChannel('Metabob');
+  const _debug = vscode.window.createOutputChannel('Metabob');
   bootstrapExtensionEventEmitter();
 
   initState(context);
