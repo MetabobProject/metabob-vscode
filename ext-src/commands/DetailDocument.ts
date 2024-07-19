@@ -16,9 +16,8 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     jobId: string;
   }) => {
     const currentWorkSpaceFolder = Utils.getRootFolderName();
-    const key = `${args.path}@@${args.id}`;
-    const setAnalyzeState = new Analyze(context);
-    const analyzeStateValue = new Analyze(context).get()?.value;
+    const analyzeState = new Analyze(context);
+    const analyzeStateValue = analyzeState.value();
     const sessionToken = new Session(context).get()?.value;
     const extensionEventEmitter = getExtensionEventEmitter();
 
@@ -26,6 +25,7 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
 
     if (!documentMetaData) {
       vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
+
       return;
     }
 
@@ -42,20 +42,21 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
         data: { ...documentMetaData.editor.document },
       });
       vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
+
       return;
     }
 
     vscode.commands.executeCommand('recommendation-panel-webview.focus');
 
     const copiedAnalyzeValue = { ...analyzeStateValue };
-    copiedAnalyzeValue[key].isDiscarded = copiedAnalyzeValue[key].isDiscarded || false;
-    copiedAnalyzeValue[key].isEndorsed = copiedAnalyzeValue[key].isEndorsed || false;
-    copiedAnalyzeValue[key].isViewed = true;
+    const fileProblems = copiedAnalyzeValue[args.path][0].problems;
+    const problem = fileProblems.find(problem => problem.id === args.id);
+    if (!problem) return;
 
     const readSuggestionPayload: FeedbackSuggestionPayload = {
       problemId: args.id,
-      discarded: copiedAnalyzeValue[key].isDiscarded || false,
-      endorsed: copiedAnalyzeValue[key].isEndorsed || false,
+      discarded: problem.discarded,
+      endorsed: problem.endorsed,
     };
 
     getExtensionEventEmitter().fire({
@@ -90,7 +91,7 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       },
     });
 
-    await setAnalyzeState.set(copiedAnalyzeValue);
+    await analyzeState.set(copiedAnalyzeValue);
 
     await Promise.allSettled([feedbackService.readSuggestion(readSuggestionPayload, sessionToken)]);
   };

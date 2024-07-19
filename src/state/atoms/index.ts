@@ -49,9 +49,9 @@ export const identifiedRecommendation = atom<
   effects_UNSTABLE: [persistAtom],
 });
 
-export const identifiedProblems = atom<AnalyzeState | undefined>({
+export const analyzeState = atom<AnalyzeState | undefined>({
   default: undefined,
-  key: 'Metabob:IdentifiedProblems',
+  key: 'Metabob:analyzeState',
   effects_UNSTABLE: [persistAtom],
 });
 

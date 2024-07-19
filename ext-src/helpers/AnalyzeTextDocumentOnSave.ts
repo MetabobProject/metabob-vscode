@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Analyze, Session } from '../state';
+import { Session } from '../state';
 import { SubmitRepresentationResponse } from '../services';
 import { IAnalyzeTextDocumentOnSave } from '../types';
 import Util from '../utils';
@@ -19,6 +19,7 @@ export async function AnalyzeDocumentOnSave(
       type: 'Analysis_Error',
       data: 'Editor is undefined',
     });
+
     return;
   }
 
@@ -28,16 +29,16 @@ export async function AnalyzeDocumentOnSave(
       type: 'Analysis_Error',
       data: 'Editor is undefined',
     });
+
     return;
   }
 
   const documentMetaData = Util.extractMetaDataFromDocument(editor.document);
 
-  const analyzeState = new Analyze(context);
   let isInQueue = false;
 
   const jobId = await Util.withProgress<SubmitRepresentationResponse>(
-    handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, undefined, true),
+    handleDocumentAnalyze(documentMetaData, sessionToken, context, undefined, true),
     CONSTANTS.analyzeCommandProgressMessage,
   ).then(response => {
     if (response.status === 'pending' || response.status === 'running') {
@@ -51,7 +52,7 @@ export async function AnalyzeDocumentOnSave(
 
   if (isInQueue) {
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, jobId, true),
+      handleDocumentAnalyze(documentMetaData, sessionToken, context, jobId, true),
       CONSTANTS.analyzeCommandQueueMessage,
     ).then(response => {
       if (response.status === 'complete' || response.status === 'failed') {

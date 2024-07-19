@@ -13,23 +13,16 @@ export function activateEndorseCommand(
   const command = CONSTANTS.endorseSuggestionCommand;
 
   const commandHandler = async (args: EndorseCommandHandler) => {
-    const { id: problemId, path } = args;
-    const key = `${path}@@${problemId}`;
+    const { id: problemId } = args;
 
     const extensionEventEmitter = getExtensionEventEmitter();
 
     const analyzeState = new Analyze(context);
-    const analyzeStateValue = analyzeState.get()?.value;
-    if (!analyzeStateValue) return;
 
     const sessionToken = new Session(context).get()?.value;
     if (!sessionToken) return;
 
-    const copyProblems = { ...analyzeStateValue };
-
-    copyProblems[key].isDiscarded = false;
-    copyProblems[key].isEndorsed = true;
-    copyProblems[key].isViewed = true;
+    analyzeState.updateProblem(problemId, { discarded: false, endorsed: true, isViewed: true });
 
     const payload: FeedbackSuggestionPayload = {
       problemId,
@@ -39,10 +32,13 @@ export function activateEndorseCommand(
     try {
       await feedbackService.endorseSuggestion(payload, sessionToken);
       await feedbackService.readSuggestion(payload, sessionToken);
-      await analyzeState.set(copyProblems);
       extensionEventEmitter.fire({
         type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...copyProblems },
+        data: {
+          shouldResetRecomendation: false,
+          shouldMoveToAnalyzePage: false,
+          ...analyzeState.value(),
+        },
       });
     } catch {
       _debug?.appendLine(`Metabob: Error Endorsing Problem With ${args.id}`);

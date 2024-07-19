@@ -55,21 +55,18 @@ export interface RecommendationPayload {
   recommendation: string;
 }
 
-export type AnalyseMetaData = {
-  id: string;
-  path: string;
-  startLine: number;
-  endLine: number;
-  category: string;
-  summary: string;
-  description: string;
+export type AnalysisData = {
+  isValid: boolean;
+  problems: ProblemData[];
+};
+
+export type ProblemData = Problem & {
+  discarded: boolean;
+  endorsed: boolean;
   severity: string;
-  isDiscarded?: boolean;
-  isEndorsed?: boolean;
   isViewed?: boolean;
-  fullFilePath?: string;
 };
 
 export type AnalyzeState = {
-  [filepathAndProblemId: string]: AnalyseMetaData;
+  [filepath: string]: AnalysisData[];
 };

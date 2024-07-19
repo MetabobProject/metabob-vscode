@@ -143,6 +143,7 @@ export class ApiServiceBase {
       const response = (await request(`${this.urlBase}${subPath}`, config)) ?? null;
       const status = response?.status;
       const responseData = response.data as T;
+
       return ok({
         ...responseData,
         httpConfig: {

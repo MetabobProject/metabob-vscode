@@ -24,7 +24,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setIdentifiedSuggestion = useSetRecoilState(State.identifiedSuggestion);
   const setIsRecommendationLoading = useSetRecoilState(State.isRecommendationLoading);
   const setIdentifiedRecommendation = useSetRecoilState(State.identifiedRecommendation);
-  const setIdentifiedProblems = useSetRecoilState(State.identifiedProblems);
+  const setAnalyzeState = useSetRecoilState(State.analyzeState);
   const setAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
   const setCurrentEditor = useSetRecoilState(State.currentEditor);
   const setCurrentWorkSpaceProject = useSetRecoilState(State.currentWorkSpaceProject);
@@ -44,7 +44,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.ANALYSIS_CALLED_ON_SAVE:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           setAnalysisLoading(true);
-          setIdentifiedProblems({} as AnalyzeState);
+          setAnalyzeState({} as AnalyzeState);
           setIdentifiedRecommendation(undefined);
           break;
         case EventDataType.FIX_SUGGESTION:
@@ -58,7 +58,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
           setIsEmptyIdentifiedProblemDetected(true);
           if (problem) {
-            setIdentifiedProblems(problem as AnalyzeState);
+            setAnalyzeState(problem as AnalyzeState);
           }
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
@@ -74,7 +74,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
           setIsEmptyIdentifiedProblemDetected(false);
           if (problem) {
-            setIdentifiedProblems(problem as AnalyzeState);
+            setAnalyzeState(problem as AnalyzeState);
           }
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
@@ -117,7 +117,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
 
           if (initData) {
-            setIdentifiedProblems(initData as AnalyzeState);
+            setAnalyzeState(initData as AnalyzeState);
           }
 
           if (currentWorkSpaceFolder) {

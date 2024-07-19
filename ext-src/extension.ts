@@ -3,7 +3,6 @@ import { AnalyzeDocumentOnSaveConfig } from './config';
 import { RecommendationWebView } from './providers/recommendation.provider';
 import {
   activateEndorseCommand,
-  activateFocusRecommendCommand,
   activateDetailSuggestionCommand,
   activateFixSuggestionCommand,
   activateDiscardCommand,
@@ -37,6 +36,8 @@ export function activate(context: vscode.ExtensionContext): void {
   initState(context);
 
   if (!context.extension || !context.extensionUri) {
+    vscode.window.showErrorMessage('Metabob: Extension Context is not available');
+
     return;
   }
 
@@ -76,9 +77,6 @@ export function activate(context: vscode.ExtensionContext): void {
     // Used to notify the model about positive feedback
     activateEndorseCommand(context);
 
-    // Deprecated
-    activateFocusRecommendCommand(context);
-
     // When the user click the detail button on the problem
     activateDetailSuggestionCommand(context);
 
@@ -103,7 +101,14 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       prevTab = tab;
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      vscode.window.showErrorMessage(`Metabob: Error activating extension: ${error.message}`);
+    }
+    _debug.appendLine(
+      `Error activating extension: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`,
+    );
+
     return;
   }
 
@@ -210,6 +215,8 @@ export function activate(context: vscode.ExtensionContext): void {
       });
     }),
   );
+
+  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => {}));
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {

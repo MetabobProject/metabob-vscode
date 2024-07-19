@@ -115,7 +115,7 @@ describe('AccountSettingProvider', () => {
             onChange={mockAnalysisLoadingStateHandler}
           />
           <RecoilObserver
-            node={State.identifiedProblems}
+            node={State.analyzeState}
             onChange={mockIdentifiedProblemsStateHandler}
           />
           <RecoilObserver
@@ -329,7 +329,7 @@ describe('AccountSettingProvider', () => {
         <AccountSettingProvider>
           <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
           <RecoilObserver
-            node={State.identifiedProblems}
+            node={State.analyzeState}
             onChange={mockIdentifiedProblemsStateHandler}
           />
           <RecoilObserver
@@ -386,7 +386,7 @@ describe('AccountSettingProvider', () => {
         <AccountSettingProvider>
           <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
           <RecoilObserver
-            node={State.identifiedProblems}
+            node={State.analyzeState}
             onChange={mockIdentifiedProblemsStateHandler}
           />
           <RecoilObserver
@@ -778,7 +778,7 @@ describe('AccountSettingProvider', () => {
             onChange={mockHasWorkSpaceFoldersStateHandler}
           />
           <RecoilObserver
-            node={State.identifiedProblems}
+            node={State.analyzeState}
             onChange={mockIdentifiedProblemsStateHandler}
           />
           <RecoilObserver
@@ -841,7 +841,7 @@ describe('AccountSettingProvider', () => {
             onChange={mockHasWorkSpaceFoldersStateHandler}
           />
           <RecoilObserver
-            node={State.identifiedProblems}
+            node={State.analyzeState}
             onChange={mockIdentifiedProblemsStateHandler}
           />
           <RecoilObserver

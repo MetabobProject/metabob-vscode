@@ -4,7 +4,6 @@ import { FeedbackSuggestionPayload, feedbackService } from '../services';
 import { getExtensionEventEmitter } from '../events';
 import CONSTANTS from '../constants';
 import Utils from '../utils';
-import { Problem } from '../types';
 
 export type DiscardCommandHandler = { id: string; path: string };
 
@@ -14,21 +13,14 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
   const commandHandler = async (args: DiscardCommandHandler) => {
     const currentWorkSpaceFolder = Utils.getRootFolderName();
     const analyzeState = new Analyze(context);
-    const problems = analyzeState.get()?.value;
-
-    if (!problems) {
-      vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
-      return;
-    }
-
     const currentQuestion = new CurrentQuestion(context);
     const extensionEventEmitter = getExtensionEventEmitter();
     const { id: problemId, path } = args;
-    const key = `${path}@@${problemId}`;
 
     const session = new Session(context).get()?.value;
     if (!session) {
       vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
+
       return;
     }
 
@@ -36,13 +28,12 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     const documentMetaData = Utils.getCurrentFile();
     if (!documentMetaData) {
       vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
+
       return;
     }
 
     const filename: string | undefined = documentMetaData.absPath;
     const isUserOnProblemFile: boolean = filename === path;
-
-    const copyProblems = { ...problems };
 
     const payload: FeedbackSuggestionPayload = {
       problemId,
@@ -51,19 +42,13 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     };
 
     // Updating the state with discarded problem values.
-    copyProblems[key].isDiscarded = true;
-    copyProblems[key].isEndorsed = false;
-    copyProblems[key].isViewed = true;
-
-    // Filtering the problem that are not not supported by vscode. Line range should be in range [0, lineNumber].
-    const results: Problem[] | undefined = Utils.getCurrentEditorProblems(copyProblems, path);
-    if (!results) {
-      vscode.window.showErrorMessage(CONSTANTS.discardCommandErrorMessage);
-      return;
-    }
+    analyzeState.updateProblem(problemId, { discarded: true, endorsed: false, isViewed: true });
 
     if (isUserOnProblemFile) {
-      Utils.decorateCurrentEditorWithHighlights(results, documentMetaData.editor);
+      Utils.decorateCurrentEditorWithHighlights(
+        analyzeState.getFileProblems(path),
+        documentMetaData.editor,
+      );
     }
 
     extensionEventEmitter.fire({
@@ -71,9 +56,13 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       data: {},
     });
 
-    getExtensionEventEmitter().fire({
+    extensionEventEmitter.fire({
       type: 'Analysis_Completed',
-      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...copyProblems },
+      data: {
+        shouldResetRecomendation: true,
+        shouldMoveToAnalyzePage: true,
+        ...analyzeState.value(),
+      },
     });
 
     extensionEventEmitter.fire({
@@ -81,7 +70,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       data: { ...documentMetaData.editor.document },
     });
 
-    getExtensionEventEmitter().fire({
+    extensionEventEmitter.fire({
       type: 'CURRENT_PROJECT',
       data: {
         name: currentWorkSpaceFolder,
@@ -89,7 +78,6 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
     });
 
     await Promise.allSettled([
-      analyzeState.set(copyProblems),
       feedbackService.discardSuggestion(payload, session),
       feedbackService.readSuggestion(payload, session),
     ]);
