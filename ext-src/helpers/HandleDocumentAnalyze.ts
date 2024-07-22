@@ -33,7 +33,7 @@ export const handleDocumentAnalyze = async (
   _debug?: vscode.OutputChannel,
 ) => {
   const thirty_minutes = new Date();
-  thirty_minutes.setHours(thirty_minutes.getHours() + 0.5);
+  thirty_minutes.setMinutes(thirty_minutes.getMinutes() + 30);
 
   const currentWorkSpaceFolder = Util.getRootFolderName();
   const editor = vscode.window.activeTextEditor;

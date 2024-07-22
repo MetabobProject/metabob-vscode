@@ -89,7 +89,7 @@ export function activate(context: vscode.ExtensionContext): void {
       // Valid document for analysis
       const activeEditor = vscode.window.activeTextEditor!;
       const analyzeState = new Analyze(context);
-      const analyzeValue = analyzeState.get()?.value;
+      const analyzeValue = analyzeState.value();
       if (analyzeValue) {
         const results: Problem[] = Util.getCurrentEditorProblems(
           analyzeValue,
@@ -216,7 +216,29 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => {}));
+  // context.subscriptions.push(
+  //   vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
+  //     console.log('Text Document Changed', e);
+  //     // Invalidate analysis if the document content has changed
+  //     const analyzeState = new Analyze(context);
+  //     analyzeState.update(state => {
+  //       const analyses: AnalysisData[] | undefined = state[e.document.fileName];
+  //       if (!analyses) return state;
+  //       for (let i = 0; i < analyses.length; i++) {
+  //         analyses[i].isValid = analyses[i].analyzedDocumentContent === e.document.getText();
+  //       }
+
+  //       return state;
+  //     });
+
+  //     const activeEditor = vscode.window.activeTextEditor;
+  //     if (!activeEditor) return;
+  //     Util.decorateCurrentEditorWithHighlights(
+  //       Util.getCurrentEditorProblems(analyzeState.value(), e.document.fileName),
+  //       activeEditor,
+  //     );
+  //   }),
+  // );
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
