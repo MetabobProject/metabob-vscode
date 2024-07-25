@@ -58,7 +58,11 @@ export const AnalyzePage = ({
   const detectedProblems = useMemo(() => {
     if (!currentEditor) return undefined;
 
-    if (!analyzeState?.[currentEditor] || analyzeState[currentEditor].length === 0)
+    if (
+      !analyzeState?.[currentEditor] ||
+      analyzeState[currentEditor].length === 0 ||
+      !analyzeState[currentEditor][0].isValid
+    )
       return undefined;
 
     return analyzeState[currentEditor][0].problems.filter(

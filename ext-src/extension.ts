@@ -21,7 +21,7 @@ import {
   disposeExtensionEventEmitter,
   getExtensionEventEmitter,
 } from './events';
-import { Analyze } from './state';
+import { AnalysisData, Analyze } from './state';
 import { Problem } from './types';
 import { RecommendationTextProvider } from './providers/RecommendationTextProvider';
 import CONSTANTS from './constants';
@@ -216,29 +216,33 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
-  // context.subscriptions.push(
-  //   vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
-  //     console.log('Text Document Changed', e);
-  //     // Invalidate analysis if the document content has changed
-  //     const analyzeState = new Analyze(context);
-  //     analyzeState.update(state => {
-  //       const analyses: AnalysisData[] | undefined = state[e.document.fileName];
-  //       if (!analyses) return state;
-  //       for (let i = 0; i < analyses.length; i++) {
-  //         analyses[i].isValid = analyses[i].analyzedDocumentContent === e.document.getText();
-  //       }
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
+      // Invalidate analysis if the document content has changed
+      const analyzeState = new Analyze(context);
+      analyzeState.update(state => {
+        const analyses: AnalysisData[] | undefined = state[e.document.fileName];
+        if (!analyses) return state;
+        for (let i = 0; i < analyses.length; i++) {
+          analyses[i].isValid = analyses[i].analyzedDocumentContent === e.document.getText();
+        }
 
-  //       return state;
-  //     });
+        return state;
+      });
 
-  //     const activeEditor = vscode.window.activeTextEditor;
-  //     if (!activeEditor) return;
-  //     Util.decorateCurrentEditorWithHighlights(
-  //       Util.getCurrentEditorProblems(analyzeState.value(), e.document.fileName),
-  //       activeEditor,
-  //     );
-  //   }),
-  // );
+      extensionEventEmitter.fire({
+        type: 'ANALYZE_STATE_CHANGED',
+        data: analyzeState.value(),
+      });
+
+      const activeEditor = vscode.window.activeTextEditor;
+      if (!activeEditor) return;
+      Util.decorateCurrentEditorWithHighlights(
+        Util.getCurrentEditorProblems(analyzeState.value(), activeEditor.document.fileName),
+        activeEditor,
+      );
+    }),
+  );
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {

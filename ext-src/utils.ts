@@ -177,6 +177,8 @@ export default class Utils {
 
     const recentAnalysisData = analyzeValue[currentFilePath][0];
 
+    if (!recentAnalysisData.isValid) return [];
+
     return recentAnalysisData.problems.filter(problem => !problem.discarded);
   }
 
