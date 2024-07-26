@@ -119,7 +119,6 @@ export class RecommendationWebView implements WebviewViewProvider {
           data: {
             shouldResetRecomendation: true,
             shouldMoveToAnalyzePage: true,
-            ...getanalyzeState,
           },
         });
       }, 500);
@@ -420,7 +419,7 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     this._view.webview.postMessage({
       type: 'Analysis_Completed',
-      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false, ...getanalyzeState },
+      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false },
     });
   }
 

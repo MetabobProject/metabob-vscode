@@ -61,7 +61,6 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       data: {
         shouldResetRecomendation: true,
         shouldMoveToAnalyzePage: true,
-        ...analyzeState.value(),
       },
     });
 

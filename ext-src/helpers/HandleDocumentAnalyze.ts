@@ -221,7 +221,6 @@ export const handleDocumentAnalyze = async (
       data: {
         shouldResetRecomendation: true,
         shouldMoveToAnalyzePage: true,
-        ...analyzeState.value(),
       },
     });
 
@@ -240,7 +239,6 @@ export const handleDocumentAnalyze = async (
     data: {
       shouldResetRecomendation: true,
       shouldMoveToAnalyzePage: true,
-      ...analyzeState.value(),
     },
   });
 

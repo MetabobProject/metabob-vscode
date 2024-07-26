@@ -37,7 +37,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
       const payload = event.data.data;
       switch (event.data.type) {
         case EventDataType.ANALYZE_STATE_CHANGED:
-          console.log('ANALYZE_STATE_CHANGED', payload);
           setAnalyzeState(payload as AnalyzeState);
           break;
         case EventDataType.NO_EDITOR_DETECTED:
@@ -48,7 +47,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.ANALYSIS_CALLED_ON_SAVE:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           setAnalysisLoading(true);
-          setAnalyzeState({} as AnalyzeState);
           setIdentifiedRecommendation(undefined);
           break;
         case EventDataType.FIX_SUGGESTION:
@@ -59,11 +57,8 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIsAnalysisLoading(false);
           break;
         case EventDataType.ANALYSIS_COMPLETED_EMPTY_PROBLEMS: {
-          const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
+          const { shouldResetRecomendation, shouldMoveToAnalyzePage } = payload;
           setIsEmptyIdentifiedProblemDetected(true);
-          if (problem) {
-            setAnalyzeState(problem as AnalyzeState);
-          }
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
             setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
@@ -75,11 +70,8 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           break;
         }
         case EventDataType.ANALYSIS_COMPLETED:
-          const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
+          const { shouldResetRecomendation, shouldMoveToAnalyzePage } = payload;
           setIsEmptyIdentifiedProblemDetected(false);
-          if (problem) {
-            setAnalyzeState(problem as AnalyzeState);
-          }
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
             setApplicationState(ApplicationWebviewState.ANALYZE_MODE);

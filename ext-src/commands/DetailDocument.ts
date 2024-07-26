@@ -75,7 +75,6 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
       data: {
         shouldResetRecomendation: false,
         shouldMoveToAnalyzePage: false,
-        ...copiedAnalyzeValue,
       },
     });
 

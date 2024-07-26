@@ -37,7 +37,6 @@ export function activateEndorseCommand(
         data: {
           shouldResetRecomendation: false,
           shouldMoveToAnalyzePage: false,
-          ...analyzeState.value(),
         },
       });
     } catch {

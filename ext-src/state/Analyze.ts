@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import CONSTANTS from '../constants';
 import { ExtensionState, ExtensionStateValue } from './Base';
 import { Problem } from '../types';
+import { getExtensionEventEmitter } from '../events';
 
 export type AnalysisData = {
   analyzedDocumentContent: string;
@@ -17,6 +18,8 @@ export type ProblemData = Problem & {
 export type AnalyzeState = {
   [filepath: string]: AnalysisData[]; // Most recent analysis data will be at the first index of the array
 };
+
+const extensionEventEmitter = getExtensionEventEmitter();
 
 // Whenever the user Analyze the file, we will store the response of the request in
 // a store, so user will be able to see decorations upon changing files.
@@ -34,6 +37,11 @@ export class Analyze extends ExtensionState<AnalyzeState> {
 
   set(value: AnalyzeState): Thenable<void> {
     const stateValue = { key: this.key, value };
+
+    extensionEventEmitter.fire({
+      type: 'ANALYZE_STATE_CHANGED',
+      data: value,
+    });
 
     return this.context.workspaceState.update(this.key, stateValue);
   }

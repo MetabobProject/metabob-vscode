@@ -230,11 +230,6 @@ export function activate(context: vscode.ExtensionContext): void {
         return state;
       });
 
-      extensionEventEmitter.fire({
-        type: 'ANALYZE_STATE_CHANGED',
-        data: analyzeState.value(),
-      });
-
       const activeEditor = vscode.window.activeTextEditor;
       if (!activeEditor) return;
       Util.decorateCurrentEditorWithHighlights(
@@ -334,7 +329,6 @@ export function activate(context: vscode.ExtensionContext): void {
             data: {
               shouldResetRecomendation: false,
               shouldMoveToAnalyzePage: false,
-              ...analyzeValue,
             },
           });
 
@@ -374,7 +368,6 @@ export function activate(context: vscode.ExtensionContext): void {
           data: {
             shouldResetRecomendation: false,
             shouldMoveToAnalyzePage: false,
-            ...analyzeValue,
           },
         });
 
