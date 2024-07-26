@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
-import { Box, CircularProgress, SxProps, useTheme } from '@mui/material';
+import { CircularProgress, Stack, SxProps, useTheme } from '@mui/material';
 import Button from '@mui/material/Button';
 import { ProblemList } from './ProblemList';
 import { AnalyzePageBodyContainer } from './styles';
@@ -91,9 +91,23 @@ export const AnalyzePage = ({
     } as SxProps;
   }, []);
 
+  const showViewPreviousResultsButton: boolean =
+    !!currentEditor &&
+    !!analyzeState?.[currentEditor] &&
+    ((analyzeState[currentEditor].length > 0 && !analyzeState[currentEditor][0].isValid) ||
+      analyzeState[currentEditor].length > 1);
+
+  const handleViewPreviousResults: React.MouseEventHandler<HTMLButtonElement> = e => {
+    e.preventDefault();
+    vscode.postMessage({
+      type: 'view_previous_results',
+      data: { path: currentEditor },
+    });
+  };
+
   return (
     <>
-      <Box sx={AnalyzePageBodyContainer(theme)}>
+      <Stack spacing={2} sx={AnalyzePageBodyContainer(theme)}>
         {(!hasWorkSpaceFolders || !hasOpenTextDocuments) && (
           <>
             <Button
@@ -130,7 +144,13 @@ export const AnalyzePage = ({
             </Button>
           </>
         )}
-      </Box>
+
+        {showViewPreviousResultsButton && (
+          <Button variant='contained' onClick={handleViewPreviousResults}>
+            View Previous Results
+          </Button>
+        )}
+      </Stack>
 
       {hasWorkSpaceFolders && hasOpenTextDocuments && (
         <ProblemList

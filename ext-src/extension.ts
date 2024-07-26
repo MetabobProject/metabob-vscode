@@ -25,6 +25,7 @@ import { AnalysisData, Analyze } from './state';
 import { Problem } from './types';
 import { RecommendationTextProvider } from './providers/RecommendationTextProvider';
 import CONSTANTS from './constants';
+import { AnalyzedDocumentTextProvider } from './providers/PreviousProblemsTextProvider';
 
 let expirationTimer: any = undefined;
 
@@ -57,6 +58,13 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.workspace.registerTextDocumentContentProvider(
         CONSTANTS.recommendationDocumentProviderScheme,
         new RecommendationTextProvider(),
+      ),
+    );
+
+    context.subscriptions.push(
+      vscode.workspace.registerTextDocumentContentProvider(
+        CONSTANTS.analyzedDocumentProviderScheme,
+        new AnalyzedDocumentTextProvider(new Analyze(context)),
       ),
     );
 
@@ -257,6 +265,18 @@ export function activate(context: vscode.ExtensionContext): void {
 
         return;
       } else if (
+        e &&
+        activeTab?.input instanceof vscode.TabInputText &&
+        activeTab.input.uri.scheme === CONSTANTS.analyzedDocumentProviderScheme
+      ) {
+        const results = Util.getPreviousEditorProblems(
+          new Analyze(context).value(),
+          e.document.uri.fsPath,
+        );
+        Util.decorateCurrentEditorWithHighlights(results, e);
+
+        return;
+      } else if (
         !activeTab ||
         !(activeTab.input instanceof vscode.TabInputText) ||
         activeTab.input.uri.scheme !== 'file'
@@ -274,8 +294,7 @@ export function activate(context: vscode.ExtensionContext): void {
       ) {
         const { filePath } = Util.extractMetaDataFromDocument(e.document);
         const analyzeState = new Analyze(context);
-        const analyzeValue = analyzeState.get().value;
-        const results = Util.getCurrentEditorProblems(analyzeValue, filePath);
+        const results = Util.getCurrentEditorProblems(analyzeState.value(), filePath);
         Util.decorateCurrentEditorWithHighlights(results, e);
 
         prevTab = activeTab;

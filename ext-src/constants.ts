@@ -34,7 +34,8 @@ const CONSTANTS = {
   sessionTokenUndefined: 'Metabob: your session has timed out. Please reload your editor window',
 
   // Document Provider
-  recommendationDocumentProviderScheme: 'metabob',
+  recommendationDocumentProviderScheme: 'metabob-recommendation',
+  analyzedDocumentProviderScheme: 'metabob-previous-analysis',
 };
 
 export default CONSTANTS;

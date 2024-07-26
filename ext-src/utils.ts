@@ -182,6 +182,14 @@ export default class Utils {
     return recentAnalysisData.problems.filter(problem => !problem.discarded);
   }
 
+  static getPreviousEditorProblems(analyzeValue: AnalyzeState, filePath: string): ProblemData[] {
+    if (analyzeValue[filePath]?.length > 1 && analyzeValue[filePath][0].isValid) {
+      return analyzeValue[filePath][1].problems;
+    } else if (analyzeValue[filePath]?.length === 1 && !analyzeValue[filePath][0].isValid) {
+      return analyzeValue[filePath][0].problems;
+    } else return [];
+  }
+
   static decorateCurrentEditorWithHighlights(
     problems: Problem[],
     problemEditor: vscode.TextEditor,

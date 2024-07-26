@@ -143,6 +143,16 @@ export class RecommendationWebView implements WebviewViewProvider {
     return;
   }
 
+  async handleShowPreviousResults(path: string): Promise<void> {
+    const d = await workspace.openTextDocument(
+      Uri.from({
+        scheme: CONSTANTS.analyzedDocumentProviderScheme,
+        path,
+      }),
+    );
+    await window.showTextDocument(d);
+  }
+
   async handleSuggestionClick(input: string, initData: CurrentQuestionState): Promise<void> {
     if (this._view === null || this._view === undefined || !this._view?.webview) {
       throw new Error('handleSuggestionClick: Webview is undefined');
@@ -461,6 +471,14 @@ export class RecommendationWebView implements WebviewViewProvider {
       }
       const data = message.data;
       switch (message.type) {
+        case 'view_previous_results':
+          const { path } = data;
+          if (!path) {
+            window.showErrorMessage('Metabob: Cannot show previous results for undefined file');
+          } else {
+            await this.handleShowPreviousResults(path);
+          }
+          break;
         case 'OPEN_FILE_IN_NEW_TAB':
           const { path: filePath } = data;
           this.openFileInNewTab(filePath);
@@ -603,6 +621,7 @@ export class RecommendationWebView implements WebviewViewProvider {
           };
           try {
             commands.executeCommand('metabob.discardSuggestion', payload);
+
             // this._view.webview.postMessage({
             //   type: 'onDiscardSuggestionClicked:Success',
             //   data: {},
