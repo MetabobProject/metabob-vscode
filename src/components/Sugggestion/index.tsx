@@ -5,7 +5,6 @@ import { Feedback } from './Feedback';
 import { Header } from './Header';
 import { Box, Button, CircularProgress, SxProps } from '@mui/material';
 import { feedbackContainer, generateRecommendationButtonContainer } from './styles';
-import { Recommendation } from './Recommendation';
 import { RecommendationSkeletonLoader } from './Recommendation/Skeleton';
 import { RecommendationPagination } from './Pagination';
 import { usePagination } from '../../hooks';
@@ -175,9 +174,6 @@ export const SuggestionPage = (): JSX.Element => {
 
       {recommendationMemo && (
         <>
-          <Box width='100%' marginTop='12px'>
-            <Recommendation text={recommendationMemo} />
-          </Box>
           <RecommendationPagination
             gotoNextPage={goToNextPage}
             gotoPreviousPage={goToPrevPage}
