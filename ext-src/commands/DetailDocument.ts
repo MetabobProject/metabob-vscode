@@ -19,15 +19,6 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
     const analyzeState = new Analyze(context);
     const analyzeStateValue = analyzeState.value();
     const sessionToken = new Session(context).get()?.value;
-    const extensionEventEmitter = getExtensionEventEmitter();
-
-    const documentMetaData = Utils.getCurrentFile();
-
-    if (!documentMetaData) {
-      vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
-
-      return;
-    }
 
     if (!sessionToken || !analyzeStateValue) {
       getExtensionEventEmitter().fire({
@@ -37,10 +28,6 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
         },
       });
 
-      extensionEventEmitter.fire({
-        type: 'CURRENT_FILE',
-        data: { ...documentMetaData.editor.document },
-      });
       vscode.window.showErrorMessage(CONSTANTS.editorNotSelectorError);
 
       return;
@@ -76,11 +63,6 @@ export function activateDetailSuggestionCommand(context: vscode.ExtensionContext
         shouldResetRecomendation: false,
         shouldMoveToAnalyzePage: false,
       },
-    });
-
-    extensionEventEmitter.fire({
-      type: 'CURRENT_FILE',
-      data: { ...documentMetaData.editor.document },
     });
 
     getExtensionEventEmitter().fire({

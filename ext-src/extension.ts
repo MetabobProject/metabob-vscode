@@ -212,7 +212,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...document },
+        data: document.uri.fsPath,
       });
 
       extensionEventEmitter.fire({
@@ -328,7 +328,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
           extensionEventEmitter.fire({
             type: 'CURRENT_FILE',
-            data: { ...e.document },
+            data: e.document.uri.fsPath,
           });
 
           extensionEventEmitter.fire({
@@ -367,7 +367,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...e.document },
+          data: e.document.uri.fsPath,
         });
 
         extensionEventEmitter.fire({

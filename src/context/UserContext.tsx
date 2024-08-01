@@ -196,7 +196,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
           break;
         case EventDataType.CURRENT_FILE:
-          const filename: string | undefined = payload?.uri?.fsPath;
+          const filename: string | undefined = payload;
 
           if (!filename) {
             setCurrentEditor(undefined);

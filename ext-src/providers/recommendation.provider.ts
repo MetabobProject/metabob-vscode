@@ -99,7 +99,7 @@ export class RecommendationWebView implements WebviewViewProvider {
       setTimeout(() => {
         this.extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...editor.document },
+          data: editor.document.uri.fsPath,
         });
 
         this.extensionEventEmitter.fire({
@@ -424,7 +424,7 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     this._view.webview.postMessage({
       type: 'CURRENT_FILE',
-      data: { ...currentEditor.document },
+      data: currentEditor.document.uri.fsPath,
     });
 
     this._view.webview.postMessage({

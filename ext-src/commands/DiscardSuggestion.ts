@@ -66,7 +66,7 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
 
     extensionEventEmitter.fire({
       type: 'CURRENT_FILE',
-      data: { ...documentMetaData.editor.document },
+      data: documentMetaData.editor.document.uri.fsPath,
     });
 
     extensionEventEmitter.fire({
