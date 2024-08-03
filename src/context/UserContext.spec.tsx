@@ -114,10 +114,7 @@ describe('AccountSettingProvider', () => {
             node={State.isAnalysisLoading}
             onChange={mockAnalysisLoadingStateHandler}
           />
-          <RecoilObserver
-            node={State.analyzeState}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
+          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.identifiedRecommendation}
             onChange={mockIdentifiedRecommendationStateHandler}
@@ -328,10 +325,7 @@ describe('AccountSettingProvider', () => {
       <RecoilRoot>
         <AccountSettingProvider>
           <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
-          <RecoilObserver
-            node={State.analyzeState}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
+          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.identifiedSuggestion}
             onChange={mockIdentifiedSuggestionStateHandler}
@@ -385,10 +379,7 @@ describe('AccountSettingProvider', () => {
       <RecoilRoot>
         <AccountSettingProvider>
           <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
-          <RecoilObserver
-            node={State.analyzeState}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
+          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.identifiedSuggestion}
             onChange={mockIdentifiedSuggestionStateHandler}
@@ -555,7 +546,7 @@ describe('AccountSettingProvider', () => {
     const mockMessageEvent = (event: MessageEvent<MessageType>) => {
       window.dispatchEvent(event);
     };
-    const payload = { uri: {fsPath: '/path/to/exampleFile.git'} };
+    const payload = { uri: { fsPath: '/path/to/exampleFile.git' } };
 
     render(
       <RecoilRoot>
@@ -596,7 +587,7 @@ describe('AccountSettingProvider', () => {
     );
 
     act(() => {
-      const payload = { uri: {fsPath: '/path/to/invalidFile'} };
+      const payload = { uri: { fsPath: '/path/to/invalidFile' } };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
           type: EventDataType.CURRENT_FILE,
@@ -624,7 +615,7 @@ describe('AccountSettingProvider', () => {
     );
 
     act(() => {
-      const payload = { uri: {fsPath: ''} };
+      const payload = { uri: { fsPath: '' } };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
           type: EventDataType.CURRENT_FILE,
@@ -777,10 +768,7 @@ describe('AccountSettingProvider', () => {
             node={State.hasWorkSpaceFolders}
             onChange={mockHasWorkSpaceFoldersStateHandler}
           />
-          <RecoilObserver
-            node={State.analyzeState}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
+          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.currentWorkSpaceProject}
             onChange={mockCurrentWorkSpaceProjectStateHandler}
@@ -798,7 +786,7 @@ describe('AccountSettingProvider', () => {
           ...IdentifiedProblems,
         },
         currentWorkSpaceFolder: 'exampleProject',
-        currentFile: { uri: {fsPath: 'exampleProject/exampleFileName.git'} },
+        currentFile: { uri: { fsPath: 'exampleProject/exampleFileName.git' } },
       };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
@@ -814,7 +802,9 @@ describe('AccountSettingProvider', () => {
     expect(mockHasWorkSpaceFoldersStateHandler).toHaveBeenCalledWith(true);
     expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
     expect(mockCurrentWorkSpaceProjectStateHandler).toHaveBeenCalledWith('exampleProject');
-    expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith('exampleProject/exampleFileName.git');
+    expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith(
+      'exampleProject/exampleFileName.git',
+    );
   });
 
   it('should update Recoil state correctly on INIT_DATA event with valid payload with an edge case', () => {
@@ -840,10 +830,7 @@ describe('AccountSettingProvider', () => {
             node={State.hasWorkSpaceFolders}
             onChange={mockHasWorkSpaceFoldersStateHandler}
           />
-          <RecoilObserver
-            node={State.analyzeState}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
+          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.currentWorkSpaceProject}
             onChange={mockCurrentWorkSpaceProjectStateHandler}
