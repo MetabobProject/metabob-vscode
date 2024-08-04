@@ -30,6 +30,35 @@ describe('AccountSettingProvider', () => {
     jest.resetModules();
   });
 
+  it('should update AnalyzeState Recoil state correctly on ANALYZE_STATE_CHANGED event', () => {
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+
+    const mockAnalyzeStateHandler = jest.fn();
+    const mockPayload = IdentifiedProblems;
+
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver node={State.analyzeState} onChange={mockAnalyzeStateHandler} />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.ANALYZE_STATE_CHANGED,
+          data: mockPayload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockAnalyzeStateHandler).toHaveBeenCalledWith(mockPayload);
+  });
+
   it('should receive Get_INIT_DATA event when the component renders', () => {
     const mockApplicationStateHandler = jest.fn();
     const mockHasWorkSpaceFoldersStateHandler = jest.fn();
@@ -103,7 +132,6 @@ describe('AccountSettingProvider', () => {
 
     const mockApplicationStateHandler = jest.fn();
     const mockAnalysisLoadingStateHandler = jest.fn();
-    const mockIdentifiedProblemsStateHandler = jest.fn();
     const mockIdentifiedRecommendationStateHandler = jest.fn();
 
     render(
@@ -114,7 +142,6 @@ describe('AccountSettingProvider', () => {
             node={State.isAnalysisLoading}
             onChange={mockAnalysisLoadingStateHandler}
           />
-          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.identifiedRecommendation}
             onChange={mockIdentifiedRecommendationStateHandler}
@@ -136,7 +163,6 @@ describe('AccountSettingProvider', () => {
 
     expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
     expect(mockAnalysisLoadingStateHandler).toHaveBeenCalledWith(true);
-    expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith({});
     expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
   });
 
@@ -310,7 +336,6 @@ describe('AccountSettingProvider', () => {
       window.dispatchEvent(event);
     };
     const mockApplicationStateHandler = jest.fn();
-    const mockIdentifiedProblemsStateHandler = jest.fn();
     const mockIdentifiedSuggestionStateHandler = jest.fn();
     const mockIdentifiedRecommendationStateHandler = jest.fn();
     const mockIsAnalysisLoadingStateHandler = jest.fn();
@@ -318,14 +343,12 @@ describe('AccountSettingProvider', () => {
     const mockPayload = {
       shouldResetRecomendation: false,
       shouldMoveToAnalyzePage: true,
-      ...IdentifiedProblems,
     };
 
     render(
       <RecoilRoot>
         <AccountSettingProvider>
           <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
-          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.identifiedSuggestion}
             onChange={mockIdentifiedSuggestionStateHandler}
@@ -353,7 +376,6 @@ describe('AccountSettingProvider', () => {
     });
 
     expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
-    expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
     expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(undefined);
     expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
     expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
@@ -372,14 +394,12 @@ describe('AccountSettingProvider', () => {
     const mockPayload = {
       shouldResetRecomendation: true,
       shouldMoveToAnalyzePage: true,
-      ...IdentifiedProblems,
     };
 
     render(
       <RecoilRoot>
         <AccountSettingProvider>
           <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
-          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.identifiedSuggestion}
             onChange={mockIdentifiedSuggestionStateHandler}
@@ -407,7 +427,6 @@ describe('AccountSettingProvider', () => {
     });
 
     expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
-    expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
     expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(undefined);
     expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
     expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
@@ -546,7 +565,7 @@ describe('AccountSettingProvider', () => {
     const mockMessageEvent = (event: MessageEvent<MessageType>) => {
       window.dispatchEvent(event);
     };
-    const payload = { uri: { fsPath: '/path/to/exampleFile.git' } };
+    const payload = '/path/to/exampleFile.git';
 
     render(
       <RecoilRoot>
@@ -566,7 +585,7 @@ describe('AccountSettingProvider', () => {
       mockMessageEvent(messageEvent);
     });
 
-    const expectedFilename = payload.uri.fsPath ?? undefined;
+    const expectedFilename = payload ?? undefined;
 
     expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith(expectedFilename);
   });
