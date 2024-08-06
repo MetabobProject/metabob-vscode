@@ -3,7 +3,6 @@ import { AnalyzeDocumentOnSaveConfig } from './config';
 import { RecommendationWebView } from './providers/recommendation.provider';
 import {
   activateEndorseCommand,
-  activateFocusRecommendCommand,
   activateDetailSuggestionCommand,
   activateFixSuggestionCommand,
   activateDiscardCommand,
@@ -22,19 +21,24 @@ import {
   disposeExtensionEventEmitter,
   getExtensionEventEmitter,
 } from './events';
-import { Analyze } from './state';
+import { AnalysisData, Analyze } from './state';
 import { Problem } from './types';
+import { RecommendationTextProvider } from './providers/RecommendationTextProvider';
+import CONSTANTS from './constants';
+import { AnalyzedDocumentTextProvider } from './providers/PreviousProblemsTextProvider';
 
 let expirationTimer: any = undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
-  let previousEditor: vscode.TextEditor | undefined = undefined;
+  let prevTab: vscode.Tab | undefined = undefined;
   const _debug = vscode.window.createOutputChannel('Metabob');
   bootstrapExtensionEventEmitter();
 
   initState(context);
 
   if (!context.extension || !context.extensionUri) {
+    vscode.window.showErrorMessage('Metabob: Extension Context is not available');
+
     return;
   }
 
@@ -49,6 +53,20 @@ export function activate(context: vscode.ExtensionContext): void {
     expirationTimer = setInterval(() => {
       handleAnalyzeExpiration(context);
     }, thirty_minutes);
+
+    context.subscriptions.push(
+      vscode.workspace.registerTextDocumentContentProvider(
+        CONSTANTS.recommendationDocumentProviderScheme,
+        new RecommendationTextProvider(),
+      ),
+    );
+
+    context.subscriptions.push(
+      vscode.workspace.registerTextDocumentContentProvider(
+        CONSTANTS.analyzedDocumentProviderScheme,
+        new AnalyzedDocumentTextProvider(new Analyze(context)),
+      ),
+    );
 
     // Create User Session, If already created get the refresh token
     // otherwise, ping server every 60 second to not destroy the token
@@ -67,15 +85,38 @@ export function activate(context: vscode.ExtensionContext): void {
     // Used to notify the model about positive feedback
     activateEndorseCommand(context);
 
-    // Deprecated
-    activateFocusRecommendCommand(context);
-
     // When the user click the detail button on the problem
     activateDetailSuggestionCommand(context);
 
     // Whenever the user clicks the fix button
     activateFixSuggestionCommand(context);
-  } catch {
+
+    // Setup opened file
+    const tab = vscode.window.tabGroups.activeTabGroup.activeTab;
+    if (tab && tab.input instanceof vscode.TabInputText && tab.input.uri.scheme === 'file') {
+      // Valid document for analysis
+      const activeEditor = vscode.window.activeTextEditor!;
+      const analyzeState = new Analyze(context);
+      const analyzeValue = analyzeState.value();
+      if (analyzeValue) {
+        const results: Problem[] = Util.getCurrentEditorProblems(
+          analyzeValue,
+          activeEditor.document.fileName,
+        );
+        if (results) {
+          Util.decorateCurrentEditorWithHighlights(results, activeEditor);
+        }
+      }
+      prevTab = tab;
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      vscode.window.showErrorMessage(`Metabob: Error activating extension: ${error.message}`);
+    }
+    _debug.appendLine(
+      `Error activating extension: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`,
+    );
+
     return;
   }
 
@@ -171,7 +212,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       extensionEventEmitter.fire({
         type: 'CURRENT_FILE',
-        data: { ...document },
+        data: document.uri.fsPath,
       });
 
       extensionEventEmitter.fire({
@@ -184,203 +225,138 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.workspace.onDidCloseTextDocument(e => {
-      const currentWorkSpaceFolder = Util.getRootFolderName();
-      const { fileName } = Util.extractMetaDataFromDocument(e);
-      if (!fileName) {
-        return;
-      }
-
-      if (fileName.includes('extension-output')) {
-        return;
-      }
-
-      const editor = vscode.window.activeTextEditor;
-      if (!editor || !editor.document) {
-        extensionEventEmitter.fire({
-          type: 'No_Editor_Detected',
-          data: {},
-        });
-
-        return;
-      }
-
-      if (editor.document.uri.fsPath !== e.uri.fsPath) {
-        return;
-      }
-
+    vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
+      // Invalidate analysis if the document content has changed
       const analyzeState = new Analyze(context);
-      const analyzeValue = analyzeState.get()?.value;
-      if (!analyzeValue) return;
+      analyzeState.update(state => {
+        const analyses: AnalysisData[] | undefined = state[e.document.fileName];
+        if (!analyses) return state;
+        for (let i = 0; i < analyses.length; i++) {
+          analyses[i].isValid = analyses[i].analyzedDocumentContent === e.document.getText();
+        }
 
-      const isValidEditor = Util.isValidDocument(editor.document);
-
-      if (isValidEditor) {
-        extensionEventEmitter.fire({
-          type: 'Analysis_Completed',
-          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-        });
-        extensionEventEmitter.fire({
-          type: 'CURRENT_FILE',
-          data: { ...editor.document },
-        });
-        extensionEventEmitter.fire({
-          type: 'CURRENT_PROJECT',
-          data: {
-            name: currentWorkSpaceFolder,
-          },
-        });
-      }
-    }),
-  );
-
-  context.subscriptions.push(
-    vscode.workspace.onDidOpenTextDocument((e: vscode.TextDocument) => {
-      const bufferedEParam: vscode.TextDocument = {
-        ...e,
-        fileName: e.fileName.replace('.git', ''),
-      };
-      const analyzeState = new Analyze(context);
-      const analyzeValue = analyzeState.get()?.value;
-      if (!analyzeValue) {
-        return;
-      }
-
-      const activeTextEditor = vscode.window.activeTextEditor;
-      if (!activeTextEditor) {
-        return;
-      }
-
-      if (activeTextEditor.document.fileName !== bufferedEParam.fileName) {
-        return;
-      }
-
-      const currentWorkSpaceFolder = Util.getRootFolderName();
-      const currentWorkspacePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-      if (currentWorkspacePath === undefined) {
-        return;
-      }
-
-      const documentMetaData = Util.extractMetaDataFromDocument(bufferedEParam);
-      if (!documentMetaData.filePath) {
-        return;
-      }
-      const filePath: string = documentMetaData.filePath.replace(/\.git$/, '');
-
-      if (!filePath) {
-        return;
-      }
-
-      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, filePath);
-      if (!results) {
-        return;
-      }
-
-      if (results.length === 0) {
-        extensionEventEmitter.fire({
-          type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
-          data: {
-            hasOpenTextDocuments: true,
-            hasWorkSpaceFolders: true,
-          },
-        });
-
-        extensionEventEmitter.fire({
-          type: 'CURRENT_FILE',
-          data: { ...activeTextEditor.document },
-        });
-
-        extensionEventEmitter.fire({
-          type: 'CURRENT_PROJECT',
-          data: {
-            name: currentWorkSpaceFolder,
-          },
-        });
-
-        extensionEventEmitter.fire({
-          type: 'onDiscardSuggestionClicked:Success',
-          data: {},
-        });
-
-        extensionEventEmitter.fire({
-          type: 'Analysis_Completed',
-          data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-        });
-
-        return;
-      }
-
-      Util.decorateCurrentEditorWithHighlights(results, activeTextEditor);
-
-      extensionEventEmitter.fire({
-        type: 'CURRENT_FILE',
-        data: { ...activeTextEditor.document },
+        return state;
       });
 
-      extensionEventEmitter.fire({
-        type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
-        data: {
-          hasOpenTextDocuments: true,
-          hasWorkSpaceFolders: true,
-        },
-      });
-
-      extensionEventEmitter.fire({
-        type: 'onDiscardSuggestionClicked:Success',
-        data: {},
-      });
-
-      extensionEventEmitter.fire({
-        type: 'CURRENT_PROJECT',
-        data: {
-          name: currentWorkSpaceFolder,
-        },
-      });
-
-      extensionEventEmitter.fire({
-        type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...analyzeValue },
-      });
+      const activeEditor = vscode.window.activeTextEditor;
+      if (!activeEditor) return;
+      Util.decorateCurrentEditorWithHighlights(
+        Util.getCurrentEditorProblems(analyzeState.value(), activeEditor.document.fileName),
+        activeEditor,
+      );
     }),
   );
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
-      if (!e) {
+      // onDidChangeActiveTextEditor fires twice when the user changes from one text file to another
+      // The first sets the activeTextEditor to undefined and the second sets it to the new text editor
+      const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+
+      if (activeTab?.input === prevTab?.input) {
         return;
-      }
-      const { filePath, fileName } = Util.extractMetaDataFromDocument(e.document);
+      } else if (
+        activeTab?.input instanceof vscode.TabInputTextDiff &&
+        activeTab.input.modified.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+        prevTab?.input instanceof vscode.TabInputText &&
+        activeTab.input.original.fsPath === prevTab.input.uri.fsPath
+      ) {
+        prevTab = activeTab;
 
-      if (!filePath) {
         return;
-      }
+      } else if (
+        e &&
+        activeTab?.input instanceof vscode.TabInputText &&
+        activeTab.input.uri.scheme === CONSTANTS.analyzedDocumentProviderScheme
+      ) {
+        const results = Util.getPreviousEditorProblems(
+          new Analyze(context).value(),
+          e.document.uri.fsPath,
+        );
+        Util.decorateCurrentEditorWithHighlights(results, e);
 
-      if (!fileName) {
         return;
-      }
+      } else if (
+        !activeTab ||
+        !(activeTab.input instanceof vscode.TabInputText) ||
+        activeTab.input.uri.scheme !== 'file'
+      ) {
+        extensionEventEmitter.fire({
+          type: 'No_Editor_Detected',
+          data: {},
+        });
+        prevTab = undefined;
+      } else if (
+        e &&
+        prevTab?.input instanceof vscode.TabInputTextDiff &&
+        prevTab.input.modified.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+        prevTab.input.original.fsPath === activeTab.input.uri.fsPath
+      ) {
+        const { filePath } = Util.extractMetaDataFromDocument(e.document);
+        const analyzeState = new Analyze(context);
+        const results = Util.getCurrentEditorProblems(analyzeState.value(), filePath);
+        Util.decorateCurrentEditorWithHighlights(results, e);
 
-      if (fileName.includes('extension-output')) {
+        prevTab = activeTab;
+
         return;
-      }
+      } else if (e) {
+        const { filePath } = Util.extractMetaDataFromDocument(e.document);
 
-      const currentWorkSpaceFolder = Util.getRootFolderName();
+        if (!filePath) {
+          return;
+        }
 
-      if (previousEditor) {
-        previousEditor.setDecorations(decorationType, []);
-      }
+        if (filePath.includes('extension-output')) {
+          return;
+        }
 
-      const analyzeState = new Analyze(context);
-      const analyzeValue = analyzeState.get()?.value;
-      if (!analyzeValue) {
-        return;
-      }
+        const currentWorkSpaceFolder = Util.getRootFolderName();
 
-      const results: Problem[] | undefined = Util.getCurrentEditorProblems(analyzeValue, filePath);
-      if (!results) {
-        return;
-      }
+        const analyzeState = new Analyze(context);
+        const analyzeValue = analyzeState.get().value;
+        const results = Util.getCurrentEditorProblems(analyzeValue, filePath);
 
-      if (results.length === 0) {
+        if (results.length === 0) {
+          extensionEventEmitter.fire({
+            type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
+            data: {
+              hasOpenTextDocuments: true,
+              hasWorkSpaceFolders: true,
+            },
+          });
+
+          extensionEventEmitter.fire({
+            type: 'CURRENT_FILE',
+            data: e.document.uri.fsPath,
+          });
+
+          extensionEventEmitter.fire({
+            type: 'CURRENT_PROJECT',
+            data: {
+              name: currentWorkSpaceFolder,
+            },
+          });
+
+          extensionEventEmitter.fire({
+            type: 'onDiscardSuggestionClicked:Success',
+            data: {},
+          });
+
+          extensionEventEmitter.fire({
+            type: 'Analysis_Completed',
+            data: {
+              shouldResetRecomendation: false,
+              shouldMoveToAnalyzePage: false,
+            },
+          });
+
+          prevTab = activeTab;
+
+          return;
+        }
+
+        Util.decorateCurrentEditorWithHighlights(results, e);
         extensionEventEmitter.fire({
           type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
           data: {
@@ -391,7 +367,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
         extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...e.document },
+          data: e.document.uri.fsPath,
         });
 
         extensionEventEmitter.fire({
@@ -411,47 +387,11 @@ export function activate(context: vscode.ExtensionContext): void {
           data: {
             shouldResetRecomendation: false,
             shouldMoveToAnalyzePage: false,
-            ...analyzeValue,
           },
         });
 
-        previousEditor = e;
-
-        return;
+        prevTab = activeTab;
       }
-
-      Util.decorateCurrentEditorWithHighlights(results, e);
-      extensionEventEmitter.fire({
-        type: 'INIT_DATA_UPON_NEW_FILE_OPEN',
-        data: {
-          hasOpenTextDocuments: true,
-          hasWorkSpaceFolders: true,
-        },
-      });
-
-      extensionEventEmitter.fire({
-        type: 'CURRENT_FILE',
-        data: { ...e.document },
-      });
-
-      extensionEventEmitter.fire({
-        type: 'CURRENT_PROJECT',
-        data: {
-          name: currentWorkSpaceFolder,
-        },
-      });
-
-      extensionEventEmitter.fire({
-        type: 'onDiscardSuggestionClicked:Success',
-        data: {},
-      });
-
-      extensionEventEmitter.fire({
-        type: 'Analysis_Completed',
-        data: { shouldResetRecomendation: false, shouldMoveToAnalyzePage: false, ...analyzeValue },
-      });
-
-      previousEditor = e;
     }),
   );
 

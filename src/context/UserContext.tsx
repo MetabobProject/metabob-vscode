@@ -24,7 +24,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setIdentifiedSuggestion = useSetRecoilState(State.identifiedSuggestion);
   const setIsRecommendationLoading = useSetRecoilState(State.isRecommendationLoading);
   const setIdentifiedRecommendation = useSetRecoilState(State.identifiedRecommendation);
-  const setIdentifiedProblems = useSetRecoilState(State.identifiedProblems);
+  const setAnalyzeState = useSetRecoilState(State.analyzeState);
   const setAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
   const setCurrentEditor = useSetRecoilState(State.currentEditor);
   const setCurrentWorkSpaceProject = useSetRecoilState(State.currentWorkSpaceProject);
@@ -36,6 +36,9 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
       switch (event.data.type) {
+        case EventDataType.ANALYZE_STATE_CHANGED:
+          setAnalyzeState(payload as AnalyzeState);
+          break;
         case EventDataType.NO_EDITOR_DETECTED:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           setHasOpenTextDocuments(false);
@@ -44,7 +47,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.ANALYSIS_CALLED_ON_SAVE:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           setAnalysisLoading(true);
-          setIdentifiedProblems({} as AnalyzeState);
           setIdentifiedRecommendation(undefined);
           break;
         case EventDataType.FIX_SUGGESTION:
@@ -55,11 +57,8 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIsAnalysisLoading(false);
           break;
         case EventDataType.ANALYSIS_COMPLETED_EMPTY_PROBLEMS: {
-          const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
+          const { shouldResetRecomendation, shouldMoveToAnalyzePage } = payload;
           setIsEmptyIdentifiedProblemDetected(true);
-          if (problem) {
-            setIdentifiedProblems(problem as AnalyzeState);
-          }
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
             setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
@@ -71,11 +70,8 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           break;
         }
         case EventDataType.ANALYSIS_COMPLETED:
-          const { shouldResetRecomendation, shouldMoveToAnalyzePage, ...problem } = payload;
+          const { shouldResetRecomendation, shouldMoveToAnalyzePage } = payload;
           setIsEmptyIdentifiedProblemDetected(false);
-          if (problem) {
-            setIdentifiedProblems(problem as AnalyzeState);
-          }
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
             setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
@@ -117,7 +113,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
 
           if (initData) {
-            setIdentifiedProblems(initData as AnalyzeState);
+            setAnalyzeState(initData as AnalyzeState);
           }
 
           if (currentWorkSpaceFolder) {
@@ -200,7 +196,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
           break;
         case EventDataType.CURRENT_FILE:
-          const filename: string | undefined = payload?.uri?.fsPath;
+          const filename: string | undefined = payload;
 
           if (!filename) {
             setCurrentEditor(undefined);

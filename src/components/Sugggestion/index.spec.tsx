@@ -279,69 +279,6 @@ describe('SuggestionPage', () => {
     expect(mockIsRecommendationLoadingChange).toHaveBeenCalledWith(true);
   });
 
-  it('should pass correct data when clicked on apply button', () => {
-    const mockIdentifiedSuggestion: FixSuggestionsPayload = {
-      id: 'suggestion-1',
-      isFix: false,
-      isReset: false,
-      path: '',
-      vuln: {
-        id: '1',
-        startLine: 2,
-        endLine: 3,
-        path: '',
-        summary: '',
-        category: 'Category',
-        description: 'Description',
-      },
-    };
-
-    const mockIdentifiedRecommendation = {
-      'suggestion-1': [{ recommendation: 'Recommendation 1' }],
-    };
-
-    const mockIsRecommendationLoading = false;
-
-    const mockIdentifiedSuggestionChange = jest.fn();
-    const mockIdentifiedRecommendationChange = jest.fn();
-    const mockIsRecommendationLoadingChange = jest.fn();
-
-    const { getByTestId } = render(
-      <RecoilRoot
-        initializeState={({ set }) => {
-          set(State.identifiedSuggestion, mockIdentifiedSuggestion);
-          set(State.identifiedRecommendation, mockIdentifiedRecommendation);
-          set(State.isRecommendationLoading, mockIsRecommendationLoading);
-        }}
-      >
-        <RecoilObserver
-          node={State.identifiedSuggestion}
-          onChange={mockIdentifiedSuggestionChange}
-        />
-        <RecoilObserver
-          node={State.identifiedRecommendation}
-          onChange={mockIdentifiedRecommendationChange}
-        />
-        <RecoilObserver
-          node={State.isRecommendationLoading}
-          onChange={mockIsRecommendationLoadingChange}
-        />
-        <SuggestionPage />
-      </RecoilRoot>,
-    );
-
-    const applyRecommendationButton = getByTestId('apply-button');
-    expect(applyRecommendationButton).toBeInTheDocument();
-    fireEvent.click(applyRecommendationButton);
-    expect(vscode.postMessage).toHaveBeenCalledWith({
-      type: 'applyRecommendation',
-      data: {
-        input: 'Recommendation 1',
-        initData: { ...mockIdentifiedSuggestion },
-      },
-    });
-  });
-
   it('should run the useEffect when isFix is true and isReset is false', () => {
     const mockIdentifiedSuggestion: FixSuggestionsPayload = {
       id: 'suggestion-1',

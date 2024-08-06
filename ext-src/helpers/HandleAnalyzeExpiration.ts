@@ -1,37 +1,38 @@
 import vscode from 'vscode';
-import { Analyze, AnalyzeState } from '../state';
+import { Analyze } from '../state';
 
-export const handleAnalyzeExpiration = (context: vscode.ExtensionContext) => {
+export const handleAnalyzeExpiration = (context: vscode.ExtensionContext): void => {
   const today = new Date();
-  let results: AnalyzeState = {};
-  const setAnalyzeState = new Analyze(context);
-  const analyzeStateValue = new Analyze(context).get()?.value;
+  const analyzeState = new Analyze(context);
 
-  if (!analyzeStateValue) return undefined;
+  analyzeState.update(state => {
+    Object.keys(state).forEach(path => {
+      const analyses = state[path];
 
-  // If the expiration field on analyzeState does not exist; discard it.
-  Object.keys(analyzeStateValue).forEach(key => {
-    const problem = analyzeStateValue[key];
-    if (problem.expiration !== undefined) {
-      results[key] = { ...problem };
-    }
-  });
+      for (let i = analyses.length - 1; i >= 0; i--) {
+        // If the expiration field on analyzeState does not exist; discard it.
+        if (!analyses[i]?.expiration) {
+          analyses.splice(i, 1);
+          continue;
+        }
 
-  let nonExpiredResults: AnalyzeState = {};
-
-  // If the problem is expired, discard it as well.
-  Object.keys(results).forEach(key => {
-    const problem = analyzeStateValue[key];
-    if (problem.expiration) {
-      // Ensure both dates are in the same timezone (e.g., UTC)
-      const todayUTC = new Date(today.toISOString());
-      const problemDate = new Date(problem.expiration);
-      if (problemDate >= todayUTC) {
-        nonExpiredResults[key] = { ...problem };
+        // If the analysis is expired, discard it as well.
+        // Ensure both dates are in the same timezone (e.g., UTC)
+        const todayUTC = new Date(today.toISOString());
+        const problemDate = new Date(analyses[i].expiration);
+        if (problemDate < todayUTC) {
+          analyses.splice(i, 1);
+          continue;
+        }
       }
-    }
+
+      if (analyses.length === 0) {
+        delete state[path];
+      }
+    });
+
+    return state;
   });
 
-  setAnalyzeState.set(nonExpiredResults);
   return;
 };

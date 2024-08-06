@@ -33,6 +33,7 @@ class SubmitService extends ApiServiceBase {
     formData.append('upload', Buffer.from(fileContent, 'utf-8'), { filepath: relativePath });
     const config = this.getConfig(sessionToken, formData.getHeaders());
     const response = await this.post<SubmitRepresentationResponse>('/submit', formData, config);
+
     return response;
   }
 
@@ -48,6 +49,7 @@ class SubmitService extends ApiServiceBase {
       },
     };
     const response = await this.post<SubmitRepresentationResponse>('/submit', payload, config);
+
     return response;
   }
 
@@ -65,6 +67,7 @@ class SubmitService extends ApiServiceBase {
     const endpoint = jobParameters === '' ? '/analysis' : `/analysis?${jobParameters}`;
     const config = this.getConfig(sessionToken);
     const response = this.post<SubmitRepresentationResponse>(endpoint, undefined, config);
+
     return response;
   }
 }

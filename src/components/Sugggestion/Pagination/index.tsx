@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 export interface RecommendationPaginationProps {
   gotoNextPage: () => void;
   gotoPreviousPage: () => void;
-  handleApplyRecommendation: () => void;
   shouldRenderPagination: boolean;
   currentPage: number;
   totalPages: number;
@@ -13,7 +12,6 @@ export interface RecommendationPaginationProps {
 export const RecommendationPagination = ({
   gotoNextPage,
   gotoPreviousPage,
-  handleApplyRecommendation,
   shouldRenderPagination,
   currentPage,
   totalPages,
@@ -107,16 +105,6 @@ export const RecommendationPagination = ({
           </ButtonGroup>
         )}
 
-        <Button
-          data-testid='apply-button'
-          variant='contained'
-          sx={{
-            justifyContent: 'flex-end',
-          }}
-          onClick={handleApplyRecommendation}
-        >
-          Apply
-        </Button>
       </Box>
     </>
   );
