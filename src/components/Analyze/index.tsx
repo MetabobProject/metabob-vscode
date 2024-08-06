@@ -33,7 +33,7 @@ export const AnalyzePage = ({
 
     const results: Array<string> = Object.keys(analyzeState)
       .filter(path => path !== currentEditor)
-      .filter(path => analyzeState[path][0].isValid)
+      .filter(path => analyzeState[path][0]?.isValid)
       .filter(path => {
         // Check if there are any viable and undiscarded problems in the file
         for (const problem of analyzeState[path][0].problems) {
