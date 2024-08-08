@@ -386,7 +386,6 @@ describe('AccountSettingProvider', () => {
       window.dispatchEvent(event);
     };
     const mockApplicationStateHandler = jest.fn();
-    const mockIdentifiedProblemsStateHandler = jest.fn();
     const mockIdentifiedSuggestionStateHandler = jest.fn();
     const mockIdentifiedRecommendationStateHandler = jest.fn();
     const mockIsAnalysisLoadingStateHandler = jest.fn();
