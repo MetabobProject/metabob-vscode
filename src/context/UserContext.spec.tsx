@@ -28,6 +28,10 @@ describe('AccountSettingProvider', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.resetModules();
+
+    // recoil-persist uses localStorage to persist state
+    // so we need to clear it after each test to avoid state leaking
+    localStorage.clear();
   });
 
   it('should update AnalyzeState Recoil state correctly on ANALYZE_STATE_CHANGED event', () => {
