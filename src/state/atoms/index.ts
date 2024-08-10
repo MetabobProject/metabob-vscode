@@ -9,63 +9,77 @@ import {
 
 const { persistAtom } = recoilPersist();
 
+export const defaults = {
+  hasOpenTextDocuments: false,
+  hasWorkSpaceFolders: false,
+  isAnalysisLoading: false,
+  applicationState: ApplicationWebviewState.ANALYZE_MODE,
+  identifiedSuggestion: undefined,
+  isRecommendationLoading: false,
+  identifiedRecommendation: undefined,
+  analyzeState: undefined,
+  isEmptyIdentifiedProblemDetected: false,
+  currentEditor: undefined,
+  currentWorkSpaceProject: undefined,
+};
+
 export const hasOpenTextDocuments = atom<boolean>({
-  default: false,
+  default: defaults.hasOpenTextDocuments,
   key: 'Metabob:hasOpenTextDocuments',
 });
 
 export const hasWorkSpaceFolders = atom<boolean>({
-  default: false,
+  default: defaults.hasWorkSpaceFolders,
   key: 'Metabob:hasWorkSpaceFolders',
 });
 
 export const isAnalysisLoading = atom<boolean>({
-  default: false,
+  default: defaults.isAnalysisLoading,
   key: 'Metabob:isAnalysisCompleted',
 });
 
 export const applicationState = atom<ApplicationWebviewState>({
-  default: ApplicationWebviewState.ANALYZE_MODE,
+  default: defaults.applicationState,
   key: 'Metabob:applicationState',
   effects_UNSTABLE: [persistAtom],
 });
 
 export const identifiedSuggestion = atom<FixSuggestionsPayload | undefined>({
-  default: undefined,
+  default: defaults.identifiedSuggestion,
   key: 'Metabob:identifiedSuggestions',
   effects_UNSTABLE: [persistAtom],
 });
 
 export const isRecommendationLoading = atom<boolean>({
-  default: false,
+  default: defaults.isRecommendationLoading,
   key: 'Metabob:isRecommendationLoading',
 });
 
 export const identifiedRecommendation = atom<
   { [problemId: string]: RecommendationPayload[] } | undefined
 >({
-  default: undefined,
+  default: defaults.identifiedRecommendation,
   key: 'Metabob:identifiedRecommendation',
   effects_UNSTABLE: [persistAtom],
 });
 
 export const analyzeState = atom<AnalyzeState | undefined>({
-  default: undefined,
+  default: defaults.analyzeState,
   key: 'Metabob:analyzeState',
   effects_UNSTABLE: [persistAtom],
 });
 
 export const isEmptyIdentifiedProblemDetected = atom<boolean>({
-  default: false,
+  default: defaults.isEmptyIdentifiedProblemDetected,
   key: 'Metabob:isEmptyIdentifiedProblemDetected',
 });
 
 export const currentEditor = atom<string | undefined>({
-  default: undefined,
+  default: defaults.currentEditor,
   key: 'Metabob:currentEditor',
 });
 
 export const currentWorkSpaceProject = atom<string | undefined>({
-  default: undefined,
+  default: defaults.currentWorkSpaceProject,
   key: 'Metabob:currentWorkSpaceProject',
 });

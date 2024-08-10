@@ -970,9 +970,10 @@ describe('AccountSettingProvider', () => {
     });
 
     // Ensure Recoil state remains unchanged
-    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith({
-      problem1: [{ recommendation: 'Some recommendation' }],
-    });
+    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledTimes(1);
+    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(
+      State.defaults.identifiedRecommendation,
+    );
     expect(mockIsRecommendationLoadingStateHandler).toHaveBeenCalledWith(false);
   });
 });
