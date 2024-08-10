@@ -385,6 +385,113 @@ describe('AccountSettingProvider', () => {
     expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
   });
 
+  it('should update Recoil state correctly on ANALYSIS_COMPLETED_EMPTY_PROBLEMS event', () => {
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+    const mockApplicationStateHandler = jest.fn();
+    const mockIdentifiedSuggestionStateHandler = jest.fn();
+    const mockIdentifiedRecommendationStateHandler = jest.fn();
+    const mockIsAnalysisLoadingStateHandler = jest.fn();
+
+    const mockPayload = {
+      shouldResetRecomendation: true,
+      shouldMoveToAnalyzePage: true,
+    };
+
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
+          <RecoilObserver
+            node={State.identifiedSuggestion}
+            onChange={mockIdentifiedSuggestionStateHandler}
+          />
+          <RecoilObserver
+            node={State.identifiedRecommendation}
+            onChange={mockIdentifiedRecommendationStateHandler}
+          />
+          <RecoilObserver
+            node={State.isAnalysisLoading}
+            onChange={mockIsAnalysisLoadingStateHandler}
+          />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.ANALYSIS_COMPLETED_EMPTY_PROBLEMS,
+          data: mockPayload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
+    expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(undefined);
+    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
+    expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
+  });
+
+  it('should update Recoil state correctly on ANALYSIS_COMPLETED_EMPTY_PROBLEMS event on edge case', () => {
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+    const mockApplicationStateHandler = jest.fn();
+    const mockIdentifiedSuggestionStateHandler = jest.fn();
+    const mockIdentifiedRecommendationStateHandler = jest.fn();
+    const mockIsAnalysisLoadingStateHandler = jest.fn();
+
+    const mockPayload = {
+      shouldResetRecomendation: false,
+      shouldMoveToAnalyzePage: false,
+    };
+
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
+          <RecoilObserver
+            node={State.identifiedSuggestion}
+            onChange={mockIdentifiedSuggestionStateHandler}
+          />
+          <RecoilObserver
+            node={State.identifiedRecommendation}
+            onChange={mockIdentifiedRecommendationStateHandler}
+          />
+          <RecoilObserver
+            node={State.isAnalysisLoading}
+            onChange={mockIsAnalysisLoadingStateHandler}
+          />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.ANALYSIS_COMPLETED_EMPTY_PROBLEMS,
+          data: mockPayload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockApplicationStateHandler).toHaveBeenCalledTimes(1);
+    expect(mockApplicationStateHandler).toHaveBeenCalledWith(State.defaults.applicationState);
+    expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledTimes(1);
+    expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(
+      State.defaults.identifiedSuggestion,
+    );
+    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledTimes(1);
+    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(
+      State.defaults.identifiedRecommendation,
+    );
+    expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
+  });
+
   it('should update Recoil state correctly on ANALYSIS_COMPLETED even with an edge case', () => {
     const mockMessageEvent = (event: MessageEvent<MessageType>) => {
       window.dispatchEvent(event);
