@@ -335,7 +335,6 @@ export class RecommendationWebView implements WebviewViewProvider {
 
       commands.executeCommand(
         'vscode.diff',
-        window.activeTextEditor?.document.uri,
         Uri.from({
           scheme: CONSTANTS.recommendationDocumentProviderScheme,
           path: window.activeTextEditor?.document.uri.path,
@@ -345,6 +344,7 @@ export class RecommendationWebView implements WebviewViewProvider {
             endLine: initData.vuln.endLine,
           }),
         }),
+        window.activeTextEditor?.document.uri,
       );
     } catch (error: any) {
       throw new Error(error);
