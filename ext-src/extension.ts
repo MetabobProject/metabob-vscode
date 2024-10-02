@@ -257,9 +257,9 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       } else if (
         activeTab?.input instanceof vscode.TabInputTextDiff &&
-        activeTab.input.modified.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+        activeTab.input.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
         prevTab?.input instanceof vscode.TabInputText &&
-        activeTab.input.original.fsPath === prevTab.input.uri.fsPath
+        activeTab.input.modified.fsPath === prevTab.input.uri.fsPath
       ) {
         prevTab = activeTab;
 
@@ -289,8 +289,8 @@ export function activate(context: vscode.ExtensionContext): void {
       } else if (
         e &&
         prevTab?.input instanceof vscode.TabInputTextDiff &&
-        prevTab.input.modified.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
-        prevTab.input.original.fsPath === activeTab.input.uri.fsPath
+        prevTab.input.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+        prevTab.input.modified.fsPath === activeTab.input.uri.fsPath
       ) {
         const { filePath } = Util.extractMetaDataFromDocument(e.document);
         const analyzeState = new Analyze(context);
