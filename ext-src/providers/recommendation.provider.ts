@@ -344,7 +344,7 @@ export class RecommendationWebView implements WebviewViewProvider {
             endLine: initData.vuln.endLine,
           }),
         }),
-        window.activeTextEditor?.document.uri,
+        Uri.file(window.activeTextEditor?.document.uri.path ?? ''),
       );
     } catch (error: any) {
       throw new Error(error);
