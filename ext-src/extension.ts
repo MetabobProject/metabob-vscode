@@ -30,7 +30,7 @@ import { AnalyzedDocumentTextProvider } from './providers/PreviousProblemsTextPr
 let expirationTimer: any = undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
-  let prevTab: vscode.Tab | undefined = undefined;
+  let prevTabInput: vscode.TabInputText | vscode.TabInputTextDiff | undefined = undefined;
   const _debug = vscode.window.createOutputChannel('Metabob');
   bootstrapExtensionEventEmitter();
 
@@ -107,7 +107,7 @@ export function activate(context: vscode.ExtensionContext): void {
           Util.decorateCurrentEditorWithHighlights(results, activeEditor);
         }
       }
-      prevTab = tab;
+      prevTabInput = tab.input;
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -253,15 +253,15 @@ export function activate(context: vscode.ExtensionContext): void {
       // The first sets the activeTextEditor to undefined and the second sets it to the new text editor
       const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
 
-      if (activeTab?.input === prevTab?.input) {
+      if (activeTab?.input === prevTabInput) {
         return;
       } else if (
         activeTab?.input instanceof vscode.TabInputTextDiff &&
         activeTab.input.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
-        prevTab?.input instanceof vscode.TabInputText &&
-        activeTab.input.modified.fsPath === prevTab.input.uri.fsPath
+        prevTabInput instanceof vscode.TabInputText &&
+        activeTab.input.modified.fsPath === prevTabInput.uri.fsPath
       ) {
-        prevTab = activeTab;
+        prevTabInput = activeTab.input;
 
         return;
       } else if (
@@ -285,22 +285,33 @@ export function activate(context: vscode.ExtensionContext): void {
           type: 'No_Editor_Detected',
           data: {},
         });
-        prevTab = undefined;
-      } else if (
-        e &&
-        prevTab?.input instanceof vscode.TabInputTextDiff &&
-        prevTab.input.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
-        prevTab.input.modified.fsPath === activeTab.input.uri.fsPath
-      ) {
-        const { filePath } = Util.extractMetaDataFromDocument(e.document);
-        const analyzeState = new Analyze(context);
-        const results = Util.getCurrentEditorProblems(analyzeState.value(), filePath);
-        Util.decorateCurrentEditorWithHighlights(results, e);
-
-        prevTab = activeTab;
-
-        return;
+        prevTabInput = undefined;
       } else if (e) {
+        if (
+          prevTabInput instanceof vscode.TabInputTextDiff &&
+          prevTabInput.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+          prevTabInput.modified.scheme === 'file'
+        ) {
+          const allTabGroups = vscode.window.tabGroups.all;
+          let prevTab: vscode.Tab | null = null;
+          for (const grp of allTabGroups) {
+            for (const tab of grp.tabs) {
+              if (
+                tab.input instanceof vscode.TabInputTextDiff &&
+                tab.input.original.toString() === prevTabInput.original.toString() &&
+                tab.input.modified.toString() === prevTabInput.modified.toString()
+              ) {
+                prevTab = tab;
+                break;
+              }
+            }
+            if (prevTab) {
+              vscode.window.tabGroups.close(prevTab);
+              break;
+            }
+          }
+        }
+
         const { filePath } = Util.extractMetaDataFromDocument(e.document);
 
         if (!filePath) {
@@ -351,7 +362,7 @@ export function activate(context: vscode.ExtensionContext): void {
             },
           });
 
-          prevTab = activeTab;
+          prevTabInput = activeTab.input;
 
           return;
         }
@@ -390,7 +401,7 @@ export function activate(context: vscode.ExtensionContext): void {
           },
         });
 
-        prevTab = activeTab;
+        prevTabInput = activeTab.input;
       }
     }),
   );
