@@ -24,6 +24,12 @@ export function activateDiscardCommand(context: vscode.ExtensionContext): void {
       return;
     }
 
+    // If discard called from recommendation diff, close recommendation
+    const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+    if (activeTab && Utils.isRecommendationDiffTab(activeTab.input)) {
+      vscode.window.tabGroups.close(activeTab);
+    }
+
     // verifying that in-fact user viewing problem.path file.
     const documentMetaData = Utils.getCurrentFile();
     if (!documentMetaData) {

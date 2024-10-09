@@ -256,12 +256,11 @@ export function activate(context: vscode.ExtensionContext): void {
       if (activeTab?.input === prevTabInput) {
         return;
       } else if (
-        activeTab?.input instanceof vscode.TabInputTextDiff &&
-        activeTab.input.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+        Util.isRecommendationDiffTab(activeTab?.input) &&
         prevTabInput instanceof vscode.TabInputText &&
-        activeTab.input.modified.fsPath === prevTabInput.uri.fsPath
+        activeTab?.input.modified.fsPath === prevTabInput.uri.fsPath
       ) {
-        prevTabInput = activeTab.input;
+        prevTabInput = activeTab?.input;
 
         return;
       } else if (
@@ -287,11 +286,7 @@ export function activate(context: vscode.ExtensionContext): void {
         });
         prevTabInput = undefined;
       } else if (e) {
-        if (
-          prevTabInput instanceof vscode.TabInputTextDiff &&
-          prevTabInput.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
-          prevTabInput.modified.scheme === 'file'
-        ) {
+        if (Util.isRecommendationDiffTab(prevTabInput)) {
           const allTabGroups = vscode.window.tabGroups.all;
           let prevTab: vscode.Tab | null = null;
           for (const grp of allTabGroups) {

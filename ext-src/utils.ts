@@ -216,4 +216,12 @@ export default class Utils {
 
     return true;
   }
+
+  static isRecommendationDiffTab(tabInput: unknown): tabInput is vscode.TabInputTextDiff {
+    return (
+      tabInput instanceof vscode.TabInputTextDiff &&
+      tabInput.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+      tabInput.modified.scheme === 'file'
+    );
+  }
 }
