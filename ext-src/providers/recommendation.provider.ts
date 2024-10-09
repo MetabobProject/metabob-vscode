@@ -620,7 +620,7 @@ export class RecommendationWebView implements WebviewViewProvider {
             path: initData.path,
           };
           try {
-            commands.executeCommand('metabob.discardSuggestion', payload);
+            commands.executeCommand(CONSTANTS.discardSuggestionCommand, payload);
 
             // this._view.webview.postMessage({
             //   type: 'onDiscardSuggestionClicked:Success',
