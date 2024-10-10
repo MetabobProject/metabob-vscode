@@ -255,11 +255,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       if (activeTab?.input === prevTabInput) {
         return;
-      } else if (
-        Util.isRecommendationDiffTab(activeTab?.input) &&
-        prevTabInput instanceof vscode.TabInputText &&
-        activeTab?.input.modified.fsPath === prevTabInput.uri.fsPath
-      ) {
+      } else if (Util.isRecommendationDiffTab(activeTab?.input)) {
         prevTabInput = activeTab?.input;
 
         return;
