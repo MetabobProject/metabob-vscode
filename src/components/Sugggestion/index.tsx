@@ -7,21 +7,26 @@ import { Box, Button, CircularProgress, SxProps } from '@mui/material';
 import { feedbackContainer, generateRecommendationButtonContainer } from './styles';
 import { RecommendationSkeletonLoader } from './Recommendation/Skeleton';
 import { RecommendationPagination } from './Pagination';
-import { usePagination } from '../../hooks';
 
 export const SuggestionPage = (): JSX.Element => {
   const suggestion = useRecoilValue(State.identifiedSuggestion);
-  const recommendations = useRecoilValue(State.identifiedRecommendation);
+  const recommendationCount = useRecoilValue(State.recommendationCount);
+  const recommendationCurrent = useRecoilValue(State.recommendationCurrent);
 
-  const problemRecomendation = useMemo(() => {
-    if (!suggestion) return undefined;
-    if (!recommendations) return undefined;
-
-    return recommendations[suggestion.id];
-  }, [suggestion, recommendations]);
-
-  const { goToNextPage, goToPrevPage, currentData, currentPage, totalPages } =
-    usePagination(problemRecomendation);
+  const goToNextPage = (): void => {
+    if (recommendationCurrent === undefined) return;
+    vscode.postMessage({
+      type: 'goToRecommendationIdx',
+      data: recommendationCurrent + 1,
+    });
+  };
+  const goToPrevPage = (): void => {
+    if (recommendationCurrent === undefined) return;
+    vscode.postMessage({
+      type: 'goToRecommendationIdx',
+      data: recommendationCurrent - 1,
+    });
+  };
 
   const [isRecommendationLoading, setIsRecommendationLoading] = useRecoilState(
     State.isRecommendationLoading,
@@ -99,21 +104,9 @@ export const SuggestionPage = (): JSX.Element => {
     return suggestion?.vuln?.description;
   }, [suggestion]);
 
-  const recommendationMemo = useMemo(() => {
-    return currentData?.recommendation;
-  }, [currentData]);
+  const shouldRenderPagination = recommendationCount > 1 && recommendationCurrent !== undefined;
 
-  const shouldRenderPagination = useMemo(() => {
-    if (!problemRecomendation) return false;
-
-    return problemRecomendation.length > 1;
-  }, [problemRecomendation]);
-
-  const shouldConvertButtonText = useMemo(() => {
-    if (!problemRecomendation) return false;
-
-    return problemRecomendation.length > 0;
-  }, [problemRecomendation]);
+  const hasRecommendation = recommendationCount > 0;
 
   const generateButtonSxProps = useMemo(() => {
     if (!suggestion || isRecommendationLoading) {
@@ -156,11 +149,11 @@ export const SuggestionPage = (): JSX.Element => {
               />
             </>
           )}
-          {shouldConvertButtonText ? 'ReGenerate' : 'Generate'} Recommendation
+          {hasRecommendation ? 'ReGenerate' : 'Generate'} Recommendation
         </Button>
       </Box>
 
-      {!recommendationMemo && isRecommendationLoading && (
+      {!hasRecommendation && isRecommendationLoading && (
         <Box
           width='100%'
           maxHeight='100px'
@@ -172,14 +165,14 @@ export const SuggestionPage = (): JSX.Element => {
         </Box>
       )}
 
-      {recommendationMemo && (
+      {shouldRenderPagination && (
         <>
           <RecommendationPagination
             gotoNextPage={goToNextPage}
             gotoPreviousPage={goToPrevPage}
             shouldRenderPagination={shouldRenderPagination}
-            currentPage={currentPage}
-            totalPages={totalPages}
+            currentPage={recommendationCurrent}
+            totalPages={recommendationCount}
           />
         </>
       )}

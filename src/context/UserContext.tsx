@@ -23,7 +23,8 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
   const setApplicationState = useSetRecoilState(State.applicationState);
   const setIdentifiedSuggestion = useSetRecoilState(State.identifiedSuggestion);
   const setIsRecommendationLoading = useSetRecoilState(State.isRecommendationLoading);
-  const setIdentifiedRecommendation = useSetRecoilState(State.identifiedRecommendation);
+  const setRecommendationCount = useSetRecoilState(State.recommendationCount);
+  const setRecommendationCurrent = useSetRecoilState(State.recommendationCurrent);
   const setAnalyzeState = useSetRecoilState(State.analyzeState);
   const setAnalysisLoading = useSetRecoilState(State.isAnalysisLoading);
   const setCurrentEditor = useSetRecoilState(State.currentEditor);
@@ -36,6 +37,12 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
     (event: MessageEvent<MessageType>) => {
       const payload = event.data.data;
       switch (event.data.type) {
+        case EventDataType.RECOMMENDATION_COUNT:
+          setRecommendationCount(payload as number);
+          break;
+        case EventDataType.RECOMMENDATION_CURRENT:
+          setRecommendationCurrent(payload);
+          break;
         case EventDataType.ANALYZE_STATE_CHANGED:
           setAnalyzeState(payload as AnalyzeState);
           break;
@@ -47,7 +54,7 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
         case EventDataType.ANALYSIS_CALLED_ON_SAVE:
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           setAnalysisLoading(true);
-          setIdentifiedRecommendation(undefined);
+          setRecommendationCount(0);
           break;
         case EventDataType.FIX_SUGGESTION:
           setApplicationState(ApplicationWebviewState.SUGGESTION_MODE);
@@ -57,27 +64,21 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIsAnalysisLoading(false);
           break;
         case EventDataType.ANALYSIS_COMPLETED_EMPTY_PROBLEMS: {
-          const { shouldResetRecomendation, shouldMoveToAnalyzePage } = payload;
+          const { shouldMoveToAnalyzePage } = payload;
           setIsEmptyIdentifiedProblemDetected(true);
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
             setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           }
-          if (shouldResetRecomendation) {
-            setIdentifiedRecommendation(undefined);
-          }
           setIsAnalysisLoading(false);
           break;
         }
         case EventDataType.ANALYSIS_COMPLETED:
-          const { shouldResetRecomendation, shouldMoveToAnalyzePage } = payload;
+          const { shouldMoveToAnalyzePage } = payload;
           setIsEmptyIdentifiedProblemDetected(false);
           if (shouldMoveToAnalyzePage) {
             setIdentifiedSuggestion(undefined);
             setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
-          }
-          if (shouldResetRecomendation) {
-            setIdentifiedRecommendation(undefined);
           }
           setIsAnalysisLoading(false);
           break;
@@ -132,43 +133,10 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           }
           break;
         case EventDataType.GENERATE_CLICKED_GPT_RESPONSE: {
-          const { recommendation: recomendation_from_gpt, problemId } = payload;
-
-          if (recomendation_from_gpt && recomendation_from_gpt.length > 0 && problemId) {
-            setIdentifiedRecommendation(prev => {
-              const prevRecommendation = prev?.[problemId] || [];
-              const newRecomendation = [
-                ...prevRecommendation,
-                { recommendation: recomendation_from_gpt },
-              ];
-
-              return {
-                ...prev,
-                [problemId]: newRecomendation,
-              };
-            });
-          }
           setIsRecommendationLoading(false);
           break;
         }
         case EventDataType.GENERATE_CLICKED_RESPONSE: {
-          const { recommendation, problemId } = payload;
-          let adjustedRecommendation: string = recommendation;
-          adjustedRecommendation = adjustedRecommendation?.replace("'''", '');
-          if (adjustedRecommendation && adjustedRecommendation.length > 0 && problemId) {
-            setIdentifiedRecommendation(prev => {
-              const prevRecommendation = prev?.[problemId] || [];
-              const newRecomendation = [
-                ...prevRecommendation,
-                { recommendation: adjustedRecommendation },
-              ];
-
-              return {
-                ...prev,
-                [problemId]: newRecomendation,
-              };
-            });
-          }
           setIsRecommendationLoading(false);
           break;
         }
@@ -177,7 +145,6 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
           setIsRecommendationLoading(false);
           break;
         case EventDataType.DISCARD_SUGGESTION_SUCCESS: {
-          setIdentifiedRecommendation(undefined);
           setIdentifiedSuggestion(undefined);
           setApplicationState(ApplicationWebviewState.ANALYZE_MODE);
           break;
@@ -218,7 +185,8 @@ const AccountSettingProvider = ({ children }: Props): JSX.Element => {
       setApplicationState,
       setAnalysisLoading,
       setIsRecommendationLoading,
-      setIdentifiedRecommendation,
+      setRecommendationCount,
+      setRecommendationCurrent,
       setHasWorkSpaceFolders,
       setHasOpenTextDocuments,
       setIsAnalysisLoading,

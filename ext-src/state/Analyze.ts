@@ -61,6 +61,20 @@ export class Analyze extends ExtensionState<AnalyzeState> {
     return this.get().value;
   }
 
+  getProblem(problemId: string): ProblemData | undefined {
+    const data = this.value();
+    for (const path in data) {
+      for (const analysisData of data[path]) {
+        const problem = analysisData.problems.find(problem => problem.id === problemId);
+        if (problem) {
+          return problem;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
   getFileProblems(path: string): ProblemData[] {
     return this.value()[path]?.[0]?.problems ?? [];
   }

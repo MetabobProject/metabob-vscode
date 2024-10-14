@@ -27,6 +27,8 @@ export enum EventDataType {
   ANALYSIS_COMPLETED_EMPTY_PROBLEMS = 'Analysis_Completed_Empty_Problems',
   VISIBILITY_LOST = 'VISIBILITY_LOST',
   ANALYZE_STATE_CHANGED = 'ANALYZE_STATE_CHANGED',
+  RECOMMENDATION_COUNT = 'recommendationCount',
+  RECOMMENDATION_CURRENT = 'recommendationCurrent',
 }
 
 export enum ApplicationWebviewState {

@@ -21,7 +21,7 @@ import {
   disposeExtensionEventEmitter,
   getExtensionEventEmitter,
 } from './events';
-import { AnalysisData, Analyze } from './state';
+import { AnalysisData, Analyze, Recommendations } from './state';
 import { Problem } from './types';
 import { RecommendationTextProvider } from './providers/RecommendationTextProvider';
 import CONSTANTS from './constants';
@@ -283,6 +283,7 @@ export function activate(context: vscode.ExtensionContext): void {
         prevTabInput = undefined;
       } else if (e) {
         if (Util.isRecommendationDiffTab(prevTabInput)) {
+          // Close recommendation diff tab
           const allTabGroups = vscode.window.tabGroups.all;
           let prevTab: vscode.Tab | null = null;
           for (const grp of allTabGroups) {
@@ -297,10 +298,15 @@ export function activate(context: vscode.ExtensionContext): void {
               }
             }
             if (prevTab) {
-              vscode.window.tabGroups.close(prevTab);
+              vscode.window.tabGroups.close(prevTab).then(undefined, e => {
+                vscode.window.showErrorMessage(JSON.stringify(e));
+              });
               break;
             }
           }
+
+          // Clear recommendations state
+          new Recommendations(context).clear();
         }
 
         const { filePath } = Util.extractMetaDataFromDocument(e.document);

@@ -1,11 +1,6 @@
 import { atom } from 'recoil';
 import { recoilPersist } from 'recoil-persist';
-import {
-  AnalyzeState,
-  ApplicationWebviewState,
-  FixSuggestionsPayload,
-  RecommendationPayload,
-} from '../../types';
+import { AnalyzeState, ApplicationWebviewState, FixSuggestionsPayload } from '../../types';
 
 const { persistAtom } = recoilPersist();
 
@@ -16,7 +11,8 @@ export const defaults = {
   applicationState: ApplicationWebviewState.ANALYZE_MODE,
   identifiedSuggestion: undefined,
   isRecommendationLoading: false,
-  identifiedRecommendation: undefined,
+  recommendationCount: 0,
+  recommendationCurrent: undefined,
   analyzeState: undefined,
   isEmptyIdentifiedProblemDetected: false,
   currentEditor: undefined,
@@ -55,12 +51,15 @@ export const isRecommendationLoading = atom<boolean>({
   key: 'Metabob:isRecommendationLoading',
 });
 
-export const identifiedRecommendation = atom<
-  { [problemId: string]: RecommendationPayload[] } | undefined
->({
-  default: defaults.identifiedRecommendation,
-  key: 'Metabob:identifiedRecommendation',
+export const recommendationCount = atom<number>({
+  default: defaults.recommendationCount,
+  key: 'Metabob:recommendationCount',
   effects_UNSTABLE: [persistAtom],
+});
+
+export const recommendationCurrent = atom<number | undefined>({
+  default: defaults.recommendationCurrent,
+  key: 'Metabob:recommendationCurrent',
 });
 
 export const analyzeState = atom<AnalyzeState | undefined>({

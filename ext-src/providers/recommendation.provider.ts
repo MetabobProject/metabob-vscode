@@ -17,12 +17,33 @@ import {
 } from 'vscode';
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services';
-import { CurrentQuestion, CurrentQuestionState, Session, Analyze } from '../state';
+import { CurrentQuestion, CurrentQuestionState, Session, Analyze, Recommendations } from '../state';
 import { BackendService, GetChatGPTToken } from '../config';
 import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
 import { AnalysisEvents } from '../events';
+
+const openRecommendationDiffTab = (
+  filepath: string,
+  recommendation: string,
+  problemStartLine: number,
+  problemEndLine: number,
+): Thenable<unknown> => {
+  return commands.executeCommand(
+    'vscode.diff',
+    Uri.from({
+      scheme: CONSTANTS.recommendationDocumentProviderScheme,
+      path: filepath,
+      query: JSON.stringify({
+        recommendation: recommendation,
+        startLine: problemStartLine,
+        endLine: problemEndLine,
+      }),
+    }),
+    Uri.file(filepath),
+  );
+};
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
@@ -250,6 +271,11 @@ export class RecommendationWebView implements WebviewViewProvider {
       throw new Error('handleRecommendationClick: InitData is undefined or null');
     }
 
+    const problem = new Analyze(this.extensionContext).getProblem(initData.id);
+    if (!problem) {
+      throw new Error('handleRecommendationClick: Problem not found');
+    }
+
     const backendServiceConfig = BackendService();
     const chatGPTToken = GetChatGPTToken();
     const isChatConfigEnabled = backendServiceConfig === 'openai/chatgpt';
@@ -269,9 +295,9 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
 
     const suggestRecomendationPayload: SuggestRecomendationPayload = {
-      problemId: initData.id,
+      problemId: problem.id,
       prompt: input,
-      description: initData.vuln.description,
+      description: problem.description,
       context: '',
       recommendation: '',
     };
@@ -300,7 +326,7 @@ export class RecommendationWebView implements WebviewViewProvider {
         this._view?.webview.postMessage({
           type: 'onGenerateClicked:Response',
           data: {
-            problemId: initData.id,
+            problemId: problem.id,
             recommendation: recommendation,
           },
         });
@@ -328,24 +354,15 @@ export class RecommendationWebView implements WebviewViewProvider {
           type: 'onGenerateClickedGPT:Response',
           data: {
             recommendation: recommendation,
-            problemId: initData.id,
+            problemId: problem.id,
           },
         });
       }
 
-      commands.executeCommand(
-        'vscode.diff',
-        Uri.from({
-          scheme: CONSTANTS.recommendationDocumentProviderScheme,
-          path: window.activeTextEditor?.document.uri.path,
-          query: JSON.stringify({
-            recommendation: recommendation,
-            startLine: initData.vuln.startLine,
-            endLine: initData.vuln.endLine,
-          }),
-        }),
-        Uri.file(window.activeTextEditor?.document.uri.path ?? ''),
-      );
+      // Store the recommendation in the Recommendations store
+      new Recommendations(this.extensionContext).appendRecommendation(problem.id, recommendation);
+
+      openRecommendationDiffTab(problem.path, recommendation, problem.startLine, problem.endLine);
     } catch (error: any) {
       throw new Error(error);
     }
@@ -471,6 +488,21 @@ export class RecommendationWebView implements WebviewViewProvider {
       }
       const data = message.data;
       switch (message.type) {
+        case 'goToRecommendationIdx':
+          const idx: number = data;
+          const recsState = new Recommendations(this.extensionContext);
+          recsState.setCurrent(idx);
+          const recsVal = recsState.value();
+          if (!recsVal) break;
+          const problem = new Analyze(this.extensionContext).getProblem(recsVal.problemId);
+          if (!problem) break;
+          openRecommendationDiffTab(
+            problem.path,
+            recsVal.recommendations[recsVal.current],
+            problem.startLine,
+            problem.endLine,
+          );
+          break;
         case 'view_previous_results':
           const { path } = data;
           if (!path) {
