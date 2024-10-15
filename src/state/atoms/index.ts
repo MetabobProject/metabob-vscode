@@ -54,7 +54,6 @@ export const isRecommendationLoading = atom<boolean>({
 export const recommendationCount = atom<number>({
   default: defaults.recommendationCount,
   key: 'Metabob:recommendationCount',
-  effects_UNSTABLE: [persistAtom],
 });
 
 export const recommendationCurrent = atom<number | undefined>({
