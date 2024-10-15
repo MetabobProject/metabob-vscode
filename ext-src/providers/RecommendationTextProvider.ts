@@ -1,8 +1,15 @@
-import { TextDocumentContentProvider, Uri, workspace } from 'vscode';
+import { ExtensionContext, TextDocumentContentProvider, Uri } from 'vscode';
+import { Analyze } from '../state';
 
 export class RecommendationTextProvider implements TextDocumentContentProvider {
+  private _analyzeState: Analyze;
+
+  constructor(context: ExtensionContext) {
+    this._analyzeState = new Analyze(context);
+  }
+
   async provideTextDocumentContent(uri: Uri): Promise<string | null | undefined> {
-    const currDocumentText = (await workspace.openTextDocument(Uri.file(uri.path))).getText();
+    const currDocumentText = this._analyzeState.value()[uri.path]?.[0]?.analyzedDocumentContent;
     const { recommendation, startLine, endLine } = JSON.parse(uri.query) as {
       recommendation: string;
       startLine: number;

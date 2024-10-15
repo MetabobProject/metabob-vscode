@@ -57,7 +57,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
       vscode.workspace.registerTextDocumentContentProvider(
         CONSTANTS.recommendationDocumentProviderScheme,
-        new RecommendationTextProvider(),
+        new RecommendationTextProvider(context),
       ),
     );
 
