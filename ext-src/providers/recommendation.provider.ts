@@ -23,23 +23,15 @@ import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
 import { AnalysisEvents } from '../events';
+import { RecommendationTextProvider } from './RecommendationTextProvider';
 
-const openRecommendationDiffTab = (
-  filepath: string,
-  recommendation: string,
-  problemStartLine: number,
-  problemEndLine: number,
-): Thenable<unknown> => {
+const openRecommendationDiffTab = (filepath: string, problemId: string): Thenable<unknown> => {
   return commands.executeCommand(
     'vscode.diff',
     Uri.from({
       scheme: CONSTANTS.recommendationDocumentProviderScheme,
       path: filepath,
-      query: JSON.stringify({
-        recommendation: recommendation,
-        startLine: problemStartLine,
-        endLine: problemEndLine,
-      }),
+      query: problemId,
     }),
     Uri.file(filepath),
   );
@@ -50,6 +42,7 @@ export class RecommendationWebView implements WebviewViewProvider {
   private readonly extensionPath: string;
   private readonly extensionURI: Uri;
   private readonly extensionContext: ExtensionContext;
+  private readonly recommendationTextProvider: RecommendationTextProvider;
   private extensionEventEmitter: EventEmitter<AnalysisEvents>;
   private eventEmitterQueue: Array<AnalysisEvents> = [];
   private interval: NodeJS.Timeout | undefined = undefined;
@@ -59,11 +52,13 @@ export class RecommendationWebView implements WebviewViewProvider {
     extensionURI: Uri,
     context: ExtensionContext,
     extensionEventEmitter: EventEmitter<AnalysisEvents>,
+    recommendationTextProvider: RecommendationTextProvider,
   ) {
     this.extensionPath = extensionPath;
     this.extensionURI = extensionURI;
     this.extensionContext = context;
     this.extensionEventEmitter = extensionEventEmitter;
+    this.recommendationTextProvider = recommendationTextProvider;
   }
 
   getCurrentQuestionValue(): CurrentQuestionState | undefined {
@@ -360,9 +355,20 @@ export class RecommendationWebView implements WebviewViewProvider {
       }
 
       // Store the recommendation in the Recommendations store
-      new Recommendations(this.extensionContext).appendRecommendation(problem.id, recommendation);
+      const recommendationStore = new Recommendations(this.extensionContext);
+      recommendationStore.appendRecommendation(problem.id, recommendation);
 
-      openRecommendationDiffTab(problem.path, recommendation, problem.startLine, problem.endLine);
+      if (recommendationStore.count() > 1) {
+        this.recommendationTextProvider.update(
+          Uri.from({
+            scheme: CONSTANTS.recommendationDocumentProviderScheme,
+            path: problem.path,
+            query: problem.id,
+          }),
+        );
+      } else {
+        openRecommendationDiffTab(problem.path, problem.id);
+      }
     } catch (error: any) {
       throw new Error(error);
     }
@@ -496,11 +502,12 @@ export class RecommendationWebView implements WebviewViewProvider {
           if (!recsVal) break;
           const problem = new Analyze(this.extensionContext).getProblem(recsVal.problemId);
           if (!problem) break;
-          openRecommendationDiffTab(
-            problem.path,
-            recsVal.recommendations[recsVal.current],
-            problem.startLine,
-            problem.endLine,
+          this.recommendationTextProvider.update(
+            Uri.from({
+              scheme: CONSTANTS.recommendationDocumentProviderScheme,
+              path: problem.path,
+              query: problem.id,
+            }),
           );
           break;
         case 'view_previous_results':

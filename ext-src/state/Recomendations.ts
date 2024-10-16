@@ -91,4 +91,13 @@ export class Recommendations extends ExtensionState<RecommendationsState> {
   count(): number {
     return this.value()?.recommendations.length ?? 0;
   }
+
+  getRecommendation(problemId: string): string | undefined {
+    const state = this.value();
+    if (!state || state.problemId !== problemId) {
+      return undefined;
+    }
+
+    return state.recommendations[state.current];
+  }
 }

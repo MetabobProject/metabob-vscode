@@ -4,6 +4,10 @@ import { ExtensionState, ExtensionStateValue } from './Base';
 import { Problem } from '../types';
 import { getExtensionEventEmitter } from '../events';
 
+export type AnalyzeState = {
+  [filepath: string]: AnalysisData[]; // Most recent analysis data will be at the first index of the array
+};
+
 export type AnalysisData = {
   analyzedDocumentContent: string;
   isValid: boolean; // Represents whether or not the document has been changed since the analysis was performed
@@ -13,10 +17,6 @@ export type AnalysisData = {
 
 export type ProblemData = Problem & {
   isViewed?: boolean;
-};
-
-export type AnalyzeState = {
-  [filepath: string]: AnalysisData[]; // Most recent analysis data will be at the first index of the array
 };
 
 const extensionEventEmitter = getExtensionEventEmitter();
@@ -61,13 +61,26 @@ export class Analyze extends ExtensionState<AnalyzeState> {
     return this.get().value;
   }
 
-  getProblem(problemId: string): ProblemData | undefined {
-    const data = this.value();
-    for (const path in data) {
-      for (const analysisData of data[path]) {
+  getProblem(problemId: string, filepath?: string): ProblemData | undefined {
+    const findProblem = (analyses: AnalysisData[] | undefined): ProblemData | undefined => {
+      if (!analyses) return undefined;
+      for (const analysisData of analyses) {
         const problem = analysisData.problems.find(problem => problem.id === problemId);
         if (problem) {
           return problem;
+        }
+      }
+
+      return undefined;
+    };
+    const data = this.value();
+    if (filepath) {
+      return findProblem(data[filepath]);
+    } else {
+      for (const path in data) {
+        const result = findProblem(data[path]);
+        if (result) {
+          return result;
         }
       }
     }
@@ -106,5 +119,9 @@ export class Analyze extends ExtensionState<AnalyzeState> {
 
       return state;
     });
+  }
+
+  getLatestAnalysis(path: string): AnalysisData | undefined {
+    return this.value()[path]?.[0];
   }
 }
