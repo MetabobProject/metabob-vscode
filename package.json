@@ -46,7 +46,7 @@
         {
           "id": "metabob-webview",
           "title": "Metabob Extension",
-          "icon": "./media/extension-icon.png"
+          "icon": "./media/svg-icon.svg"
         }
       ]
     },
@@ -56,7 +56,7 @@
           "type": "webview",
           "id": "recommendation-panel-webview",
           "name": "Recommendation",
-          "icon": "./media/extension-icon.png"
+          "icon": "./media/svg-icon.svg"
         }
       ]
     },
