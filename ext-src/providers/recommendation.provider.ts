@@ -10,7 +10,6 @@ import {
   ExtensionContext,
   TextEditorEdit,
   Position,
-  Range,
   commands,
   env,
   workspace,
@@ -18,19 +17,32 @@ import {
 } from 'vscode';
 import { Configuration, CreateChatCompletionRequest, OpenAIApi } from 'openai';
 import { explainService, ExplainProblemPayload, SuggestRecomendationPayload } from '../services';
-import { CurrentQuestion, CurrentQuestionState, Session, Analyze } from '../state';
+import { CurrentQuestion, CurrentQuestionState, Session, Analyze, Recommendations } from '../state';
 import { BackendService, GetChatGPTToken } from '../config';
 import { DiscardCommandHandler, EndorseCommandHandler } from '../commands';
 import CONSTANTS from '../constants';
 import Util from '../utils';
 import { AnalysisEvents } from '../events';
-import { Problem } from '../types';
+import { RecommendationTextProvider } from './RecommendationTextProvider';
+
+const openRecommendationDiffTab = (filepath: string, problemId: string): Thenable<unknown> => {
+  return commands.executeCommand(
+    'vscode.diff',
+    Uri.from({
+      scheme: CONSTANTS.recommendationDocumentProviderScheme,
+      path: filepath,
+      query: problemId,
+    }),
+    Uri.file(filepath),
+  );
+};
 
 export class RecommendationWebView implements WebviewViewProvider {
   private _view?: WebviewView | null = null;
   private readonly extensionPath: string;
   private readonly extensionURI: Uri;
   private readonly extensionContext: ExtensionContext;
+  private readonly recommendationTextProvider: RecommendationTextProvider;
   private extensionEventEmitter: EventEmitter<AnalysisEvents>;
   private eventEmitterQueue: Array<AnalysisEvents> = [];
   private interval: NodeJS.Timeout | undefined = undefined;
@@ -40,11 +52,13 @@ export class RecommendationWebView implements WebviewViewProvider {
     extensionURI: Uri,
     context: ExtensionContext,
     extensionEventEmitter: EventEmitter<AnalysisEvents>,
+    recommendationTextProvider: RecommendationTextProvider,
   ) {
     this.extensionPath = extensionPath;
     this.extensionURI = extensionURI;
     this.extensionContext = context;
     this.extensionEventEmitter = extensionEventEmitter;
+    this.recommendationTextProvider = recommendationTextProvider;
   }
 
   getCurrentQuestionValue(): CurrentQuestionState | undefined {
@@ -101,7 +115,7 @@ export class RecommendationWebView implements WebviewViewProvider {
       setTimeout(() => {
         this.extensionEventEmitter.fire({
           type: 'CURRENT_FILE',
-          data: { ...editor.document },
+          data: editor.document.uri.fsPath,
         });
 
         this.extensionEventEmitter.fire({
@@ -121,7 +135,6 @@ export class RecommendationWebView implements WebviewViewProvider {
           data: {
             shouldResetRecomendation: true,
             shouldMoveToAnalyzePage: true,
-            ...getanalyzeState,
           },
         });
       }, 500);
@@ -144,6 +157,16 @@ export class RecommendationWebView implements WebviewViewProvider {
     await currentQuestionState.update(() => payload);
 
     return;
+  }
+
+  async handleShowPreviousResults(path: string): Promise<void> {
+    const d = await workspace.openTextDocument(
+      Uri.from({
+        scheme: CONSTANTS.analyzedDocumentProviderScheme,
+        path,
+      }),
+    );
+    await window.showTextDocument(d);
   }
 
   async handleSuggestionClick(input: string, initData: CurrentQuestionState): Promise<void> {
@@ -243,6 +266,11 @@ export class RecommendationWebView implements WebviewViewProvider {
       throw new Error('handleRecommendationClick: InitData is undefined or null');
     }
 
+    const problem = new Analyze(this.extensionContext).getProblem(initData.id);
+    if (!problem) {
+      throw new Error('handleRecommendationClick: Problem not found');
+    }
+
     const backendServiceConfig = BackendService();
     const chatGPTToken = GetChatGPTToken();
     const isChatConfigEnabled = backendServiceConfig === 'openai/chatgpt';
@@ -262,9 +290,9 @@ export class RecommendationWebView implements WebviewViewProvider {
     }
 
     const suggestRecomendationPayload: SuggestRecomendationPayload = {
-      problemId: initData.id,
+      problemId: problem.id,
       prompt: input,
-      description: initData.vuln.description,
+      description: problem.description,
       context: '',
       recommendation: '',
     };
@@ -286,43 +314,61 @@ export class RecommendationWebView implements WebviewViewProvider {
         throw new Error('handleRecommendationClick: Response value is null');
       }
 
+      let recommendation: string;
+
       if (!isChatConfigEnabled) {
+        recommendation = response.value.recommendation;
         this._view?.webview.postMessage({
           type: 'onGenerateClicked:Response',
           data: {
-            problemId: initData.id,
-            recommendation: response.value.recommendation,
+            problemId: problem.id,
+            recommendation: recommendation,
           },
         });
-
-        return;
+      } else {
+        const configuration = new Configuration({
+          apiKey: chatGPTToken,
+        });
+        const openai = new OpenAIApi(configuration);
+        const payload: CreateChatCompletionRequest = {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: response.value.prompt,
+            },
+            {
+              role: 'user',
+              content: input,
+            },
+          ],
+        };
+        const chatresponse = await openai.createChatCompletion({ ...payload });
+        recommendation = chatresponse.data.choices[0].message?.content || '';
+        this._view.webview.postMessage({
+          type: 'onGenerateClickedGPT:Response',
+          data: {
+            recommendation: recommendation,
+            problemId: problem.id,
+          },
+        });
       }
 
-      const configuration = new Configuration({
-        apiKey: chatGPTToken,
-      });
-      const openai = new OpenAIApi(configuration);
-      const payload: CreateChatCompletionRequest = {
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: response.value.prompt,
-          },
-          {
-            role: 'user',
-            content: input,
-          },
-        ],
-      };
-      const chatresponse = await openai.createChatCompletion({ ...payload });
-      this._view.webview.postMessage({
-        type: 'onGenerateClickedGPT:Response',
-        data: {
-          recommendation: chatresponse.data.choices[0].message?.content || '',
-          problemId: initData.id,
-        },
-      });
+      // Store the recommendation in the Recommendations store
+      const recommendationStore = new Recommendations(this.extensionContext);
+      recommendationStore.appendRecommendation(problem.id, recommendation);
+
+      if (recommendationStore.count() > 1) {
+        this.recommendationTextProvider.update(
+          Uri.from({
+            scheme: CONSTANTS.recommendationDocumentProviderScheme,
+            path: problem.path,
+            query: problem.id,
+          }),
+        );
+      } else {
+        openRecommendationDiffTab(problem.path, problem.id);
+      }
     } catch (error: any) {
       throw new Error(error);
     }
@@ -401,65 +447,13 @@ export class RecommendationWebView implements WebviewViewProvider {
 
     this._view.webview.postMessage({
       type: 'CURRENT_FILE',
-      data: { ...currentEditor.document },
+      data: currentEditor.document.uri.fsPath,
     });
 
     this._view.webview.postMessage({
       type: 'Analysis_Completed',
-      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false, ...getanalyzeState },
+      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: false },
     });
-  }
-
-  async handleApplyRecommendation(input: string, initData: CurrentQuestionState) {
-    const documentMetadata = Util.getCurrentFile();
-    if (!documentMetadata || !initData) {
-      throw new Error('handleApplyRecommendation: Editor or Init Data is undefined');
-    }
-
-    const key = `${initData.path}@@${initData.id}`;
-    if (documentMetadata.absPath !== initData.path) {
-      throw new Error('handleApplyRecommendation: User editor changed');
-    }
-
-    const setAnalyzeState = new Analyze(this.extensionContext);
-    const getanalyzeState = new Analyze(this.extensionContext).get()?.value;
-    if (!getanalyzeState) {
-      throw new Error('handleApplyRecommendation: Analze is undefined');
-    }
-
-    const copyAnalyzeValue = { ...getanalyzeState };
-    copyAnalyzeValue[key].isDiscarded = true;
-    copyAnalyzeValue[key].isEndorsed = false;
-    copyAnalyzeValue[key].isViewed = true;
-
-    const results: Problem[] | undefined = Util.getCurrentEditorProblems(
-      copyAnalyzeValue,
-      initData.path,
-    );
-    if (!results) {
-      throw new Error('handleApplyRecommendation: Results are undefined');
-    }
-
-    const isCurrentFileDecorated = Util.decorateCurrentEditorWithHighlights(
-      results,
-      documentMetadata.editor,
-    );
-
-    if (!isCurrentFileDecorated) {
-      throw new Error('handleApplyRecommendation: could not decorate current file');
-    }
-
-    // Immediately replace suggested recommendation in the editor
-    const startLine = initData.vuln.startLine;
-    const endLine = initData.vuln.endLine;
-    const comment = `${input.replace('```', '')}`;
-    const start = new Position(startLine - 1, 0); // convert line number to position
-    const end = new Position(endLine, 0); // convert line number to position
-    const range = new Range(start, end);
-    documentMetadata.editor.edit((editBuilder: TextEditorEdit) => {
-      editBuilder.replace(range, comment + '\n');
-    });
-    await setAnalyzeState.set({ ...copyAnalyzeValue });
   }
 
   async openExternalLink(url: string): Promise<void> {
@@ -500,6 +494,30 @@ export class RecommendationWebView implements WebviewViewProvider {
       }
       const data = message.data;
       switch (message.type) {
+        case 'goToRecommendationIdx':
+          const idx: number = data;
+          const recsState = new Recommendations(this.extensionContext);
+          recsState.setCurrent(idx);
+          const recsVal = recsState.value();
+          if (!recsVal) break;
+          const problem = new Analyze(this.extensionContext).getProblem(recsVal.problemId);
+          if (!problem) break;
+          this.recommendationTextProvider.update(
+            Uri.from({
+              scheme: CONSTANTS.recommendationDocumentProviderScheme,
+              path: problem.path,
+              query: problem.id,
+            }),
+          );
+          break;
+        case 'view_previous_results':
+          const { path } = data;
+          if (!path) {
+            window.showErrorMessage('Metabob: Cannot show previous results for undefined file');
+          } else {
+            await this.handleShowPreviousResults(path);
+          }
+          break;
         case 'OPEN_FILE_IN_NEW_TAB':
           const { path: filePath } = data;
           this.openFileInNewTab(filePath);
@@ -596,28 +614,6 @@ export class RecommendationWebView implements WebviewViewProvider {
 
           break;
         }
-        case 'applyRecommendation': {
-          const input = data?.input;
-          const initData = data?.initData;
-          if (initData === null || !initData) {
-            window.showErrorMessage('Metabob: Init Data is null');
-            this._view.webview.postMessage({
-              type: 'applyRecommendation:Error',
-              data: {},
-            });
-            break;
-          }
-          try {
-            this.handleApplyRecommendation(input, initData);
-          } catch (error: any) {
-            window.showErrorMessage(`${CONSTANTS.applyRecommendationEror}`);
-            this._view.webview.postMessage({
-              type: 'applyRecommendation:Error',
-              data: {},
-            });
-          }
-          break;
-        }
         case 'onEndorseSuggestionClicked': {
           const initData = data?.initData;
           if (initData === null || !initData) {
@@ -663,7 +659,8 @@ export class RecommendationWebView implements WebviewViewProvider {
             path: initData.path,
           };
           try {
-            commands.executeCommand('metabob.discardSuggestion', payload);
+            commands.executeCommand(CONSTANTS.discardSuggestionCommand, payload);
+
             // this._view.webview.postMessage({
             //   type: 'onDiscardSuggestionClicked:Success',
             //   data: {},

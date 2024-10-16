@@ -11,7 +11,10 @@ export interface AnalysisEvents {
     | 'CURRENT_FILE'
     | 'CURRENT_PROJECT'
     | 'INIT_DATA_UPON_NEW_FILE_OPEN'
-    | 'Analysis_Completed_Empty_Problems';
+    | 'Analysis_Completed_Empty_Problems'
+    | 'ANALYZE_STATE_CHANGED'
+    | 'recommendationCount'
+    | 'recommendationCurrent';
   data: any;
 }
 

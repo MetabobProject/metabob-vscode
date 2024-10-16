@@ -11,7 +11,7 @@ import {
 } from 'vscode';
 import { GenerateDecorations, decorationType } from './helpers';
 import CONSTANTS from './constants';
-import { AnalyzeState } from './state';
+import { AnalyzeState, ProblemData } from './state';
 
 // Normal Utilities used shared across folders
 export default class Utils {
@@ -172,27 +172,22 @@ export default class Utils {
   static getCurrentEditorProblems(
     analyzeValue: AnalyzeState,
     currentFilePath: string,
-  ): Problem[] | undefined {
-    const results: Problem[] = [];
+  ): ProblemData[] {
+    if (!analyzeValue[currentFilePath] || analyzeValue[currentFilePath].length === 0) return [];
 
-    for (const value of Object.values(analyzeValue)) {
-      if (value.path === undefined) continue;
+    const recentAnalysisData = analyzeValue[currentFilePath][0];
 
-      // verifying that we only show current opened file decorations that are not discarded.
-      if (value.path === currentFilePath && value.isDiscarded === false) {
-        const problem: Problem = {
-          ...value,
-          startLine: value.startLine < 0 ? value.startLine * -1 : value.startLine,
-          endLine: value.endLine < 0 ? value.endLine * -1 : value.endLine,
-          discarded: value.isDiscarded || false,
-          endorsed: value.isEndorsed || false,
-        };
+    if (!recentAnalysisData.isValid) return [];
 
-        results.push(problem);
-      }
-    }
+    return recentAnalysisData.problems.filter(problem => !problem.discarded);
+  }
 
-    return results;
+  static getPreviousEditorProblems(analyzeValue: AnalyzeState, filePath: string): ProblemData[] {
+    if (analyzeValue[filePath]?.length > 1 && analyzeValue[filePath][0].isValid) {
+      return analyzeValue[filePath][1].problems;
+    } else if (analyzeValue[filePath]?.length === 1 && !analyzeValue[filePath][0].isValid) {
+      return analyzeValue[filePath][0].problems;
+    } else return [];
   }
 
   static decorateCurrentEditorWithHighlights(
@@ -220,5 +215,13 @@ export default class Utils {
     problemEditor.setDecorations(decorationType, decorations);
 
     return true;
+  }
+
+  static isRecommendationDiffTab(tabInput: unknown): tabInput is vscode.TabInputTextDiff {
+    return (
+      tabInput instanceof vscode.TabInputTextDiff &&
+      tabInput.original.scheme === CONSTANTS.recommendationDocumentProviderScheme &&
+      tabInput.modified.scheme === 'file'
+    );
   }
 }

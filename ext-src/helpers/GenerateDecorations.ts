@@ -20,8 +20,11 @@ export function GenerateDecorations(
 } {
   const decorations: vscode.DecorationOptions[] = results
     .filter(vulnerability => {
-      const { endLine, startLine } = vulnerability;
+      const { endLine, startLine, discarded } = vulnerability;
       if (endLine - 1 < 0 || startLine - 1 < 0) {
+        return false;
+      }
+      if (discarded) {
         return false;
       }
 

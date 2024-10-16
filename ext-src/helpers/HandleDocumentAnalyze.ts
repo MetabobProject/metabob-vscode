@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Result } from 'rusty-result-ts';
 import { submitService, SubmitRepresentationResponse, ApiErrorBase } from '../services/';
 import { IDocumentMetaData } from '../types';
-import { AnalyzeState, Analyze, AnalyseMetaData } from '../state';
+import { Analyze, ProblemData } from '../state';
 import Util from '../utils';
 import CONSTANTS from '../constants';
 import { getExtensionEventEmitter } from '../events';
@@ -27,14 +27,13 @@ export const verifyResponseOfSubmit = (
 export const handleDocumentAnalyze = async (
   metaDataDocument: IDocumentMetaData,
   sessionToken: string,
-  analyzeState: Analyze,
   context: vscode.ExtensionContext,
   jobId?: string,
   suppressRateLimitErrors = false,
   _debug?: vscode.OutputChannel,
 ) => {
   const thirty_minutes = new Date();
-  thirty_minutes.setHours(thirty_minutes.getHours() + 0.5);
+  thirty_minutes.setMinutes(thirty_minutes.getMinutes() + 30);
 
   const currentWorkSpaceFolder = Util.getRootFolderName();
   const editor = vscode.window.activeTextEditor;
@@ -139,29 +138,13 @@ export const handleDocumentAnalyze = async (
     result.path = path.join(workspaceFolderPath, result.path);
   });
 
-  let results: AnalyzeState = {};
-  const analyzeStateValue = new Analyze(context).get()?.value;
+  const analyzeState = new Analyze(context);
   _debug?.appendLine(
     'AnalyzeDocument.ts: handleDocumentAnalyze: analyzeStateValue: ' +
-      JSON.stringify(analyzeStateValue),
+      JSON.stringify(analyzeState.value()),
   );
 
-  if (analyzeStateValue) {
-    const responseProblemsFilePaths = verifiedResponse.results.map(problem => {
-      return problem.path;
-    });
-
-    const buggerAnalyzeStateValue: AnalyzeState = {};
-
-    Object.entries(analyzeStateValue).forEach(([key, problem]) => {
-      if (!responseProblemsFilePaths.includes(problem.path)) {
-        buggerAnalyzeStateValue[key] = { ...problem };
-      }
-    });
-    results = { ...buggerAnalyzeStateValue };
-  }
-
-  verifiedResponse.results
+  const results: ProblemData[] = verifiedResponse.results
     .filter(vulnerability => {
       const { endLine, startLine } = vulnerability;
       if (endLine - 1 < 0 || startLine - 1 < 0) {
@@ -186,23 +169,23 @@ export const handleDocumentAnalyze = async (
 
       return true;
     })
-    .forEach(problem => {
-      const key = `${problem.path}@@${problem.id}`;
-      const analyzeMetaData: AnalyseMetaData = {
+    .map(problem => {
+      return {
         ...problem,
-        startLine: problem.startLine < 0 ? problem.startLine * -1 : problem.startLine,
-        endLine: problem.endLine < 0 ? problem.endLine * -1 : problem.endLine,
-        isDiscarded: problem.discarded,
-        isEndorsed: problem.endorsed,
         isViewed: false,
-        fullFilePath: currentWorkSpaceFolder,
-        expiration: thirty_minutes.toISOString(),
       };
-      results[key] = { ...analyzeMetaData };
     });
 
+  if (results.length !== 0) {
+    analyzeState.storeAnalysis(metaDataDocument.filePath, {
+      analyzedDocumentContent: metaDataDocument.fileContent,
+      isValid: true,
+      expiration: thirty_minutes.toISOString(),
+      problems: results,
+    });
+  }
   _debug?.appendLine('AnalyzeDocument.ts: Document File path: ' + currFile.absPath);
-  const problems = Util.getCurrentEditorProblems(results, currFile.absPath);
+  const problems = Util.getCurrentEditorProblems(analyzeState.value(), currFile.absPath);
   _debug?.appendLine(
     'AnalyzeDocument.ts: handleDocumentAnalyze: problems: ' + JSON.stringify(problems),
   );
@@ -232,12 +215,13 @@ export const handleDocumentAnalyze = async (
     Util.decorateCurrentEditorWithHighlights(problems, currFile.editor, _debug);
   }
 
-  await analyzeState.set(results);
-
   if (problems.length === 0) {
     getExtensionEventEmitter().fire({
       type: 'Analysis_Completed_Empty_Problems',
-      data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...results },
+      data: {
+        shouldResetRecomendation: true,
+        shouldMoveToAnalyzePage: true,
+      },
     });
 
     getExtensionEventEmitter().fire({
@@ -252,7 +236,10 @@ export const handleDocumentAnalyze = async (
 
   getExtensionEventEmitter().fire({
     type: 'Analysis_Completed',
-    data: { shouldResetRecomendation: true, shouldMoveToAnalyzePage: true, ...results },
+    data: {
+      shouldResetRecomendation: true,
+      shouldMoveToAnalyzePage: true,
+    },
   });
 
   getExtensionEventEmitter().fire({

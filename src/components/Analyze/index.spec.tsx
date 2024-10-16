@@ -76,7 +76,7 @@ describe('AnalyzePage component', () => {
           set(State.hasOpenTextDocuments, true);
           set(State.hasOpenTextDocuments, true);
           set(State.currentEditor, 'example.py');
-          set(State.identifiedProblems, IdentifiedProblems);
+          set(State.analyzeState, IdentifiedProblems);
           set(State.currentWorkSpaceProject, 'example');
         }}
       >
@@ -99,7 +99,7 @@ describe('AnalyzePage component', () => {
           set(State.hasOpenTextDocuments, true);
           set(State.hasOpenTextDocuments, true);
           set(State.currentEditor, undefined);
-          set(State.identifiedProblems, IdentifiedProblems);
+          set(State.analyzeState, IdentifiedProblems);
           set(State.currentWorkSpaceProject, 'example');
         }}
       >

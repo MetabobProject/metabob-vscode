@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { SubmitRepresentationResponse } from '../services';
 import { handleDocumentAnalyze } from '../helpers';
-import { Analyze, Session } from '../state';
+import { Session } from '../state';
 import CONSTANTS from '../constants';
 import Util from '../utils';
 import { getExtensionEventEmitter } from '../events';
@@ -16,7 +16,6 @@ export function activateAnalyzeCommand(
     let isInQueue = false;
     let inflightJobId: string | undefined;
     const extensionEventEmitter = getExtensionEventEmitter();
-    const analyzeState = new Analyze(context);
     const sessionToken = new Session(context).get()?.value;
 
     const editor = vscode.window.activeTextEditor;
@@ -71,15 +70,7 @@ export function activateAnalyzeCommand(
     );
 
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(
-        documentMetaData,
-        sessionToken,
-        analyzeState,
-        context,
-        undefined,
-        true,
-        _debug,
-      ),
+      handleDocumentAnalyze(documentMetaData, sessionToken, context, undefined, true, _debug),
       CONSTANTS.analyzeCommandProgressMessage,
     ).then(response => {
       if (response.status === 'pending' || response.status === 'running') {
@@ -93,7 +84,7 @@ export function activateAnalyzeCommand(
     }
 
     Util.withProgress<SubmitRepresentationResponse>(
-      handleDocumentAnalyze(documentMetaData, sessionToken, analyzeState, context, inflightJobId),
+      handleDocumentAnalyze(documentMetaData, sessionToken, context, inflightJobId),
       CONSTANTS.analyzeCommandQueueMessage,
     ).then(response => {
       switch (response.status) {
