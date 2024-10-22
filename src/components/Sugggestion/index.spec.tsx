@@ -41,9 +41,7 @@ describe('SuggestionPage', () => {
       },
     };
 
-    const mockIdentifiedRecommendation = {
-      'suggestion-1': [{ recommendation: 'Recommendation 1' }],
-    };
+    const mockRecommendationCount = 1;
 
     const mockIsRecommendationLoading = false;
 
@@ -51,7 +49,7 @@ describe('SuggestionPage', () => {
       <RecoilRoot
         initializeState={({ set }) => {
           set(State.identifiedSuggestion, mockIdentifiedSuggestion);
-          set(State.identifiedRecommendation, mockIdentifiedRecommendation);
+          set(State.recommendationCount, mockRecommendationCount);
           set(State.isRecommendationLoading, mockIsRecommendationLoading);
         }}
       >
@@ -71,7 +69,7 @@ describe('SuggestionPage', () => {
 
   it('should not render recommendation pagination when there is only one recommendation', () => {
     const mockIdentifiedSuggestionChange = jest.fn();
-    const mockIdentifiedRecommendationChange = jest.fn();
+    const mockRecommendationCountChange = jest.fn();
     const mockIsRecommendationLoadingChange = jest.fn();
 
     const mockIdentifiedSuggestion: FixSuggestionsPayload = {
@@ -90,9 +88,7 @@ describe('SuggestionPage', () => {
       },
     };
 
-    const mockIdentifiedRecommendation = {
-      'suggestion-1': [{ recommendation: 'Recommendation 1' }],
-    };
+    const mockRecommendationCount = 1;
 
     const mockIsRecommendationLoading = false;
 
@@ -100,7 +96,7 @@ describe('SuggestionPage', () => {
       <RecoilRoot
         initializeState={({ set }) => {
           set(State.identifiedSuggestion, mockIdentifiedSuggestion);
-          set(State.identifiedRecommendation, mockIdentifiedRecommendation);
+          set(State.recommendationCount, mockRecommendationCount);
           set(State.isRecommendationLoading, mockIsRecommendationLoading);
         }}
       >
@@ -108,10 +104,7 @@ describe('SuggestionPage', () => {
           node={State.identifiedSuggestion}
           onChange={mockIdentifiedSuggestionChange}
         />
-        <RecoilObserver
-          node={State.identifiedRecommendation}
-          onChange={mockIdentifiedRecommendationChange}
-        />
+        <RecoilObserver node={State.recommendationCount} onChange={mockRecommendationCountChange} />
         <RecoilObserver
           node={State.isRecommendationLoading}
           onChange={mockIsRecommendationLoadingChange}
@@ -125,7 +118,7 @@ describe('SuggestionPage', () => {
 
   it('should display loading spinner when generating recommendation', () => {
     const mockIdentifiedSuggestionChange = jest.fn();
-    const mockIdentifiedRecommendationChange = jest.fn();
+    const mockRecommendationCountChange = jest.fn();
     const mockIsRecommendationLoadingChange = jest.fn();
 
     const { getByTestId } = render(
@@ -138,10 +131,7 @@ describe('SuggestionPage', () => {
           node={State.identifiedSuggestion}
           onChange={mockIdentifiedSuggestionChange}
         />
-        <RecoilObserver
-          node={State.identifiedRecommendation}
-          onChange={mockIdentifiedRecommendationChange}
-        />
+        <RecoilObserver node={State.recommendationCount} onChange={mockRecommendationCountChange} />
         <RecoilObserver
           node={State.isRecommendationLoading}
           onChange={mockIsRecommendationLoadingChange}
@@ -170,21 +160,19 @@ describe('SuggestionPage', () => {
       },
     };
 
-    const mockIdentifiedRecommendation = {
-      'suggestion-1': [{ recommendation: 'Recommendation 1' }],
-    };
+    const mockRecommendationCount = 1;
 
     const mockIsRecommendationLoading = false;
 
     const mockIdentifiedSuggestionChange = jest.fn();
-    const mockIdentifiedRecommendationChange = jest.fn();
+    const mockRecommendationCountChange = jest.fn();
     const mockIsRecommendationLoadingChange = jest.fn();
 
     const { getByTestId } = render(
       <RecoilRoot
         initializeState={({ set }) => {
           set(State.identifiedSuggestion, mockIdentifiedSuggestion);
-          set(State.identifiedRecommendation, mockIdentifiedRecommendation);
+          set(State.recommendationCount, mockRecommendationCount);
           set(State.isRecommendationLoading, mockIsRecommendationLoading);
         }}
       >
@@ -192,10 +180,7 @@ describe('SuggestionPage', () => {
           node={State.identifiedSuggestion}
           onChange={mockIdentifiedSuggestionChange}
         />
-        <RecoilObserver
-          node={State.identifiedRecommendation}
-          onChange={mockIdentifiedRecommendationChange}
-        />
+        <RecoilObserver node={State.recommendationCount} onChange={mockRecommendationCountChange} />
         <RecoilObserver
           node={State.isRecommendationLoading}
           onChange={mockIsRecommendationLoadingChange}
@@ -232,21 +217,19 @@ describe('SuggestionPage', () => {
       },
     };
 
-    const mockIdentifiedRecommendation = {
-      'suggestion-1': [{ recommendation: 'Recommendation 1' }],
-    };
+    const mockRecommendationCount = 1;
 
     const mockIsRecommendationLoading = false;
 
     const mockIdentifiedSuggestionChange = jest.fn();
-    const mockIdentifiedRecommendationChange = jest.fn();
+    const mockRecommendationCountChange = jest.fn();
     const mockIsRecommendationLoadingChange = jest.fn();
 
     const { getByTestId } = render(
       <RecoilRoot
         initializeState={({ set }) => {
           set(State.identifiedSuggestion, mockIdentifiedSuggestion);
-          set(State.identifiedRecommendation, mockIdentifiedRecommendation);
+          set(State.recommendationCount, mockRecommendationCount);
           set(State.isRecommendationLoading, mockIsRecommendationLoading);
         }}
       >
@@ -254,10 +237,7 @@ describe('SuggestionPage', () => {
           node={State.identifiedSuggestion}
           onChange={mockIdentifiedSuggestionChange}
         />
-        <RecoilObserver
-          node={State.identifiedRecommendation}
-          onChange={mockIdentifiedRecommendationChange}
-        />
+        <RecoilObserver node={State.recommendationCount} onChange={mockRecommendationCountChange} />
         <RecoilObserver
           node={State.isRecommendationLoading}
           onChange={mockIsRecommendationLoadingChange}
@@ -279,69 +259,6 @@ describe('SuggestionPage', () => {
     expect(mockIsRecommendationLoadingChange).toHaveBeenCalledWith(true);
   });
 
-  it('should pass correct data when clicked on apply button', () => {
-    const mockIdentifiedSuggestion: FixSuggestionsPayload = {
-      id: 'suggestion-1',
-      isFix: false,
-      isReset: false,
-      path: '',
-      vuln: {
-        id: '1',
-        startLine: 2,
-        endLine: 3,
-        path: '',
-        summary: '',
-        category: 'Category',
-        description: 'Description',
-      },
-    };
-
-    const mockIdentifiedRecommendation = {
-      'suggestion-1': [{ recommendation: 'Recommendation 1' }],
-    };
-
-    const mockIsRecommendationLoading = false;
-
-    const mockIdentifiedSuggestionChange = jest.fn();
-    const mockIdentifiedRecommendationChange = jest.fn();
-    const mockIsRecommendationLoadingChange = jest.fn();
-
-    const { getByTestId } = render(
-      <RecoilRoot
-        initializeState={({ set }) => {
-          set(State.identifiedSuggestion, mockIdentifiedSuggestion);
-          set(State.identifiedRecommendation, mockIdentifiedRecommendation);
-          set(State.isRecommendationLoading, mockIsRecommendationLoading);
-        }}
-      >
-        <RecoilObserver
-          node={State.identifiedSuggestion}
-          onChange={mockIdentifiedSuggestionChange}
-        />
-        <RecoilObserver
-          node={State.identifiedRecommendation}
-          onChange={mockIdentifiedRecommendationChange}
-        />
-        <RecoilObserver
-          node={State.isRecommendationLoading}
-          onChange={mockIsRecommendationLoadingChange}
-        />
-        <SuggestionPage />
-      </RecoilRoot>,
-    );
-
-    const applyRecommendationButton = getByTestId('apply-button');
-    expect(applyRecommendationButton).toBeInTheDocument();
-    fireEvent.click(applyRecommendationButton);
-    expect(vscode.postMessage).toHaveBeenCalledWith({
-      type: 'applyRecommendation',
-      data: {
-        input: 'Recommendation 1',
-        initData: { ...mockIdentifiedSuggestion },
-      },
-    });
-  });
-
   it('should run the useEffect when isFix is true and isReset is false', () => {
     const mockIdentifiedSuggestion: FixSuggestionsPayload = {
       id: 'suggestion-1',
@@ -359,21 +276,19 @@ describe('SuggestionPage', () => {
       },
     };
 
-    const mockIdentifiedRecommendation = {
-      'suggestion-1': [{ recommendation: 'Recommendation 1' }],
-    };
+    const mockRecommendationCount = 1;
 
     const mockIsRecommendationLoading = false;
 
     const mockIdentifiedSuggestionChange = jest.fn();
-    const mockIdentifiedRecommendationChange = jest.fn();
+    const mockRecommendationCountChange = jest.fn();
     const mockIsRecommendationLoadingChange = jest.fn();
 
     const { rerender } = render(
       <RecoilRoot
         initializeState={({ set }) => {
           set(State.identifiedSuggestion, mockIdentifiedSuggestion);
-          set(State.identifiedRecommendation, mockIdentifiedRecommendation);
+          set(State.recommendationCount, mockRecommendationCount);
           set(State.isRecommendationLoading, mockIsRecommendationLoading);
         }}
       >
@@ -381,10 +296,7 @@ describe('SuggestionPage', () => {
           node={State.identifiedSuggestion}
           onChange={mockIdentifiedSuggestionChange}
         />
-        <RecoilObserver
-          node={State.identifiedRecommendation}
-          onChange={mockIdentifiedRecommendationChange}
-        />
+        <RecoilObserver node={State.recommendationCount} onChange={mockRecommendationCountChange} />
         <RecoilObserver
           node={State.isRecommendationLoading}
           onChange={mockIsRecommendationLoadingChange}
@@ -397,7 +309,7 @@ describe('SuggestionPage', () => {
       <RecoilRoot
         initializeState={({ set }) => {
           set(State.identifiedSuggestion, mockIdentifiedSuggestion);
-          set(State.identifiedRecommendation, mockIdentifiedRecommendation);
+          set(State.recommendationCount, mockRecommendationCount);
           set(State.isRecommendationLoading, mockIsRecommendationLoading);
         }}
       >
@@ -405,10 +317,7 @@ describe('SuggestionPage', () => {
           node={State.identifiedSuggestion}
           onChange={mockIdentifiedSuggestionChange}
         />
-        <RecoilObserver
-          node={State.identifiedRecommendation}
-          onChange={mockIdentifiedRecommendationChange}
-        />
+        <RecoilObserver node={State.recommendationCount} onChange={mockRecommendationCountChange} />
         <RecoilObserver
           node={State.isRecommendationLoading}
           onChange={mockIsRecommendationLoadingChange}

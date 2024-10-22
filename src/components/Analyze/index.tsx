@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
-import { Box, CircularProgress, SxProps, useTheme } from '@mui/material';
+import { CircularProgress, Stack, SxProps, useTheme } from '@mui/material';
 import Button from '@mui/material/Button';
 import { ProblemList } from './ProblemList';
 import { AnalyzePageBodyContainer } from './styles';
@@ -21,64 +21,31 @@ export const AnalyzePage = ({
 }: AnalyzeProps): JSX.Element => {
   const theme = useTheme();
 
-  const identifiedProblems = useRecoilValue(State.identifiedProblems);
+  const analyzeState = useRecoilValue(State.analyzeState);
   const currentEditor = useRecoilValue(State.currentEditor);
   const currentWorkSpaceProject = useRecoilValue(State.currentWorkSpaceProject);
   const isEmptyIdentifiedProblemDetected = useRecoilValue(State.isEmptyIdentifiedProblemDetected);
 
   const otherFileWithProblems: Array<{ name: string; path: string }> | undefined = useMemo(() => {
-    if (!identifiedProblems) return undefined;
+    if (!analyzeState) return undefined;
 
     if (!currentEditor) return undefined;
 
-    const results: Array<{ path: string }> = Object.keys(identifiedProblems)
-      .filter(problemKey => {
-        const problem = identifiedProblems[problemKey];
-
-        if (problem.fullFilePath === undefined || currentWorkSpaceProject === undefined) {
-          return false;
-        }
-
-        if (problem.fullFilePath === currentWorkSpaceProject) {
-          return true;
-        }
-
-        return false;
-      })
-      .filter(problemKey => {
-        const problem = identifiedProblems[problemKey];
-        const splitString: string | undefined = problemKey.split('@@')[0];
-
-        if (splitString === undefined || problem.endLine - 1 < 0 || problem.startLine - 1 < 0) {
-          return false;
-        }
-
-        if (splitString !== currentEditor && problem.isDiscarded === false) {
-          return true;
+    const results: Array<string> = Object.keys(analyzeState)
+      .filter(path => path !== currentEditor)
+      .filter(path => analyzeState[path][0]?.isValid)
+      .filter(path => {
+        // Check if there are any viable and undiscarded problems in the file
+        for (const problem of analyzeState[path][0].problems) {
+          if (problem.endLine - 1 >= 0 && problem.startLine - 1 >= 0 && !problem.discarded) {
+            return true;
+          }
         }
 
         return false;
-      })
-      .filter(problemKey => {
-        const splitString: string | undefined = problemKey.split('@@')[0];
-        if (splitString === undefined) return false;
-        const isViewed = identifiedProblems[problemKey].isViewed || false;
-
-        if (splitString !== currentEditor && isViewed === false) {
-          return true;
-        }
-
-        return false;
-      })
-      .map(problemKey => {
-        const problem = identifiedProblems[problemKey];
-
-        return {
-          path: problem.path,
-        };
       });
 
-    const uniqueFiles = Array.from(new Set(results.map(item => item.path)));
+    const uniqueFiles = Array.from(new Set(results));
 
     return uniqueFiles.map(file => {
       return {
@@ -86,41 +53,22 @@ export const AnalyzePage = ({
         name: file.split(/\/|\\/g).pop() || '',
       };
     });
-  }, [identifiedProblems, currentEditor, currentWorkSpaceProject]);
+  }, [analyzeState, currentEditor, currentWorkSpaceProject]);
 
   const detectedProblems = useMemo(() => {
-    if (!identifiedProblems) return undefined;
-
     if (!currentEditor) return undefined;
 
-    return Object.keys(identifiedProblems)
-      .filter(problemKey => {
-        const problem = identifiedProblems[problemKey];
-        if (problem.fullFilePath === undefined || currentWorkSpaceProject === undefined) {
-          return false;
-        }
+    if (
+      !analyzeState?.[currentEditor] ||
+      analyzeState[currentEditor].length === 0 ||
+      !analyzeState[currentEditor][0].isValid
+    )
+      return undefined;
 
-        if (problem.fullFilePath === currentWorkSpaceProject) {
-          return true;
-        }
-
-        return false;
-      })
-      .filter(problemKey => {
-        const problem = identifiedProblems[problemKey];
-        const splitString: string | undefined = problemKey.split('@@')[0];
-
-        if (splitString === undefined || problem.endLine - 1 < 0 || problem.startLine - 1 < 0) {
-          return false;
-        }
-
-        if (splitString === currentEditor && problem.isDiscarded === false) {
-          return true;
-        }
-
-        return false;
-      }).length;
-  }, [identifiedProblems, currentEditor, currentWorkSpaceProject]);
+    return analyzeState[currentEditor][0].problems.filter(
+      problem => problem.startLine - 1 >= 0 && problem.endLine - 1 >= 0 && !problem.discarded,
+    ).length;
+  }, [analyzeState, currentEditor, currentWorkSpaceProject]);
 
   const analyzeButtonDisabledSxProps = useMemo(() => {
     if (isAnalysisLoading === true) {
@@ -143,9 +91,23 @@ export const AnalyzePage = ({
     } as SxProps;
   }, []);
 
+  const showViewPreviousResultsButton: boolean =
+    !!currentEditor &&
+    !!analyzeState?.[currentEditor] &&
+    ((analyzeState[currentEditor].length > 0 && !analyzeState[currentEditor][0].isValid) ||
+      analyzeState[currentEditor].length > 1);
+
+  const handleViewPreviousResults: React.MouseEventHandler<HTMLButtonElement> = e => {
+    e.preventDefault();
+    vscode.postMessage({
+      type: 'view_previous_results',
+      data: { path: currentEditor },
+    });
+  };
+
   return (
     <>
-      <Box sx={AnalyzePageBodyContainer(theme)}>
+      <Stack spacing={2} sx={AnalyzePageBodyContainer(theme)}>
         {(!hasWorkSpaceFolders || !hasOpenTextDocuments) && (
           <>
             <Button
@@ -182,7 +144,13 @@ export const AnalyzePage = ({
             </Button>
           </>
         )}
-      </Box>
+
+        {showViewPreviousResultsButton && (
+          <Button variant='contained' onClick={handleViewPreviousResults}>
+            View Previous Results
+          </Button>
+        )}
+      </Stack>
 
       {hasWorkSpaceFolders && hasOpenTextDocuments && (
         <ProblemList

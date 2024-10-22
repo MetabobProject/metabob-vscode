@@ -4,6 +4,7 @@ import { act, render } from '@testing-library/react';
 // Manually mock vscode
 jest.mock('vscode');
 import vscode from '../__mocks__/vscode';
+
 (global as any).vscode = vscode;
 
 import { RecoilRoot, useRecoilValue } from 'recoil';
@@ -21,6 +22,7 @@ import { IdentifiedProblems } from '../__mocks__/identifiedProblems';
 export const RecoilObserver = ({ node, onChange }) => {
   const value = useRecoilValue(node);
   useEffect(() => onChange(value), [onChange, value]);
+
   return null;
 };
 
@@ -28,6 +30,39 @@ describe('AccountSettingProvider', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.resetModules();
+
+    // recoil-persist uses localStorage to persist state
+    // so we need to clear it after each test to avoid state leaking
+    localStorage.clear();
+  });
+
+  it('should update AnalyzeState Recoil state correctly on ANALYZE_STATE_CHANGED event', () => {
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+
+    const mockAnalyzeStateHandler = jest.fn();
+    const mockPayload = IdentifiedProblems;
+
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver node={State.analyzeState} onChange={mockAnalyzeStateHandler} />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.ANALYZE_STATE_CHANGED,
+          data: mockPayload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockAnalyzeStateHandler).toHaveBeenCalledWith(mockPayload);
   });
 
   it('should receive Get_INIT_DATA event when the component renders', () => {
@@ -103,8 +138,6 @@ describe('AccountSettingProvider', () => {
 
     const mockApplicationStateHandler = jest.fn();
     const mockAnalysisLoadingStateHandler = jest.fn();
-    const mockIdentifiedProblemsStateHandler = jest.fn();
-    const mockIdentifiedRecommendationStateHandler = jest.fn();
 
     render(
       <RecoilRoot>
@@ -113,14 +146,6 @@ describe('AccountSettingProvider', () => {
           <RecoilObserver
             node={State.isAnalysisLoading}
             onChange={mockAnalysisLoadingStateHandler}
-          />
-          <RecoilObserver
-            node={State.identifiedProblems}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
-          <RecoilObserver
-            node={State.identifiedRecommendation}
-            onChange={mockIdentifiedRecommendationStateHandler}
           />
         </AccountSettingProvider>
       </RecoilRoot>,
@@ -139,8 +164,6 @@ describe('AccountSettingProvider', () => {
 
     expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
     expect(mockAnalysisLoadingStateHandler).toHaveBeenCalledWith(true);
-    expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith({});
-    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
   });
 
   it('should update Recoil state correctly on FIX_SUGGESTION event', () => {
@@ -313,15 +336,12 @@ describe('AccountSettingProvider', () => {
       window.dispatchEvent(event);
     };
     const mockApplicationStateHandler = jest.fn();
-    const mockIdentifiedProblemsStateHandler = jest.fn();
     const mockIdentifiedSuggestionStateHandler = jest.fn();
-    const mockIdentifiedRecommendationStateHandler = jest.fn();
     const mockIsAnalysisLoadingStateHandler = jest.fn();
 
     const mockPayload = {
       shouldResetRecomendation: false,
       shouldMoveToAnalyzePage: true,
-      ...IdentifiedProblems,
     };
 
     render(
@@ -329,16 +349,8 @@ describe('AccountSettingProvider', () => {
         <AccountSettingProvider>
           <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
           <RecoilObserver
-            node={State.identifiedProblems}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
-          <RecoilObserver
             node={State.identifiedSuggestion}
             onChange={mockIdentifiedSuggestionStateHandler}
-          />
-          <RecoilObserver
-            node={State.identifiedRecommendation}
-            onChange={mockIdentifiedRecommendationStateHandler}
           />
           <RecoilObserver
             node={State.isAnalysisLoading}
@@ -359,9 +371,99 @@ describe('AccountSettingProvider', () => {
     });
 
     expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
-    expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
     expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(undefined);
-    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
+    expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
+  });
+
+  it('should update Recoil state correctly on ANALYSIS_COMPLETED_EMPTY_PROBLEMS event', () => {
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+    const mockApplicationStateHandler = jest.fn();
+    const mockIdentifiedSuggestionStateHandler = jest.fn();
+    const mockIsAnalysisLoadingStateHandler = jest.fn();
+
+    const mockPayload = {
+      shouldResetRecomendation: true,
+      shouldMoveToAnalyzePage: true,
+    };
+
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
+          <RecoilObserver
+            node={State.identifiedSuggestion}
+            onChange={mockIdentifiedSuggestionStateHandler}
+          />
+          <RecoilObserver
+            node={State.isAnalysisLoading}
+            onChange={mockIsAnalysisLoadingStateHandler}
+          />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.ANALYSIS_COMPLETED_EMPTY_PROBLEMS,
+          data: mockPayload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
+    expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(undefined);
+    expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
+  });
+
+  it('should update Recoil state correctly on ANALYSIS_COMPLETED_EMPTY_PROBLEMS event on edge case', () => {
+    const mockMessageEvent = (event: MessageEvent<MessageType>) => {
+      window.dispatchEvent(event);
+    };
+    const mockApplicationStateHandler = jest.fn();
+    const mockIdentifiedSuggestionStateHandler = jest.fn();
+    const mockIsAnalysisLoadingStateHandler = jest.fn();
+
+    const mockPayload = {
+      shouldResetRecomendation: false,
+      shouldMoveToAnalyzePage: false,
+    };
+
+    render(
+      <RecoilRoot>
+        <AccountSettingProvider>
+          <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
+          <RecoilObserver
+            node={State.identifiedSuggestion}
+            onChange={mockIdentifiedSuggestionStateHandler}
+          />
+          <RecoilObserver
+            node={State.isAnalysisLoading}
+            onChange={mockIsAnalysisLoadingStateHandler}
+          />
+        </AccountSettingProvider>
+      </RecoilRoot>,
+    );
+
+    act(() => {
+      const messageEvent = new MessageEvent<MessageType>('message', {
+        data: {
+          type: EventDataType.ANALYSIS_COMPLETED_EMPTY_PROBLEMS,
+          data: mockPayload,
+        },
+      });
+      mockMessageEvent(messageEvent);
+    });
+
+    expect(mockApplicationStateHandler).toHaveBeenCalledTimes(1);
+    expect(mockApplicationStateHandler).toHaveBeenCalledWith(State.defaults.applicationState);
+    expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledTimes(1);
+    expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(
+      State.defaults.identifiedSuggestion,
+    );
     expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
   });
 
@@ -370,15 +472,12 @@ describe('AccountSettingProvider', () => {
       window.dispatchEvent(event);
     };
     const mockApplicationStateHandler = jest.fn();
-    const mockIdentifiedProblemsStateHandler = jest.fn();
     const mockIdentifiedSuggestionStateHandler = jest.fn();
-    const mockIdentifiedRecommendationStateHandler = jest.fn();
     const mockIsAnalysisLoadingStateHandler = jest.fn();
 
     const mockPayload = {
       shouldResetRecomendation: true,
       shouldMoveToAnalyzePage: true,
-      ...IdentifiedProblems,
     };
 
     render(
@@ -386,16 +485,8 @@ describe('AccountSettingProvider', () => {
         <AccountSettingProvider>
           <RecoilObserver node={State.applicationState} onChange={mockApplicationStateHandler} />
           <RecoilObserver
-            node={State.identifiedProblems}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
-          <RecoilObserver
             node={State.identifiedSuggestion}
             onChange={mockIdentifiedSuggestionStateHandler}
-          />
-          <RecoilObserver
-            node={State.identifiedRecommendation}
-            onChange={mockIdentifiedRecommendationStateHandler}
           />
           <RecoilObserver
             node={State.isAnalysisLoading}
@@ -416,9 +507,7 @@ describe('AccountSettingProvider', () => {
     });
 
     expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
-    expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
     expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(undefined);
-    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
     expect(mockIsAnalysisLoadingStateHandler).toHaveBeenCalledWith(false);
   });
 
@@ -460,7 +549,6 @@ describe('AccountSettingProvider', () => {
     };
 
     const mockIdentifiedSuggestionStateHandler = jest.fn();
-    const mockIdentifiedRecommendationStateHandler = jest.fn();
     const mockApplicationStateHandler = jest.fn();
     const mockPayload = undefined;
 
@@ -471,10 +559,6 @@ describe('AccountSettingProvider', () => {
           <RecoilObserver
             node={State.identifiedSuggestion}
             onChange={mockIdentifiedSuggestionStateHandler}
-          />
-          <RecoilObserver
-            node={State.identifiedRecommendation}
-            onChange={mockIdentifiedRecommendationStateHandler}
           />
         </AccountSettingProvider>
       </RecoilRoot>,
@@ -492,7 +576,6 @@ describe('AccountSettingProvider', () => {
 
     expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
     expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(undefined);
-    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
   });
 
   it('should not update Recoil State on case DISCARD_SUGGESTION_ERROR, ENDORSE_SUGGESTION_ERROR, ENDORSE_SUGGESTION_SUCCESS', () => {
@@ -501,7 +584,6 @@ describe('AccountSettingProvider', () => {
     };
 
     const mockIdentifiedSuggestionStateHandler = jest.fn();
-    const mockIdentifiedRecommendationStateHandler = jest.fn();
     const mockApplicationStateHandler = jest.fn();
     const mockPayload = undefined;
 
@@ -512,10 +594,6 @@ describe('AccountSettingProvider', () => {
           <RecoilObserver
             node={State.identifiedSuggestion}
             onChange={mockIdentifiedSuggestionStateHandler}
-          />
-          <RecoilObserver
-            node={State.identifiedRecommendation}
-            onChange={mockIdentifiedRecommendationStateHandler}
           />
         </AccountSettingProvider>
       </RecoilRoot>,
@@ -547,7 +625,6 @@ describe('AccountSettingProvider', () => {
 
     expect(mockApplicationStateHandler).toHaveBeenCalledWith(ApplicationWebviewState.ANALYZE_MODE);
     expect(mockIdentifiedSuggestionStateHandler).toHaveBeenCalledWith(undefined);
-    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith(undefined);
   });
 
   it('should update Recoil state correctly on CURRENT_FILE event with valid filename', () => {
@@ -555,7 +632,7 @@ describe('AccountSettingProvider', () => {
     const mockMessageEvent = (event: MessageEvent<MessageType>) => {
       window.dispatchEvent(event);
     };
-    const payload = { uri: {fsPath: '/path/to/exampleFile.git'} };
+    const payload = '/path/to/exampleFile.git';
 
     render(
       <RecoilRoot>
@@ -575,7 +652,7 @@ describe('AccountSettingProvider', () => {
       mockMessageEvent(messageEvent);
     });
 
-    const expectedFilename = payload.uri.fsPath ?? undefined;
+    const expectedFilename = payload ?? undefined;
 
     expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith(expectedFilename);
   });
@@ -596,7 +673,7 @@ describe('AccountSettingProvider', () => {
     );
 
     act(() => {
-      const payload = { uri: {fsPath: '/path/to/invalidFile'} };
+      const payload = { uri: { fsPath: '/path/to/invalidFile' } };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
           type: EventDataType.CURRENT_FILE,
@@ -624,7 +701,7 @@ describe('AccountSettingProvider', () => {
     );
 
     act(() => {
-      const payload = { uri: {fsPath: ''} };
+      const payload = { uri: { fsPath: '' } };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
           type: EventDataType.CURRENT_FILE,
@@ -777,10 +854,7 @@ describe('AccountSettingProvider', () => {
             node={State.hasWorkSpaceFolders}
             onChange={mockHasWorkSpaceFoldersStateHandler}
           />
-          <RecoilObserver
-            node={State.identifiedProblems}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
+          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.currentWorkSpaceProject}
             onChange={mockCurrentWorkSpaceProjectStateHandler}
@@ -798,7 +872,7 @@ describe('AccountSettingProvider', () => {
           ...IdentifiedProblems,
         },
         currentWorkSpaceFolder: 'exampleProject',
-        currentFile: { uri: {fsPath: 'exampleProject/exampleFileName.git'} },
+        currentFile: { uri: { fsPath: 'exampleProject/exampleFileName.git' } },
       };
       const messageEvent = new MessageEvent<MessageType>('message', {
         data: {
@@ -814,7 +888,9 @@ describe('AccountSettingProvider', () => {
     expect(mockHasWorkSpaceFoldersStateHandler).toHaveBeenCalledWith(true);
     expect(mockIdentifiedProblemsStateHandler).toHaveBeenCalledWith(IdentifiedProblems);
     expect(mockCurrentWorkSpaceProjectStateHandler).toHaveBeenCalledWith('exampleProject');
-    expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith('exampleProject/exampleFileName.git');
+    expect(mockCurrentEditorStateHandler).toHaveBeenCalledWith(
+      'exampleProject/exampleFileName.git',
+    );
   });
 
   it('should update Recoil state correctly on INIT_DATA event with valid payload with an edge case', () => {
@@ -840,10 +916,7 @@ describe('AccountSettingProvider', () => {
             node={State.hasWorkSpaceFolders}
             onChange={mockHasWorkSpaceFoldersStateHandler}
           />
-          <RecoilObserver
-            node={State.identifiedProblems}
-            onChange={mockIdentifiedProblemsStateHandler}
-          />
+          <RecoilObserver node={State.analyzeState} onChange={mockIdentifiedProblemsStateHandler} />
           <RecoilObserver
             node={State.currentWorkSpaceProject}
             onChange={mockCurrentWorkSpaceProjectStateHandler}
@@ -881,7 +954,6 @@ describe('AccountSettingProvider', () => {
   });
 
   it('should update Recoil state correctly on GENERATE_CLICKED_RESPONSE event with valid payload', () => {
-    const mockIdentifiedRecommendationStateHandler = jest.fn();
     const mockIsRecommendationLoadingStateHandler = jest.fn();
     const mockMessageEvent = (event: MessageEvent<MessageType>) => {
       window.dispatchEvent(event);
@@ -889,10 +961,6 @@ describe('AccountSettingProvider', () => {
     render(
       <RecoilRoot>
         <AccountSettingProvider>
-          <RecoilObserver
-            node={State.identifiedRecommendation}
-            onChange={mockIdentifiedRecommendationStateHandler}
-          />
           <RecoilObserver
             node={State.isRecommendationLoading}
             onChange={mockIsRecommendationLoadingStateHandler}
@@ -915,14 +983,10 @@ describe('AccountSettingProvider', () => {
       mockMessageEvent(messageEvent);
     });
 
-    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith({
-      problem1: [{ recommendation: 'Some recommendation' }],
-    });
     expect(mockIsRecommendationLoadingStateHandler).toHaveBeenCalledWith(false);
   });
 
   it('should not update Recoil state on GENERATE_CLICKED_RESPONSE event with empty recommendation', () => {
-    const mockIdentifiedRecommendationStateHandler = jest.fn();
     const mockIsRecommendationLoadingStateHandler = jest.fn();
     const mockMessageEvent = (event: MessageEvent<MessageType>) => {
       window.dispatchEvent(event);
@@ -930,14 +994,10 @@ describe('AccountSettingProvider', () => {
     render(
       <RecoilRoot
         initializeState={({ set }) => {
-          set(State.identifiedRecommendation, undefined);
+          set(State.recommendationCount, 0);
         }}
       >
         <AccountSettingProvider>
-          <RecoilObserver
-            node={State.identifiedRecommendation}
-            onChange={mockIdentifiedRecommendationStateHandler}
-          />
           <RecoilObserver
             node={State.isRecommendationLoading}
             onChange={mockIsRecommendationLoadingStateHandler}
@@ -961,9 +1021,6 @@ describe('AccountSettingProvider', () => {
     });
 
     // Ensure Recoil state remains unchanged
-    expect(mockIdentifiedRecommendationStateHandler).toHaveBeenCalledWith({
-      problem1: [{ recommendation: 'Some recommendation' }],
-    });
     expect(mockIsRecommendationLoadingStateHandler).toHaveBeenCalledWith(false);
   });
 });
